@@ -27,7 +27,7 @@ body {
 }
 
 .brand-panel {
-  background: linear-gradient(135deg, var(--primary) 0%, #0d2d5c 100%);
+  background: linear-gradient(  135deg, var(--primary) 0%, #0d2d5c 100%);
   color: var(--white);
   display: flex;
   align-items: center;
@@ -43,12 +43,14 @@ body {
 }
 
 .logo {
-  width: 110px;
-  height: 110px;
-  border-radius: 24px;
-  background: var(--white);
-  padding: 12px;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  border-radius: 12px;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  object-fit: contain;
 }
 
 .eyebrow {
@@ -168,12 +170,48 @@ button:hover {
 }
 
 @media (max-width: 560px) {
-  .brand-panel,
+  .page-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .brand-panel {
+    min-height: auto;
+    padding: 20px 20px;
+    justify-content: flex-start;
+  }
+
+  .brand-card {
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+    max-width: 100%;
+  }
+
+  .logo {
+    max-width: 100px;
+    min-width: 100px;
+    flex-shrink: 0;
+  }
+
+  h1 {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+  }
+
+  .eyebrow {
+    display: none;
+  }
+
   .login-panel {
-    padding: 20px;
+    padding: 16px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-top: 20px;
   }
 
   .login-card {
-    padding: 24px;
+    padding: 20px;
+    width: 100%;
   }
 }

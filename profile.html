@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profile — Yusen Warehouse</title>
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">Yusen Warehouse</div>
+      <nav>
+        <a href="/dashboard.html">Dashboard</a>
+        <a href="/inbound-outbound.html">Inbound & Outbound</a>
+        <a href="/inventory.html">Inventory</a>
+        <a href="/activity-report.html">Activity Report</a>
+        <a href="/profile.html">Profile</a>
+        <a href="#logout">Logout</a>
+      </nav>
+    </aside>
+    <div class="main-column">
+      <header class="topbar">
+        <div class="search"><input placeholder="Search..."/></div>
+        <div class="top-actions"><button class="icon">🔔</button> <span class="profile">John Doe ▾</span></div>
+      </header>
+      <div class="content">
+        <h1>Profile</h1>
+        <div class="card-row">
+          <div class="card">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:72px;height:72px;background:#ddd;border-radius:50%"></div>
+              <div>
+                <div><strong>Juan Dela Cruz</strong></div>
+                <div>ID: EMP-001</div>
+                <div>Position: Warehouse Staff</div>
+              </div>
+            </div>
+            <div style="margin-top:12px"><button class="btn">Edit Profile</button> <button class="btn">Change Password</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="/assets/app.js"></script>
+</body>
+</html>
