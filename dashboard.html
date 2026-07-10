@@ -45,21 +45,115 @@
       <div class="content">
         <h1>Dashboard</h1>
         <div class="card-row">
-          <div class="card"><div class="card-title">Total Shipments</div><div class="card-value">1,240</div></div>
-          <div class="card"><div class="card-title">Cargo in Warehouse</div><div class="card-value">532</div></div>
-          <div class="card"><div class="card-title">Incoming Today</div><div class="card-value">12</div></div>
-          <div class="card"><div class="card-title">Outgoing Today</div><div class="card-value">9</div></div>
-          <div class="card"><div class="card-title">Waiting for Confirmation</div><div class="card-value">7</div></div>
+          <div class="card card-animated">
+            <div class="card-content">
+              <div>
+                <div class="card-title">Total Shipments</div>
+                <div class="card-value">1,248</div>
+                <div class="card-subtitle">All time</div>
+              </div>
+            </div>
+            <div class="card-icon icon-blue">📋</div>
+          </div>
+          <div class="card card-animated">
+            <div class="card-content">
+              <div>
+                <div class="card-title">Cargo in Warehouse</div>
+                <div class="card-value">532</div>
+                <div class="card-subtitle">Current</div>
+              </div>
+            </div>
+            <div class="card-icon icon-green">📦</div>
+          </div>
+          <div class="card card-animated">
+            <div class="card-content">
+              <div>
+                <div class="card-title">Incoming Today</div>
+                <div class="card-value">28</div>
+                <div class="card-subtitle">Shipments</div>
+              </div>
+            </div>
+            <div class="card-icon icon-blue">⬇️</div>
+          </div>
+          <div class="card card-animated">
+            <div class="card-content">
+              <div>
+                <div class="card-title">Outgoing Today</div>
+                <div class="card-value">15</div>
+                <div class="card-subtitle">Shipments</div>
+              </div>
+            </div>
+            <div class="card-icon icon-orange">📤</div>
+          </div>
+          <div class="card card-animated">
+            <div class="card-content">
+              <div>
+                <div class="card-title">Waiting for Confirmation</div>
+                <div class="card-value">17</div>
+                <div class="card-subtitle">Shipments</div>
+              </div>
+            </div>
+            <div class="card-icon icon-yellow">⏱️</div>
+          </div>
         </div>
 
         <section class="recent">
-          <h2>Recent Shipments</h2>
+          <div class="recent-header">
+            <h2>Recent Shipments</h2>
+            <div class="recent-actions">
+              <div class="search-compact">
+                <input type="text" placeholder="Search shipment..."/>
+              </div>
+              <button class="btn primary-btn">View All</button>
+            </div>
+          </div>
           <div class="table">
             <table>
-              <thead><tr><th>Client</th><th>HAWB</th><th>Status</th><th>Location</th><th>Date</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>CLIENT</th>
+                  <th>HAWB</th>
+                  <th>STATUS</th>
+                  <th>LOCATION</th>
+                  <th>DATE & TIME</th>
+                </tr>
+              </thead>
               <tbody>
-                <tr><td>ABC Corp</td><td>HAWB001</td><td>In</td><td>WH-A</td><td>2026-07-09</td></tr>
-                <tr><td>XYZ Trading</td><td>HAWB002</td><td>Out</td><td>WH-B</td><td>2026-07-09</td></tr>
+                <tr>
+                  <td><strong>YAZAKI ORD</strong></td>
+                  <td><a href="#">YPH-04800983</a></td>
+                  <td><span class="badge-orange">WAITING FOR CONFIRMATION</span></td>
+                  <td>AISLE A</td>
+                  <td>Apr 11, 2026 16:14</td>
+                </tr>
+                <tr>
+                  <td><strong>TOYOTA TSUSHO</strong></td>
+                  <td><a href="#">YPH-04800982</a></td>
+                  <td><span class="badge-green">RECEIVED</span></td>
+                  <td>AISLE B</td>
+                  <td>Apr 11, 2026 16:40</td>
+                </tr>
+                <tr>
+                  <td><strong>DENSO PHIL.</strong></td>
+                  <td><a href="#">YPH-04800981</a></td>
+                  <td><span class="badge-blue">PARTIAL</span></td>
+                  <td>AISLE C</td>
+                  <td>Apr 11, 2026 14:25</td>
+                </tr>
+                <tr>
+                  <td><strong>NIPPON EXPRESS</strong></td>
+                  <td><a href="#">YPH-04800980</a></td>
+                  <td><span class="badge-green">RELEASED</span></td>
+                  <td>AISLE A</td>
+                  <td>Apr 11, 2026 11:55</td>
+                </tr>
+                <tr>
+                  <td><strong>KURASHIKI CORP</strong></td>
+                  <td><a href="#">YPH-04800979</a></td>
+                  <td><span class="badge-green">RECEIVED</span></td>
+                  <td>AISLE D</td>
+                  <td>Apr 11, 2026 10:30</td>
+                </tr>
               </tbody>
             </table>
           </div>
