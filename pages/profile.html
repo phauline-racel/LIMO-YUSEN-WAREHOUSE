@@ -8,21 +8,43 @@
 </head>
 <body>
   <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">Yusen Warehouse</div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand"><img src="../assets/logo-YL.png" alt="Yusen Logistics" class="brand-logo"/></div>
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">
+          <span class="toggle-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+            </svg>
+          </span>
+        </button>
+      </div>
       <nav>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="inbound-outbound.html">Inbound & Outbound</a>
-        <a href="inventory.html">Inventory</a>
-        <a href="activity-report.html">Activity Report</a>
-        <a href="profile.html">Profile</a>
-        <a href="#logout">Logout</a>
+        <a href="dashboard.html" title="Dashboard"><span class="icon">📊</span><span class="text">Dashboard</span></a>
+        <a href="inbound-outbound.html" title="Inbound & Outbound"><span class="icon">📦</span><span class="text">Inbound & Outbound</span></a>
+        <a href="inventory.html" title="Inventory"><span class="icon">📋</span><span class="text">Inventory</span></a>
+        <a href="activity-report.html" title="Activity Report"><span class="icon">📈</span><span class="text">Activity Report</span></a>
+        <a href="profile.html" title="Profile"><span class="icon">👤</span><span class="text">Profile</span></a>
+        <a href="#logout" title="Logout"><span class="icon">🚪</span><span class="text">Logout</span></a>
       </nav>
     </aside>
     <div class="main-column">
       <header class="topbar">
-        <div class="search"><input placeholder="Search..."/></div>
-        <div class="top-actions"><button class="icon">🔔</button> <span class="profile">John Doe ▾</span></div>
+        <div class="search-container">
+          <span class="search-icon">🔍︎</span>
+          <input type="text" placeholder="Search HAWB, MAWB, Client..." class="search-input"/>
+        </div>
+        <div class="top-actions">
+          <button class="icon notification-btn">🔔<span class="badge">1</span></button>
+          <div class="user-profile">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Joseph" alt="User" class="user-avatar"/>
+            <div class="user-info">
+              <div class="user-name">JOSEPH</div>
+              <div class="user-role">Warehouse Staff</div>
+            </div>
+            <span class="dropdown-icon">▾</span>
+          </div>
+        </div>
       </header>
       <div class="content">
         <h1>Profile</h1>
