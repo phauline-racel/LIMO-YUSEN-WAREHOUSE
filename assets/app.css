@@ -49,7 +49,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);
 .card-animated{transition:all 0.3s ease;cursor:pointer}
 .card-animated:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(6,24,61,0.15)}
 .card-content{flex:1}
-.card-title{font-size:0.85rem;color:var(--muted);font-weight:500;margin-bottom:8px}
+.card-title{font-size:0.85rem;color:var(--primary);font-weight:600;margin-bottom:8px}
 .card-value{font-size:2rem;font-weight:700;color:var(--primary);margin-bottom:4px}
 .card-subtitle{font-size:0.75rem;color:var(--muted)}
 .card-icon{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform 0.3s ease;flex-shrink:0}
