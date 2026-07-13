@@ -52,12 +52,13 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);
 .card-title{font-size:0.85rem;color:var(--muted);font-weight:500;margin-bottom:8px}
 .card-value{font-size:2rem;font-weight:700;color:var(--primary);margin-bottom:4px}
 .card-subtitle{font-size:0.75rem;color:var(--muted)}
-.card-icon{font-size:2.5rem;opacity:0.8;transition:transform 0.3s ease}
+.card-icon{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform 0.3s ease;flex-shrink:0}
+.card-icon .material-symbols-outlined,.card-icon i{font-size:1.65rem;display:inline-flex;align-items:center;justify-content:center}
 .card-animated:hover .card-icon{transform:scale(1.1)}
-.icon-blue{color:#0066cc}
-.icon-green{color:#10b981}
-.icon-orange{color:var(--secondary)}
-.icon-yellow{color:#f59e0b}
+.icon-blue{background:#dbeafe;color:#0066cc}
+.icon-green{background:#d1fae5;color:#059669}
+.icon-orange{background:#ffedd5;color:#d97706}
+.icon-yellow{background:#fef3c7;color:#f59e0b}
 .recent{margin:32px 0}
 .recent-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:16px}
 .recent-header h2{margin:0;font-size:1.2rem;color:var(--primary)}
