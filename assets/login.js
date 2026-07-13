@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     setTimeout(()=>{
       // redirect to the dashboard page (static UI)
-      window.location.href = '/dashboard.html'
+      window.location.href = 'pages/dashboard.html'
     }, 700)
   })
 })

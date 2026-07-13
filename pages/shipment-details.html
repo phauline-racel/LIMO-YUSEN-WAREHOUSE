@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shipment Details — Yusen Warehouse</title>
+  <link rel="stylesheet" href="../assets/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand"><img src="../assets/logo-YL.png" alt="Yusen Logistics" class="brand-logo"/></div>
+        <button class="sidebar-toggle" id="sidebarToggle" title="Toggle sidebar">
+          <span class="toggle-icon">◀</span>
+        </button>
+      </div>
+      <nav>
+        <a href="dashboard.html" title="Dashboard"><span class="icon">📊</span><span class="text">Dashboard</span></a>
+        <a href="inbound-outbound.html" title="Inbound & Outbound"><span class="icon">📦</span><span class="text">Inbound & Outbound</span></a>
+        <a href="inventory.html" title="Inventory"><span class="icon">📋</span><span class="text">Inventory</span></a>
+        <a href="activity-report.html" title="Activity Report"><span class="icon">📈</span><span class="text">Activity Report</span></a>
+        <a href="profile.html" title="Profile"><span class="icon">👤</span><span class="text">Profile</span></a>
+        <a href="#logout" title="Logout"><span class="icon">🚪</span><span class="text">Logout</span></a>
+      </nav>
+    </aside>
+    <div class="main-column">
+      <header class="topbar">
+        <div class="search-container">
+          <span class="search-icon">🔍︎</span>
+          <input type="text" placeholder="Search HAWB, MAWB, Client..." class="search-input"/>
+        </div>
+        <div class="top-actions">
+          <button class="icon notification-btn">🔔<span class="badge">1</span></button>
+          <div class="user-profile">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Joseph" alt="User" class="user-avatar"/>
+            <div class="user-info">
+              <div class="user-name">JOSEPH</div>
+              <div class="user-role">Warehouse Staff</div>
+            </div>
+            <span class="dropdown-icon">▾</span>
+          </div>
+        </div>
+      </header>
+      <div class="content">
+        <h1>Shipment Details</h1>
+        <div class="detail-grid">
+          <section style="background:var(--surface);padding:12px;border-radius:12px;margin-bottom:12px">
+            <h3>Shipment Information</h3>
+            <p><strong>Client:</strong> ABC Corp</p>
+            <p><strong>Destination:</strong> Manila</p>
+            <p><strong>HAWB:</strong> HAWB001</p>
+            <p><strong>MAWB:</strong> MAWB001</p>
+            <p><strong>Invoice:</strong> INV123</p>
+            <p><strong>Transaction Type:</strong> Import</p>
+          </section>
+
+          <section style="background:var(--surface);padding:12px;border-radius:12px;margin-bottom:12px">
+            <h3>Receiving Information</h3>
+            <p><strong>Date:</strong> 2026-07-09</p>
+            <p><strong>Time:</strong> 08:30</p>
+            <p><strong>Received By:</strong> Juan Dela Cruz</p>
+            <p><strong>Plate Number:</strong> ABC-1234</p>
+            <p><strong>Driver:</strong> Driver Name</p>
+            <p><strong>Cargo Condition:</strong> Good</p>
+          </section>
+
+          <section style="background:var(--surface);padding:12px;border-radius:12px;margin-bottom:12px">
+            <h3>Warehouse Information</h3>
+            <p><strong>Location:</strong> WH-A</p>
+            <p><strong>Cargo Handling:</strong> Palletized</p>
+            <p><strong>Status:</strong> Stored (Partial)</p>
+          </section>
+
+          <section style="background:var(--surface);padding:12px;border-radius:12px;margin-bottom:12px">
+            <h3>Quantity Information</h3>
+            <ul>
+              <li>5 CTN</li>
+              <li>10 KGS</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../assets/app.js"></script>
+</body>
+</html>
