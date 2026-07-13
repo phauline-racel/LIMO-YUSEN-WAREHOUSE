@@ -96,6 +96,11 @@ tbody tr:hover{background-color:#f8f9fa}
 tbody tr:last-child td{border-bottom:none}
 table a{color:#0066cc;text-decoration:none;font-weight:500}
 table a:hover{text-decoration:underline}
+.pagination-wrapper{padding:14px 16px 18px;background:#fff;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end}
+.pagination-boxes{display:flex;gap:8px;flex-wrap:wrap}
+.page-box{min-width:38px;height:38px;border:1px solid rgba(6,24,61,0.12);background:#f8f9fa;color:var(--primary);font-weight:700;border-radius:8px;cursor:pointer;transition:all 0.2s ease}
+.page-box:hover{background:#eaf2ff;border-color:#b8d2ff}
+.page-box.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .badge-orange{display:inline-block;background:#fef3c7;color:#d97706;padding:6px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
 .badge-green{display:inline-block;background:#d1fae5;color:#059669;padding:6px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
 .badge-blue{display:inline-block;background:#dbeafe;color:#0066cc;padding:6px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
