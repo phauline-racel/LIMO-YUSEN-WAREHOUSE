@@ -27,19 +27,30 @@ body {
 }
 
 .brand-panel {
-  background: linear-gradient(  135deg, var(--primary) 0%, #0d2d5c 100%);
+  background:
+    radial-gradient(circle at top left, rgba(225, 109, 16, 0.24), transparent 38%),
+    linear-gradient(135deg, var(--primary) 0%, #0d2d5c 100%);
   color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 40px;
 }
 
 .brand-card {
-  max-width: 520px;
+  max-width: 620px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.brand-logo-wrap {
+  width: fit-content;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
 }
 
 .logo {
@@ -55,10 +66,10 @@ body {
 
 .eyebrow {
   margin: 0 0 8px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 h1,
@@ -67,15 +78,47 @@ h2 {
 }
 
 h1 {
-  font-size: clamp(2rem, 4vw, 2.7rem);
+  font-size: clamp(2rem, 4vw, 2.8rem);
   margin-bottom: 8px;
+  line-height: 1.15;
 }
 
 .subtext {
   margin: 0;
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.7;
   color: rgba(255, 255, 255, 0.82);
+}
+
+.feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.feature-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--white);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.truck-illustration {
+  margin-top: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 20px;
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+}
+
+.truck-illustration svg {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .login-panel {
@@ -107,7 +150,7 @@ h1 {
   margin-bottom: 8px;
 }
 
-.login-header p {
+.login-header p:last-child {
   margin: 0;
   color: var(--muted);
   line-height: 1.6;
@@ -125,19 +168,36 @@ h1 {
   color: var(--primary);
 }
 
-.field input {
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px 16px;
-  font-size: 1rem;
-  outline: none;
+  padding: 0 14px;
+  background: #f8fafc;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.field input:focus {
+.input-wrap:focus-within {
   border-color: var(--secondary);
   box-shadow: 0 0 0 4px rgba(225, 109, 16, 0.16);
+}
+
+.input-wrap i {
+  color: var(--secondary);
+  font-size: 1rem;
+}
+
+.field input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  padding: 14px 0;
+  font-size: 1rem;
+  outline: none;
 }
 
 button {
@@ -165,7 +225,8 @@ button:hover {
   }
 
   .brand-panel {
-    min-height: 280px;
+    min-height: 320px;
+    padding: 24px;
   }
 }
 
@@ -177,30 +238,41 @@ button:hover {
 
   .brand-panel {
     min-height: auto;
-    padding: 20px 20px;
+    padding: 18px;
     justify-content: flex-start;
   }
 
   .brand-card {
-    flex-direction: row;
-    gap: 12px;
-    align-items: center;
-    max-width: 100%;
+    gap: 14px;
+  }
+
+  .brand-logo-wrap {
+    padding: 10px 12px;
   }
 
   .logo {
-    max-width: 100px;
-    min-width: 100px;
+    max-width: 120px;
+    min-width: 120px;
     flex-shrink: 0;
   }
 
   h1 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     margin-bottom: 0;
   }
 
   .eyebrow {
+    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+  }
+
+  .subtext,
+  .feature-list {
     display: none;
+  }
+
+  .truck-illustration {
+    padding: 12px;
   }
 
   .login-panel {
