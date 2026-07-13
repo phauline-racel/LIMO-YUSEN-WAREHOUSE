@@ -30,6 +30,98 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const activityFilterToggle = document.getElementById('activityFilterToggle');
+  const activityFilterPanel = document.getElementById('activityFilterPanel');
+
+  if (activityFilterToggle && activityFilterPanel) {
+    activityFilterToggle.addEventListener('click', () => {
+      const isExpanded = activityFilterToggle.getAttribute('aria-expanded') === 'true';
+      activityFilterToggle.setAttribute('aria-expanded', String(!isExpanded));
+      activityFilterPanel.classList.toggle('open', !isExpanded);
+      activityFilterPanel.setAttribute('aria-hidden', String(isExpanded));
+    });
+  }
+
+  const activityTableBody = document.getElementById('activityTableBody');
+  const activityPagination = document.getElementById('activityPagination');
+
+  if (activityTableBody && activityPagination) {
+    const activityData = Array.from({ length: 25 }, (_, index) => {
+      const months = ['Jul 2026', 'Jun 2026', 'May 2026'];
+      const clients = ['YAZAKI ORD', 'TOYOTA TSUSHO', 'DENSO PHIL.', 'NIPPON EXPRESS', 'KURASHIKI CORP'];
+      const maws = ['SPSF-26A-030', '418650', 'TYC0018-26A', '5533899552', 'ICL-07-126'];
+      const hawbs = ['YPH-04800983', 'YPH-04807585', 'YPH-04808204', 'YMY-05298532', 'YPH-63792105'];
+      const statuses = ['RECEIVED', 'RELEASED', 'PARTIAL', 'WAITING FOR CONFIRMATION'];
+      const dateIns = ['2026-07-01', '2026-06-27', '2026-05-11', '2026-07-03', '2026-06-20'];
+      const dateOuts = ['2026-07-05', '2026-06-29', '2026-05-14', '2026-07-06', '2026-06-23'];
+      const quantityIns = [12, 18, 9, 14, 21];
+      const quantityOuts = [8, 10, 5, 7, 11];
+
+      return {
+        month: months[index % months.length],
+        client: clients[index % clients.length],
+        mawb: maws[index % maws.length],
+        hawb: hawbs[index % hawbs.length],
+        dateIn: dateIns[index % dateIns.length],
+        qtyIn: quantityIns[index % quantityIns.length],
+        dateOut: dateOuts[index % dateOuts.length],
+        qtyOut: quantityOuts[index % quantityOuts.length],
+        status: statuses[index % statuses.length],
+        badgeClass: {
+          RECEIVED: 'badge-green',
+          RELEASED: 'badge-blue',
+          PARTIAL: 'badge-orange',
+          'WAITING FOR CONFIRMATION': 'badge-blue'
+        }[statuses[index % statuses.length]]
+      };
+    });
+
+    const rowsPerPage = 6;
+    const totalPages = Math.ceil(activityData.length / rowsPerPage);
+
+    const renderActivityPage = (pageNumber) => {
+      const start = (pageNumber - 1) * rowsPerPage;
+      const items = activityData.slice(start, start + rowsPerPage);
+
+      activityTableBody.innerHTML = items.map((item) => `
+        <tr>
+          <td>${item.month}</td>
+          <td>${item.client}</td>
+          <td>${item.mawb}</td>
+          <td>${item.hawb}</td>
+          <td>${item.dateIn}</td>
+          <td>${item.qtyIn}</td>
+          <td>${item.dateOut}</td>
+          <td>${item.qtyOut}</td>
+          <td><span class="${item.badgeClass}">${item.status}</span></td>
+        </tr>
+      `).join('');
+
+      activityPagination.querySelectorAll('.page-box').forEach((button) => {
+        button.classList.toggle('active', Number(button.dataset.page) === pageNumber);
+      });
+    };
+
+    activityPagination.querySelectorAll('.page-box').forEach((button) => button.remove());
+
+    for (let page = 1; page <= totalPages; page += 1) {
+      const pageButton = document.createElement('button');
+      pageButton.type = 'button';
+      pageButton.className = 'page-box';
+      pageButton.dataset.page = String(page);
+      pageButton.textContent = String(page);
+      activityPagination.appendChild(pageButton);
+    }
+
+    activityPagination.addEventListener('click', (event) => {
+      const targetButton = event.target.closest('.page-box');
+      if (!targetButton) return;
+      renderActivityPage(Number(targetButton.dataset.page));
+    });
+
+    renderActivityPage(1);
+  }
+
   const inventoryTableBody = document.getElementById('inventoryTableBody');
   const inventoryPagination = document.getElementById('inventoryPagination');
 

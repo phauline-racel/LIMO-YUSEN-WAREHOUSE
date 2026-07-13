@@ -47,21 +47,127 @@
         </div>
       </header>
       <div class="content">
-        <h1>Activity Report</h1>
-        <div class="filters">
-          <span class="filters-label">Filters:</span>
-          <input placeholder="Client"/>
-          <select><option>All</option></select>
+        <div class="page-header">
+          <div>
+            <h1>Activity Report</h1>
+            <p>Monitor inbound and outbound cargo movements, warehouse status, and shipment activity across all clients.</p>
+          </div>
+          <div class="page-badge">
+            <span class="material-symbols-outlined">monitoring</span>
+            <span>Weekly Overview</span>
+          </div>
         </div>
-        <div class="table">
+
+        <div class="card-row report-summary">
+          <div class="card card-animated">
+            <div class="card-content">
+              <div class="card-title">Total Transactions</div>
+              <div class="card-value">124</div>
+              <div class="card-subtitle">This month</div>
+            </div>
+            <div class="card-icon icon-blue"><span class="material-symbols-outlined">inventory_2</span></div>
+          </div>
+
+          <div class="card card-animated">
+            <div class="card-content">
+              <div class="card-title">Inbound Received</div>
+              <div class="card-value">68</div>
+              <div class="card-subtitle">Cargo in</div>
+            </div>
+            <div class="card-icon icon-green"><i class="bi bi-box-arrow-in-down"></i></div>
+          </div>
+
+          <div class="card card-animated">
+            <div class="card-content">
+              <div class="card-title">Outbound Released</div>
+              <div class="card-value">41</div>
+              <div class="card-subtitle">Cargo out</div>
+            </div>
+            <div class="card-icon icon-orange"><i class="bi bi-box-arrow-up"></i></div>
+          </div>
+
+          <div class="card card-animated">
+            <div class="card-content">
+              <div class="card-title">Pending Confirmation</div>
+              <div class="card-value">15</div>
+              <div class="card-subtitle">Awaiting release</div>
+            </div>
+            <div class="card-icon icon-yellow"><i class="bi bi-clock"></i></div>
+          </div>
+        </div>
+
+        <div class="inventory-toolbar activity-toolbar">
+          <div class="inventory-controls">
+            <div class="search-container inventory-search-box">
+              <span class="search-icon">🔍︎</span>
+              <input type="text" placeholder="Search by client, MAWB, or HAWB" class="search-input"/>
+            </div>
+
+            <button class="inventory-filter-toggle" id="activityFilterToggle" type="button" aria-expanded="false" aria-controls="activityFilterPanel">
+              <span class="material-symbols-outlined">filter_alt</span>
+              <span>Filters</span>
+            </button>
+
+            <div class="inventory-filter-panel" id="activityFilterPanel" aria-hidden="true">
+              <div class="filter-box">
+                <label for="activity-month">Month</label>
+                <select id="activity-month" aria-label="Month">
+                  <option selected disabled>Select month</option>
+                  <option>Jul 2026</option>
+                  <option>Jun 2026</option>
+                  <option>May 2026</option>
+                </select>
+              </div>
+              <div class="filter-box">
+                <label for="activity-status">Status</label>
+                <select id="activity-status" aria-label="Status">
+                  <option selected disabled>Select status</option>
+                  <option>Received</option>
+                  <option>Released</option>
+                  <option>Partial</option>
+                  <option>Waiting for Confirmation</option>
+                </select>
+              </div>
+              <div class="filter-box">
+                <label for="activity-location">Warehouse Location</label>
+                <select id="activity-location" aria-label="Warehouse location">
+                  <option selected disabled>Select location</option>
+                  <option>Aisle A</option>
+                  <option>Aisle B</option>
+                  <option>Aisle C</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table report-table">
           <table>
-            <thead><tr><th>Month</th><th>Client</th><th>MAWB</th><th>HAWB</th><th>Date In</th><th>Qty In</th><th>Date Out</th><th>Qty Out</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td>Jul 2026</td><td>ABC</td><td>MAWB1</td><td>HAWB1</td><td>2026-07-01</td><td>10</td><td>2026-07-05</td><td>5</td><td><span class="badge-blue">Partial</span></td></tr>
-            </tbody>
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Client</th>
+                <th>MAWB</th>
+                <th>HAWB</th>
+                <th>Date In</th>
+                <th>Qty In</th>
+                <th>Date Out</th>
+                <th>Qty Out</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody"></tbody>
           </table>
+          <div class="pagination-wrapper">
+            <div class="pagination-boxes" id="activityPagination" aria-label="Activity report pagination"></div>
+          </div>
         </div>
-        <div style="margin-top:12px"><button class="btn">Export Excel</button> <button class="btn">Export PDF</button> <button class="btn">Print</button></div>
+
+        <div class="report-actions">
+          <button class="btn primary-btn">Export Excel</button>
+          <button class="btn">Export PDF</button>
+          <button class="btn">Print</button>
+        </div>
       </div>
     </div>
   </div>
