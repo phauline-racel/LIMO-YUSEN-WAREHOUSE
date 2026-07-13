@@ -18,6 +18,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const inventoryFilterToggle = document.getElementById('inventoryFilterToggle');
+  const inventoryFilterPanel = document.getElementById('inventoryFilterPanel');
+
+  if (inventoryFilterToggle && inventoryFilterPanel) {
+    inventoryFilterToggle.addEventListener('click', () => {
+      const isExpanded = inventoryFilterToggle.getAttribute('aria-expanded') === 'true';
+      inventoryFilterToggle.setAttribute('aria-expanded', String(!isExpanded));
+      inventoryFilterPanel.classList.toggle('open', !isExpanded);
+      inventoryFilterPanel.setAttribute('aria-hidden', String(isExpanded));
+    });
+  }
+
   // Tab switching functionality
   const tabs = document.querySelectorAll('.tab[data-tab]');
   tabs.forEach(tab => {
