@@ -124,9 +124,10 @@ table a:hover{text-decoration:underline}
   .sidebar.collapsed nav a span.text{display:none}
   .sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
   .main-column{min-width:0}
-  .topbar{flex-direction:column;gap:12px}
-  .search-container{max-width:100%}
-  .user-profile{flex-direction:column;justify-content:center}
+  .topbar{flex-direction:row;align-items:center;flex-wrap:nowrap;gap:12px;padding:12px 14px}
+  .search-container{max-width:100%;flex:1 1 auto;min-width:0}
+  .top-actions{flex-shrink:0;gap:12px}
+  .user-profile{flex-direction:row;justify-content:center;align-items:center;padding:6px 8px}
   .user-info{display:none}
   .form-grid{grid-template-columns:1fr}
   .card-row{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -148,6 +149,12 @@ table a:hover{text-decoration:underline}
   .sidebar.collapsed nav a{justify-content:center}
   .sidebar.collapsed nav a span.text{display:none}
   .sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
+  .topbar{padding:10px 12px;gap:8px}
+  .search-container{padding:8px 10px}
+  .top-actions{gap:10px}
+  .user-profile{padding:4px 6px}
+  .user-avatar{width:34px;height:34px}
+  .notification-btn{align-self:center}
   .card-row{grid-template-columns:1fr}
   .card{padding:14px}
   .card-icon{width:50px;height:50px}
@@ -156,7 +163,6 @@ table a:hover{text-decoration:underline}
   .card-subtitle{font-size:0.7rem}
   .recent-actions{flex-direction:column;align-items:stretch;width:100%}
   .search-compact input{width:100%}
-  .notification-btn{align-self:flex-end}
   table{font-size:0.8rem}
   th,td{padding:10px 8px}
 }
