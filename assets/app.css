@@ -109,8 +109,17 @@ table a:hover{text-decoration:underline}
 .btn{padding:10px 14px;border-radius:8px;border:none;cursor:pointer}
 .btn.primary{background:linear-gradient(90deg,var(--secondary),#ff7e2d);color:#fff}
 @media (max-width:800px){
-  .sidebar{width:100%;display:flex;gap:12px;align-items:center;padding:10px;position:sticky;top:0}
-  .app-shell{flex-direction:column}
+  .app-shell{flex-direction:row}
+  .sidebar{width:84px;min-width:84px;display:flex;gap:12px;align-items:stretch;padding:12px 10px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:2}
+  .sidebar-header{margin-bottom:12px;justify-content:center}
+  .sidebar .brand{display:none}
+  .sidebar nav{gap:10px}
+  .sidebar nav a{justify-content:center;padding:10px}
+  .sidebar nav a span.text{display:none}
+  .sidebar-toggle{align-self:center}
+  .sidebar.collapsed{width:84px;padding:12px 10px}
+  .sidebar.collapsed .toggle-icon{transform:none}
+  .main-column{min-width:0}
   .topbar{flex-direction:column;gap:12px}
   .search-container{max-width:100%}
   .user-profile{flex-direction:column;justify-content:center}
