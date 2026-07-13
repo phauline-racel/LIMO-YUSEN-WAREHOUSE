@@ -48,12 +48,16 @@
       </header>
       <div class="content">
         <h1>Activity Report</h1>
-        <div class="filters">Filters: <input placeholder="Client"/> <select><option>All</option></select></div>
+        <div class="filters">
+          <span class="filters-label">Filters:</span>
+          <input placeholder="Client"/>
+          <select><option>All</option></select>
+        </div>
         <div class="table">
           <table>
             <thead><tr><th>Month</th><th>Client</th><th>MAWB</th><th>HAWB</th><th>Date In</th><th>Qty In</th><th>Date Out</th><th>Qty Out</th><th>Status</th></tr></thead>
             <tbody>
-              <tr><td>Jul 2026</td><td>ABC</td><td>MAWB1</td><td>HAWB1</td><td>2026-07-01</td><td>10</td><td>2026-07-05</td><td>5</td><td>Partial</td></tr>
+              <tr><td>Jul 2026</td><td>ABC</td><td>MAWB1</td><td>HAWB1</td><td>2026-07-01</td><td>10</td><td>2026-07-05</td><td>5</td><td><span class="badge-blue">Partial</span></td></tr>
             </tbody>
           </table>
         </div>

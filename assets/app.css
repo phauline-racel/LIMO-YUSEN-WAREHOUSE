@@ -65,6 +65,11 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);
 .recent-actions{display:flex;gap:12px;align-items:center}
 .search-compact{display:flex;align-items:center;background:#f5f7fa;padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.04)}
 .search-compact input{border:none;background:transparent;outline:none;width:200px;font-size:0.9rem}
+.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:0 0 18px;background:var(--surface);border-radius:12px;box-shadow:0 2px 8px rgba(6,24,61,0.08)}
+.filters-label{font-size:0.9rem;font-weight:700;color:var(--primary)}
+.filters input,.filters select{border:1px solid rgba(0,0,0,0.06);background:#f5f7fa;padding:8px 12px;border-radius:8px;font-size:0.9rem;color:var(--text);min-width:160px}
+.filters input::placeholder{color:var(--muted)}
+.filters input:focus,.filters select:focus{outline:none;border-color:rgba(0,102,204,0.35);box-shadow:0 0 0 2px rgba(0,102,204,0.12)}
 .primary-btn{background:linear-gradient(90deg,#06183d,#0d2d5c);color:#fff;padding:10px 20px;font-weight:600}
 .table{background:var(--surface);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(6,24,61,0.08)}
 table{width:100%;border-collapse:collapse;border-spacing:0}
@@ -76,9 +81,9 @@ tbody tr:hover{background-color:#f8f9fa}
 tbody tr:last-child td{border-bottom:none}
 table a{color:#0066cc;text-decoration:none;font-weight:500}
 table a:hover{text-decoration:underline}
-.badge-orange{display:inline-block;background:#fef3c7;color:#d97706;padding:6px 12px;border-radius:6px;font-size:0.8rem;font-weight:600}
-.badge-green{display:inline-block;background:#d1fae5;color:#059669;padding:6px 12px;border-radius:6px;font-size:0.8rem;font-weight:600}
-.badge-blue{display:inline-block;background:#dbeafe;color:#0066cc;padding:6px 12px;border-radius:6px;font-size:0.8rem;font-weight:600}
+.badge-orange{display:inline-block;background:#fef3c7;color:#d97706;padding:6px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
+.badge-green{display:inline-block;background:#d1fae5;color:#059669;padding:6px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
+.badge-blue{display:inline-block;background:#dbeafe;color:#0066cc;padding:6px 12px;border-radius:999px;font-size:0.75rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
 .tabs-header{border-bottom:2px solid #e5e7eb;margin-bottom:20px}
 .tabs{display:flex;gap:0;margin:0}
 .tab{padding:16px 20px;background:transparent;border:none;cursor:pointer;transition:all 0.2s;border-bottom:3px solid transparent;color:var(--muted);font-weight:500;white-space:nowrap;position:relative}

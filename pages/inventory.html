@@ -48,13 +48,17 @@
       </header>
       <div class="content">
         <h1>Inventory</h1>
-        <div class="filters">Filters: <input placeholder="Client"/> <select><option>All</option></select></div>
+        <div class="filters">
+          <span class="filters-label">Filters:</span>
+          <input placeholder="Client"/>
+          <select><option>All</option></select>
+        </div>
 
         <div class="table">
           <table>
             <thead><tr><th>Client</th><th>HAWB</th><th>MAWB</th><th>Transaction Type</th><th>Warehouse Location</th><th>Remaining Quantity</th><th>Status</th><th>Action</th></tr></thead>
             <tbody>
-              <tr><td>ABC Corp</td><td>HAWB001</td><td>MAWB001</td><td>Import</td><td>WH-A</td><td>10 CTN</td><td>Stored</td><td><a href="shipment-details.html">View</a></td></tr>
+              <tr><td>ABC Corp</td><td>HAWB001</td><td>MAWB001</td><td>Import</td><td>WH-A</td><td>10 CTN</td><td><span class="badge-green">Stored</span></td><td><a href="shipment-details.html">View</a></td></tr>
             </tbody>
           </table>
         </div>
