@@ -48,17 +48,121 @@
       </header>
       <div class="content">
         <h1>Inventory</h1>
-        <div class="filters">
-          <span class="filters-label">Filters:</span>
-          <input placeholder="Client"/>
-          <select><option>All</option></select>
+
+        <div class="card-row">
+          <a class="card card-animated" href="dashboard.html">
+            <div class="card-content">
+              <div class="card-title">Dashboard</div>
+              <div class="card-value">5</div>
+              <div class="card-subtitle">Quick overview</div>
+            </div>
+            <div class="card-icon icon-blue"><span class="material-symbols-outlined">dashboard</span></div>
+          </a>
+          <a class="card card-animated" href="inbound-outbound.html">
+            <div class="card-content">
+              <div class="card-title">Inbound &amp; Outbound</div>
+              <div class="card-value">4</div>
+              <div class="card-subtitle">Transaction flow</div>
+            </div>
+            <div class="card-icon icon-green"><i class="bi bi-box-seam-fill"></i></div>
+          </a>
+          <a class="card card-animated" href="inventory.html">
+            <div class="card-content">
+              <div class="card-title">Inventory</div>
+              <div class="card-value">18</div>
+              <div class="card-subtitle">Warehouse items</div>
+            </div>
+            <div class="card-icon icon-orange"><span class="material-symbols-outlined">task</span></div>
+          </a>
+          <a class="card card-animated" href="activity-report.html">
+            <div class="card-content">
+              <div class="card-title">Activity Report</div>
+              <div class="card-value">12</div>
+              <div class="card-subtitle">Movement logs</div>
+            </div>
+            <div class="card-icon icon-blue"><span class="material-symbols-outlined">monitoring</span></div>
+          </a>
+          <a class="card card-animated" href="profile.html">
+            <div class="card-content">
+              <div class="card-title">Profile</div>
+              <div class="card-value">1</div>
+              <div class="card-subtitle">Warehouse user</div>
+            </div>
+            <div class="card-icon icon-yellow"><i class="bi bi-person-fill"></i></div>
+          </a>
+        </div>
+
+        <div class="inventory-toolbar">
+          <div class="filters">
+            <select aria-label="Location">
+              <option selected disabled>Location</option>
+              <option>Aisle A</option>
+              <option>Aisle B</option>
+            </select>
+            <select aria-label="Transaction Type">
+              <option selected disabled>Transaction Type</option>
+              <option>AFF Import</option>
+              <option>AFF Export</option>
+              <option>OFF Import</option>
+              <option>OFF Export</option>
+            </select>
+            <select aria-label="Status">
+              <option selected disabled>Status</option>
+              <option>Return</option>
+              <option>Hold</option>
+              <option>Waiting for Confirmation</option>
+            </select>
+          </div>
+
+          <div class="inventory-search-row">
+            <div class="search-container inventory-search-box">
+              <span class="search-icon">🔍︎</span>
+              <input type="text" placeholder="Search by MAWB or HAWB" class="search-input"/>
+            </div>
+            <select class="search-select" aria-label="Search by">
+              <option selected>MAWB</option>
+              <option>HAWB</option>
+            </select>
+          </div>
         </div>
 
         <div class="table">
           <table>
-            <thead><tr><th>Client</th><th>HAWB</th><th>MAWB</th><th>Transaction Type</th><th>Warehouse Location</th><th>Remaining Quantity</th><th>Status</th><th>Action</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>MAWB</th>
+                <th>HAWB</th>
+                <th>Transaction Type</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><td>ABC Corp</td><td>HAWB001</td><td>MAWB001</td><td>Import</td><td>WH-A</td><td>10 CTN</td><td><span class="badge-green">Stored</span></td><td><a href="shipment-details.html">View</a></td></tr>
+              <tr>
+                <td>Aisle A</td>
+                <td>MAWB001</td>
+                <td>HAWB001</td>
+                <td>AFF Import</td>
+                <td><span class="badge-orange">Return</span></td>
+                <td><a href="shipment-details.html">View</a></td>
+              </tr>
+              <tr>
+                <td>Aisle B</td>
+                <td>MAWB002</td>
+                <td>HAWB002</td>
+                <td>OFF Export</td>
+                <td><span class="badge-green">Hold</span></td>
+                <td><a href="shipment-details.html">View</a></td>
+              </tr>
+              <tr>
+                <td>Aisle A</td>
+                <td>MAWB003</td>
+                <td>HAWB003</td>
+                <td>AFF Export</td>
+                <td><span class="badge-blue">Waiting for Confirmation</span></td>
+                <td><a href="shipment-details.html">View</a></td>
+              </tr>
             </tbody>
           </table>
         </div>
