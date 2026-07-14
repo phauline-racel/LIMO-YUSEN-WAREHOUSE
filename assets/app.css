@@ -63,6 +63,8 @@ a.card{text-decoration:none;color:inherit}
 .inventory-search-box .search-input{width:100%}
 .inventory-filter-toggle{display:flex;align-items:center;gap:8px;padding:10px 16px;border:none;border-radius:12px;background:var(--surface);box-shadow:0 2px 8px rgba(6,24,61,0.08);color:var(--primary);font-weight:700;cursor:pointer}
 .inventory-filter-toggle .material-symbols-outlined{font-size:1.1rem}
+.toolbar-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.toolbar-btn{padding:10px 14px}
 .inventory-filter-panel{display:flex;align-items:flex-start;gap:10px;flex:1 1 100%;width:100%;max-height:0;overflow:hidden;opacity:0;padding:0;transition:max-height 0.3s ease, opacity 0.2s ease, padding 0.25s ease}
 .inventory-filter-panel.open{max-height:220px;opacity:1;padding-top:4px}
 .filter-box{min-width:200px;display:flex;flex-direction:column;gap:6px}
