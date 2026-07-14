@@ -267,8 +267,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Basic UI interactions: scan modal and dynamic quantity rows
 document.addEventListener('click', (e)=>{
-  if(e.target.matches('.scan-btn')){
-    const id = e.target.getAttribute('data-target') || 'scanModal'
+  const scanTrigger = e.target.closest('.scan-btn, .inline-scan-btn')
+  if(scanTrigger){
+    e.preventDefault()
+    const id = scanTrigger.getAttribute('data-target') || 'scanModal'
     const modal = document.getElementById(id)
     if(modal) modal.style.display = 'flex'
   }
