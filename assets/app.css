@@ -14,21 +14,22 @@ a.card{text-decoration:none;color:inherit}
 .app-shell{display:flex;min-height:100vh;min-width:0}
 .sidebar{width:240px;background:linear-gradient(135deg,var(--primary),#0d2d5c);color:#fff;padding:20px;flex-shrink:0;transition:width 0.3s ease;display:flex;flex-direction:column}
 .sidebar-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.sidebar .brand{font-weight:700;white-space:nowrap;overflow:hidden}
+.sidebar .brand{font-weight:700;white-space:nowrap;overflow:hidden;transition:opacity 0.25s ease, max-width 0.25s ease;display:inline-block;max-width:200px}
 .sidebar .brand-logo{height:40px;width:auto;object-fit:contain}
 .sidebar-toggle{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:background 0.2s}
 .sidebar-toggle:hover{background:rgba(255,255,255,0.1)}
-.toggle-icon{display:flex;align-items:center;justify-content:center}
+.toggle-icon{display:flex;align-items:center;justify-content:center;transition:transform 0.25s ease}
 .toggle-icon i{font-size:1.15rem;display:block;line-height:1}
 .sidebar.collapsed{width:80px;padding:20px 12px}
-.sidebar.collapsed .brand{display:none}
-.sidebar.collapsed nav a span.text{display:none}
+.sidebar.collapsed .brand{opacity:0;max-width:0}
+.sidebar.collapsed nav a span.text{opacity:0;max-width:0;display:inline-block;overflow:hidden}
 .sidebar.collapsed nav a{justify-content:center}
 .sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
 .sidebar nav{display:flex;flex-direction:column;gap:12px;flex:1}
 .sidebar nav a{display:flex;align-items:center;gap:12px;color:rgba(255,255,255,0.9);text-decoration:none;padding:12px;border-radius:6px;transition:background 0.2s;white-space:nowrap;overflow:hidden}
 .sidebar nav a:hover{background:rgba(255,255,255,0.12)}
 .sidebar nav a span.icon{font-size:1.4rem;min-width:24px;display:flex;align-items:center}
+.sidebar nav a span.text{display:inline-block;max-width:140px;overflow:hidden;transition:opacity 0.25s ease, max-width 0.25s ease;vertical-align:middle}
 .main-column{flex:1;display:flex;flex-direction:column}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--surface);border-bottom:1px solid rgba(0,0,0,0.06);gap:20px}
 .search-container{display:flex;align-items:center;gap:10px;background:#f5f7fa;padding:10px 16px;border-radius:12px;flex:1;max-width:500px;border:1px solid rgba(0,0,0,0.04)}
@@ -174,12 +175,12 @@ table a:hover{text-decoration:underline}
   .sidebar .brand{display:block}
   .sidebar nav{gap:10px}
   .sidebar nav a{justify-content:flex-start;padding:10px}
-  .sidebar nav a span.text{display:inline}
+  .sidebar nav a span.text{display:inline-block}
   .sidebar-toggle{align-self:center}
   .sidebar.collapsed{width:80px;min-width:80px;padding:12px 10px}
-  .sidebar.collapsed .brand{display:none}
+  .sidebar.collapsed .brand{opacity:0;max-width:0}
   .sidebar.collapsed nav a{justify-content:center}
-  .sidebar.collapsed nav a span.text{display:none}
+  .sidebar.collapsed nav a span.text{opacity:0;max-width:0}
   .sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
   .main-column{min-width:0;width:100%}
   .topbar{flex-direction:row;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 14px}
@@ -205,11 +206,11 @@ table a:hover{text-decoration:underline}
   .sidebar:not(.collapsed){width:240px;min-width:240px}
   .sidebar:not(.collapsed) .brand{display:block}
   .sidebar:not(.collapsed) nav a{justify-content:flex-start}
-  .sidebar:not(.collapsed) nav a span.text{display:inline}
+  .sidebar:not(.collapsed) nav a span.text{display:inline-block}
   .sidebar.collapsed{width:80px;min-width:80px}
-  .sidebar.collapsed .brand{display:none}
+  .sidebar.collapsed .brand{opacity:0;max-width:0}
   .sidebar.collapsed nav a{justify-content:center}
-  .sidebar.collapsed nav a span.text{display:none}
+  .sidebar.collapsed nav a span.text{opacity:0;max-width:0}
   .sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
   .topbar{padding:10px 12px;gap:8px;flex-wrap:wrap;align-items:flex-start}
   .search-container{padding:8px 10px}
