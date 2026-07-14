@@ -107,10 +107,15 @@
               <input type="text" placeholder="Search by client, MAWB, or HAWB" class="search-input"/>
             </div>
 
-            <button class="inventory-filter-toggle" id="activityFilterToggle" type="button" aria-expanded="false" aria-controls="activityFilterPanel">
-              <span class="material-symbols-outlined">filter_alt</span>
-              <span>Filters</span>
-            </button>
+            <div class="toolbar-actions">
+              <button class="inventory-filter-toggle" id="activityFilterToggle" type="button" aria-expanded="false" aria-controls="activityFilterPanel">
+                <span class="material-symbols-outlined">filter_alt</span>
+                <span>Filters</span>
+              </button>
+              <button class="btn toolbar-btn primary-btn">Export Excel</button>
+              <button class="btn toolbar-btn">Export PDF</button>
+              <button class="btn toolbar-btn">Print</button>
+            </div>
 
             <div class="inventory-filter-panel" id="activityFilterPanel" aria-hidden="true">
               <div class="filter-box">
@@ -167,11 +172,6 @@
           </div>
         </div>
 
-        <div class="report-actions">
-          <button class="btn primary-btn">Export Excel</button>
-          <button class="btn">Export PDF</button>
-          <button class="btn">Print</button>
-        </div>
       </div>
     </div>
   </div>
