@@ -56,13 +56,13 @@
             <h1>Activity Report</h1>
             <p>Monitor inbound and outbound cargo movements, warehouse status, and shipment activity across all clients.</p>
           </div>
-          <div class="page-badge">
+          <button class="page-badge overview-toggle" id="weeklyOverviewTrigger" type="button" aria-expanded="false" aria-controls="activitySummaryCards">
             <span class="material-symbols-outlined">monitoring</span>
             <span>Weekly Overview</span>
-          </div>
+          </button>
         </div>
 
-        <div class="card-row report-summary">
+        <div class="card-row report-summary" id="activitySummaryCards" hidden>
           <div class="card card-animated">
             <div class="card-content">
               <div class="card-title">Total Transactions</div>
