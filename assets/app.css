@@ -165,18 +165,18 @@ table a:hover{text-decoration:underline}
 .btn.primary{background:linear-gradient(90deg,#06183d,#0d2d5c);color:#fff;border:none}
 @media (max-width:800px){
   .app-shell{flex-direction:row}
-  .sidebar{width:84px;min-width:84px;display:flex;gap:12px;align-items:stretch;padding:12px 10px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:1}
+  .sidebar{width:240px;min-width:240px;display:flex;gap:12px;align-items:stretch;padding:12px 10px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:1}
   .inventory-search-row{flex-direction:column;align-items:stretch}
   .inventory-search-box{max-width:none}
   .search-select{width:100%}
-  .sidebar:not(.collapsed){width:84px;min-width:84px}
+  .sidebar:not(.collapsed){width:240px;min-width:240px}
   .sidebar-header{margin-bottom:12px;justify-content:space-between}
-  .sidebar .brand{display:none}
+  .sidebar .brand{display:block}
   .sidebar nav{gap:10px}
-  .sidebar nav a{justify-content:center;padding:10px}
-  .sidebar nav a span.text{display:none}
+  .sidebar nav a{justify-content:flex-start;padding:10px}
+  .sidebar nav a span.text{display:inline}
   .sidebar-toggle{align-self:center}
-  .sidebar.collapsed{width:84px;min-width:84px;padding:12px 10px}
+  .sidebar.collapsed{width:80px;min-width:80px;padding:12px 10px}
   .sidebar.collapsed .brand{display:none}
   .sidebar.collapsed nav a{justify-content:center}
   .sidebar.collapsed nav a span.text{display:none}
@@ -201,11 +201,12 @@ table a:hover{text-decoration:underline}
 
 @media (max-width:560px){
   .app-shell{flex-direction:row}
-  .sidebar{width:74px;min-width:74px;padding:12px 8px;position:sticky;top:0;height:100vh}
-  .sidebar:not(.collapsed){width:74px;min-width:74px}
-  .sidebar:not(.collapsed) .brand{display:none}
-  .sidebar:not(.collapsed) nav a{justify-content:center}
-  .sidebar:not(.collapsed) nav a span.text{display:none}
+  .sidebar{width:240px;min-width:240px;padding:12px 8px;position:sticky;top:0;height:100vh}
+  .sidebar:not(.collapsed){width:240px;min-width:240px}
+  .sidebar:not(.collapsed) .brand{display:block}
+  .sidebar:not(.collapsed) nav a{justify-content:flex-start}
+  .sidebar:not(.collapsed) nav a span.text{display:inline}
+  .sidebar.collapsed{width:80px;min-width:80px}
   .sidebar.collapsed .brand{display:none}
   .sidebar.collapsed nav a{justify-content:center}
   .sidebar.collapsed nav a span.text{display:none}
