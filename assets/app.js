@@ -66,6 +66,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const weeklyOverviewTrigger = document.getElementById('weeklyOverviewTrigger');
+  const activitySummaryCards = document.getElementById('activitySummaryCards');
+
+  if (weeklyOverviewTrigger && activitySummaryCards) {
+    const toggleSummaryCards = () => {
+      const isExpanded = weeklyOverviewTrigger.getAttribute('aria-expanded') === 'true';
+      weeklyOverviewTrigger.setAttribute('aria-expanded', String(!isExpanded));
+      activitySummaryCards.hidden = isExpanded;
+    };
+
+    weeklyOverviewTrigger.addEventListener('click', toggleSummaryCards);
+    weeklyOverviewTrigger.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        toggleSummaryCards();
+      }
+    });
+  }
+
   const activityTableBody = document.getElementById('activityTableBody');
   const activityPagination = document.getElementById('activityPagination');
 
