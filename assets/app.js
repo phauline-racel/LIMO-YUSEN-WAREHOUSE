@@ -54,6 +54,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const inventoryClearFilters = document.getElementById('inventoryClearFilters');
+  const inventoryLocation = document.getElementById('inventory-location');
+  const inventoryTransaction = document.getElementById('inventory-transaction');
+  const inventoryStatus = document.getElementById('inventory-status');
+
+  if (inventoryClearFilters && inventoryLocation && inventoryTransaction && inventoryStatus) {
+    inventoryClearFilters.addEventListener('click', () => {
+      inventoryLocation.selectedIndex = 0;
+      inventoryTransaction.selectedIndex = 0;
+      inventoryStatus.selectedIndex = 0;
+    });
+  }
+
   const activityFilterToggle = document.getElementById('activityFilterToggle');
   const activityFilterPanel = document.getElementById('activityFilterPanel');
 
@@ -177,6 +190,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const locations = ['Aisle A', 'Aisle B', 'Aisle A', 'Aisle A', 'Aisle A'];
       const quantities = ['5 CTN', '11 CTN', '1 CRT', '11 PLT', '7 CTN'];
       const statuses = ['WAITING FOR CONFIRMATION', 'HOLD', 'RETURN', 'WAITING FOR CONFIRMATION', 'HOLD'];
+      const destinations = ['Manila', 'Cebu', 'Davao', 'Clark', 'Iloilo'];
+      const invoices = ['INV-001', 'INV-002', 'INV-003', 'INV-004', 'INV-005'];
+      const modules = ['M1', 'M2', 'M3', 'M4', 'M5'];
+      const flights = ['PR 123', '5J 788', 'QR 456', 'TG 090', 'CX 321'];
+      const receivedDates = ['2025-09-10', '2025-09-11', '2025-09-12', '2025-09-13', '2025-09-14'];
+      const receivedTimes = ['08:45', '09:15', '10:00', '11:30', '13:20'];
+      const receivedBys = ['Anna', 'Ben', 'Cara', 'Dave', 'Elena'];
+      const receivingPlates = ['ABC-1234', 'DEF-5678', 'GHI-9012', 'JKL-3456', 'MNO-7890'];
+      const truckers = ['Lima Transport', 'Nova Cargo', 'Prime Haul', 'Echo Logistics', 'Delta Trucking'];
+      const drivers = ['Ramon', 'Maria', 'Jasper', 'Nina', 'Oscar'];
+      const cargoConditions = ['Good', 'Damaged', 'Inspected', 'Refrigerated', 'Secure'];
+      const cargoHandlings = ['Palletized', 'Loose', 'Fragile', 'Heavy', 'Standard'];
+      const partialFulls = ['Full', 'Partial', 'Full', 'Partial', 'Full'];
+      const units = ['CTN', 'PLT', 'CRT', 'PCS', 'BOX'];
+      const releaseDates = ['2025-09-15', '2025-09-16', '2025-09-17', '2025-09-18', '2025-09-19'];
+      const releaseTimes = ['14:00', '15:30', '16:45', '17:20', '18:05'];
+      const releasePlates = ['PQR-1122', 'STU-3344', 'VWX-5566', 'YZA-7788', 'BCD-9900'];
+      const releaseDrivers = ['Paul', 'Rita', 'Sam', 'Tina', 'Umar'];
+      const remarks = ['Ready for release', 'Pending inspection', 'Awaiting docs', 'Hold for customs', 'Cleared'];
       const badgeClass = {
         'WAITING FOR CONFIRMATION': 'badge-blue',
         HOLD: 'badge-green',
@@ -185,12 +217,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return {
         client: clients[index % clients.length],
+        destination: destinations[index % destinations.length],
         hawb: hawbs[index % hawbs.length],
         mawb: maws[index % maws.length],
+        invoice: invoices[index % invoices.length],
         transactionType: transactionTypes[index % transactionTypes.length],
+        module: modules[index % modules.length],
+        flight: flights[index % flights.length],
+        date: receivedDates[index % receivedDates.length],
+        time: receivedTimes[index % receivedTimes.length],
+        receivedBy: receivedBys[index % receivedBys.length],
+        receivingPlate: receivingPlates[index % receivingPlates.length],
+        trucker: truckers[index % truckers.length],
+        driver: drivers[index % drivers.length],
+        cargoCondition: cargoConditions[index % cargoConditions.length],
         location: locations[index % locations.length],
-        quantity: quantities[index % quantities.length],
+        cargoHandling: cargoHandlings[index % cargoHandlings.length],
         status: statuses[index % statuses.length],
+        partialFull: partialFulls[index % partialFulls.length],
+        quantity: quantities[index % quantities.length],
+        unit: units[index % units.length],
+        remainingQuantity: quantities[index % quantities.length],
+        releaseDate: releaseDates[index % releaseDates.length],
+        releaseTime: releaseTimes[index % releaseTimes.length],
+        releasePlate: releasePlates[index % releasePlates.length],
+        releaseDriver: releaseDrivers[index % releaseDrivers.length],
+        remarks: remarks[index % remarks.length],
         badgeClass
       };
     });
@@ -202,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const start = (pageNumber - 1) * rowsPerPage;
       const items = inventoryData.slice(start, start + rowsPerPage);
 
-      inventoryTableBody.innerHTML = items.map((item) => `
+      inventoryTableBody.innerHTML = items.map((item, index) => `
         <tr>
           <td>${item.client}</td>
           <td>${item.hawb}</td>
@@ -211,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${item.location}</td>
           <td>${item.quantity}</td>
           <td><span class="${item.badgeClass}">${item.status}</span></td>
-          <td><a href="shipment-details.html">View</a></td>
+          <td><button type="button" class="view-details-btn" data-index="${start + index}">View</button></td>
         </tr>
       `).join('');
 
@@ -236,6 +288,99 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     renderInventoryPage(1);
+
+    const inventoryDrawer = document.getElementById('inventoryDrawer');
+    const inventoryDrawerBackdrop = document.getElementById('inventoryDrawerBackdrop');
+    const inventoryDrawerClose = document.getElementById('inventoryDrawerClose');
+    const drawerClient = document.getElementById('drawerClient');
+    const drawerDestination = document.getElementById('drawerDestination');
+    const drawerHawb = document.getElementById('drawerHawb');
+    const drawerMawb = document.getElementById('drawerMawb');
+    const drawerInvoice = document.getElementById('drawerInvoice');
+    const drawerTransaction = document.getElementById('drawerTransaction');
+    const drawerModule = document.getElementById('drawerModule');
+    const drawerFlight = document.getElementById('drawerFlight');
+    const drawerDate = document.getElementById('drawerDate');
+    const drawerTime = document.getElementById('drawerTime');
+    const drawerReceivedBy = document.getElementById('drawerReceivedBy');
+    const drawerReceivingPlate = document.getElementById('drawerReceivingPlate');
+    const drawerTrucker = document.getElementById('drawerTrucker');
+    const drawerDriver = document.getElementById('drawerDriver');
+    const drawerCargoCondition = document.getElementById('drawerCargoCondition');
+    const drawerLocation = document.getElementById('drawerLocation');
+    const drawerCargoHandling = document.getElementById('drawerCargoHandling');
+    const drawerStatus = document.getElementById('drawerStatus');
+    const drawerPartialFull = document.getElementById('drawerPartialFull');
+    const drawerQty = document.getElementById('drawerQty');
+    const drawerUnit = document.getElementById('drawerUnit');
+    const drawerRemainingQuantity = document.getElementById('drawerRemainingQuantity');
+    const drawerReleaseDate = document.getElementById('drawerReleaseDate');
+    const drawerReleaseTime = document.getElementById('drawerReleaseTime');
+    const drawerReleasePlate = document.getElementById('drawerReleasePlate');
+    const drawerReleaseDriver = document.getElementById('drawerReleaseDriver');
+    const drawerRemarks = document.getElementById('drawerRemarks');
+
+    const openInventoryDrawer = (item) => {
+      if (!inventoryDrawer) return;
+      drawerClient.textContent = item.client;
+      drawerDestination.textContent = item.destination;
+      drawerHawb.textContent = item.hawb;
+      drawerMawb.textContent = item.mawb;
+      drawerInvoice.textContent = item.invoice;
+      drawerTransaction.textContent = item.transactionType;
+      drawerModule.textContent = item.module;
+      drawerFlight.textContent = item.flight;
+      drawerDate.textContent = item.date;
+      drawerTime.textContent = item.time;
+      drawerReceivedBy.textContent = item.receivedBy;
+      drawerReceivingPlate.textContent = item.receivingPlate;
+      drawerTrucker.textContent = item.trucker;
+      drawerDriver.textContent = item.driver;
+      drawerCargoCondition.textContent = item.cargoCondition;
+      drawerLocation.textContent = item.location;
+      drawerCargoHandling.textContent = item.cargoHandling;
+      drawerStatus.textContent = item.status;
+      drawerPartialFull.textContent = item.partialFull;
+      drawerQty.textContent = item.quantity;
+      drawerUnit.textContent = item.unit;
+      drawerRemainingQuantity.textContent = item.remainingQuantity;
+      drawerReleaseDate.textContent = item.releaseDate;
+      drawerReleaseTime.textContent = item.releaseTime;
+      drawerReleasePlate.textContent = item.releasePlate;
+      drawerReleaseDriver.textContent = item.releaseDriver;
+      drawerRemarks.textContent = item.remarks;
+
+      inventoryDrawer.classList.add('open');
+      inventoryDrawerBackdrop.classList.add('open');
+      inventoryDrawer.setAttribute('aria-hidden', 'false');
+      inventoryDrawerBackdrop.hidden = false;
+    };
+
+    const closeInventoryDrawer = () => {
+      if (!inventoryDrawer) return;
+      inventoryDrawer.classList.remove('open');
+      inventoryDrawerBackdrop.classList.remove('open');
+      inventoryDrawer.setAttribute('aria-hidden', 'true');
+      inventoryDrawerBackdrop.hidden = true;
+    };
+
+    inventoryTableBody.addEventListener('click', (event) => {
+      const button = event.target.closest('.view-details-btn');
+      if (!button) return;
+      const index = Number(button.dataset.index);
+      const item = inventoryData[index];
+      if (item) {
+        openInventoryDrawer(item);
+      }
+    });
+
+    if (inventoryDrawerClose) {
+      inventoryDrawerClose.addEventListener('click', closeInventoryDrawer);
+    }
+
+    if (inventoryDrawerBackdrop) {
+      inventoryDrawerBackdrop.addEventListener('click', closeInventoryDrawer);
+    }
   }
 
   // Tab switching functionality

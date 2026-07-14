@@ -94,6 +94,7 @@
                   <option>Waiting for Confirmation</option>
                 </select>
               </div>
+              <button type="button" class="filter-clear-btn" id="inventoryClearFilters">Clear filters</button>
             </div>
           </div>
         </div>
@@ -120,6 +121,65 @@
         </div>
       </div>
     </div>
+
+    <div class="inventory-drawer-backdrop" id="inventoryDrawerBackdrop" hidden></div>
+    <aside class="inventory-drawer" id="inventoryDrawer" aria-hidden="true">
+      <div class="drawer-header">
+        <div>
+          <h2>Shipment details</h2>
+          <p class="drawer-subtitle" id="inventoryDrawerSubtitle">Review the selected shipment information</p>
+        </div>
+        <button type="button" class="drawer-close-btn" id="inventoryDrawerClose" aria-label="Close drawer">×</button>
+      </div>
+      <div class="drawer-content" id="inventoryDrawerContent">
+        <section class="drawer-section">
+          <h3 class="drawer-section-title">Shipment Information</h3>
+          <div class="drawer-row"><span>Client</span><strong id="drawerClient"></strong></div>
+          <div class="drawer-row"><span>Destination</span><strong id="drawerDestination"></strong></div>
+          <div class="drawer-row"><span>HAWB</span><strong id="drawerHawb"></strong></div>
+          <div class="drawer-row"><span>MAWB</span><strong id="drawerMawb"></strong></div>
+          <div class="drawer-row"><span>Invoice / Markings</span><strong id="drawerInvoice"></strong></div>
+          <div class="drawer-row"><span>Transaction Type</span><strong id="drawerTransaction"></strong></div>
+          <div class="drawer-row"><span>Module</span><strong id="drawerModule"></strong></div>
+          <div class="drawer-row"><span>Flight</span><strong id="drawerFlight"></strong></div>
+        </section>
+
+        <section class="drawer-section">
+          <h3 class="drawer-section-title">Receiving Information</h3>
+          <div class="drawer-row"><span>Date</span><strong id="drawerDate"></strong></div>
+          <div class="drawer-row"><span>Time</span><strong id="drawerTime"></strong></div>
+          <div class="drawer-row"><span>Received By</span><strong id="drawerReceivedBy"></strong></div>
+          <div class="drawer-row"><span>Plate Number</span><strong id="drawerReceivingPlate"></strong></div>
+          <div class="drawer-row"><span>Trucker</span><strong id="drawerTrucker"></strong></div>
+          <div class="drawer-row"><span>Driver</span><strong id="drawerDriver"></strong></div>
+          <div class="drawer-row"><span>Cargo Condition</span><strong id="drawerCargoCondition"></strong></div>
+        </section>
+
+        <section class="drawer-section">
+          <h3 class="drawer-section-title">Warehouse Information</h3>
+          <div class="drawer-row"><span>Location</span><strong id="drawerLocation"></strong></div>
+          <div class="drawer-row"><span>Cargo Handling</span><strong id="drawerCargoHandling"></strong></div>
+          <div class="drawer-row"><span>Status</span><strong id="drawerStatus"></strong></div>
+          <div class="drawer-row"><span>Partial / Full</span><strong id="drawerPartialFull"></strong></div>
+        </section>
+
+        <section class="drawer-section">
+          <h3 class="drawer-section-title">Quantity Information</h3>
+          <div class="drawer-row"><span>Quantity</span><strong id="drawerQty"></strong></div>
+          <div class="drawer-row"><span>Unit</span><strong id="drawerUnit"></strong></div>
+          <div class="drawer-row"><span>Remaining Quantity</span><strong id="drawerRemainingQuantity"></strong></div>
+        </section>
+
+        <section class="drawer-section">
+          <h3 class="drawer-section-title">Release Information</h3>
+          <div class="drawer-row"><span>Release Date</span><strong id="drawerReleaseDate"></strong></div>
+          <div class="drawer-row"><span>Release Time</span><strong id="drawerReleaseTime"></strong></div>
+          <div class="drawer-row"><span>Plate Number</span><strong id="drawerReleasePlate"></strong></div>
+          <div class="drawer-row"><span>Driver</span><strong id="drawerReleaseDriver"></strong></div>
+          <div class="drawer-row"><span>Remarks</span><strong id="drawerRemarks"></strong></div>
+        </section>
+      </div>
+    </aside>
   </div>
   <script src="../assets/app.js"></script>
 </body>
