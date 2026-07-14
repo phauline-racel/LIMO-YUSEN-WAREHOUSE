@@ -18,6 +18,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // User profile dropdown functionality
+  const userProfileBtn = document.getElementById('userProfileBtn');
+  const userDropdown = document.getElementById('userDropdown');
+
+  if (userProfileBtn && userDropdown) {
+    userProfileBtn.addEventListener('click', () => {
+      userDropdown.classList.toggle('open');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+      if (!userProfileBtn.contains(event.target) && !userDropdown.contains(event.target)) {
+        userDropdown.classList.remove('open');
+      }
+    });
+
+    // Close dropdown when clicking a link
+    userDropdown.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        userDropdown.classList.remove('open');
+      });
+    });
+  }
+
   const inventoryFilterToggle = document.getElementById('inventoryFilterToggle');
   const inventoryFilterPanel = document.getElementById('inventoryFilterPanel');
 
