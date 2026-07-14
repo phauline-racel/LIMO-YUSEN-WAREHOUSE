@@ -28,6 +28,7 @@
     </aside>
     <div class="main-column">
       <header class="topbar">
+        <div class="topbar-brand">Amvel Warehouse</div>
         <div class="search-container">
           <span class="search-icon">🔍︎</span>
           <input type="text" placeholder="Search HAWB, MAWB, Client..." class="search-input"/>
@@ -60,96 +61,107 @@
         </div>
 
         <div id="inbound-content" class="tab-content active">
-          <div class="scan-actions">
-            <button class="scan-btn" data-target="scanModal"><i class="bi bi-qr-code-scan"></i> Scan QR / Barcode</button>
-          </div>
-
           <section class="manual-form">
             <form>
-              <div class="form-section">
-                <h3 class="section-title">Shipment Information</h3>
-                <div class="form-grid grid-3col">
-                  <div class="form-field">
-                    <label>Client</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Destination</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>HAWB Number</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>MAWB Number</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Invoice / Markings</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Transaction Type</label>
-                    <select><option value="" disabled selected>Select transaction type</option><option>AFF Import</option><option>AFF Export</option><option>OFF Import</option><option>OFF Export</option></select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-section">
-                <h3 class="section-title">Receiving Information</h3>
-                <div class="form-grid grid-4col">
-                  <div class="form-field">
-                    <label>Date</label>
-                    <input type="date"/>
-                  </div>
-                  <div class="form-field">
-                    <label>Time</label>
-                    <input type="time"/>
-                  </div>
-                  <div class="form-field">
-                    <label>Received By</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Plate No.</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Trucker</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Driver</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Cargo Condition</label>
-                    <select><option>Good</option><option>Broken UoM but still in Good Condition</option><option>Damaged</option></select>
-                  </div>
-                  <div class="form-field">
-                    <label>Warehouse Location</label>
-                    <select><option value="" disabled selected>Select warehouse location</option><option>Aisle A</option><option>Aisle B</option></select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-section">
-                <h3 class="section-title">Quantity Information</h3>
-                <div class="quantity-section">
-                  <div class="qty-header">
-                    <div>Quantity</div>
-                    <div>Unit</div>
-                    <div></div>
-                  </div>
-                  <div class="quantity-list">
-                    <div class="qty-row">
-                      <input type="number" min="1" value="1" placeholder="Quantity"/>
-                      <select><option value="" disabled selected>Select unit</option><option>Carton</option><option>Pallet</option><option>Barrel</option><option>Box</option><option>Crate</option></select>
-                      <button type="button" class="btn-delete" aria-label="Delete quantity"><i class="bi bi-trash3-fill"></i></button>
+              <div class="form-columns">
+                <div class="panel-column">
+                  <div class="form-section">
+                    <h3 class="section-title">Shipment Information</h3>
+                    <div class="form-grid grid-3col">
+                      <div class="form-field">
+                        <label>Client</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Destination</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>HAWB Number</label>
+                        <div class="input-with-action">
+                          <input/>
+                          <button type="button" class="inline-scan-btn" data-target="scanModal" aria-label="Scan HAWB"><i class="bi bi-qr-code-scan"></i></button>
+                        </div>
+                      </div>
+                      <div class="form-field">
+                        <label>MAWB Number</label>
+                        <div class="input-with-action">
+                          <input/>
+                          <button type="button" class="inline-scan-btn" data-target="scanModal" aria-label="Scan MAWB"><i class="bi bi-qr-code-scan"></i></button>
+                        </div>
+                      </div>
+                      <div class="form-field">
+                        <label>Invoice / Markings</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Transaction Type</label>
+                        <select><option value="" disabled selected>Select transaction type</option><option>AFF Import</option><option>AFF Export</option><option>OFF Import</option><option>OFF Export</option></select>
+                      </div>
                     </div>
                   </div>
-                  <div style="margin-top:12px"><button type="button" class="add-qty btn">+ Add Another Quantity</button></div>
+                </div>
+
+                <div class="panel-column">
+                  <div class="form-section">
+                    <h3 class="section-title">Receiving Information</h3>
+                    <div class="form-grid grid-4col">
+                      <div class="form-field">
+                        <label>Date</label>
+                        <input type="date"/>
+                      </div>
+                      <div class="form-field">
+                        <label>Time</label>
+                        <input type="time"/>
+                      </div>
+                      <div class="form-field">
+                        <label>Received By</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Plate No.</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Trucker</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Driver</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Cargo Condition</label>
+                        <select><option>Good</option><option>Broken UoM but still in Good Condition</option><option>Damaged</option></select>
+                      </div>
+                      <div class="form-field">
+                        <label>Warehouse Location</label>
+                        <select><option value="" disabled selected>Select warehouse location</option><option>Aisle A</option><option>Aisle B</option></select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="panel-column right-panel">
+                  <div class="form-section">
+                    <h3 class="section-title">Quantity Information</h3>
+                    <div class="quantity-section">
+                      <div class="quantity-list">
+                        <div class="qty-row">
+                          <div class="form-field qty-field">
+                            <label>Quantity</label>
+                            <input type="number" min="1" value="1" placeholder="Quantity"/>
+                          </div>
+                          <div class="form-field qty-field">
+                            <label>Unit</label>
+                            <select><option value="" disabled selected>Select unit</option><option>Carton</option><option>Pallet</option><option>Barrel</option><option>Box</option><option>Crate</option></select>
+                          </div>
+                          <button type="button" class="btn-delete" aria-label="Delete quantity"><i class="bi bi-trash3-fill"></i></button>
+                        </div>
+                      </div>
+                      <div class="quantity-actions"><button type="button" class="add-qty btn">+ Add Another Quantity</button></div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -162,99 +174,107 @@
         </div>
 
         <div id="outbound-content" class="tab-content" style="display:none">
-          <div class="scan-actions">
-            <button class="scan-btn" data-target="scanModal"><i class="bi bi-qr-code-scan"></i> Scan QR / Barcode</button>
-          </div>
-
           <section class="manual-form">
             <form>
-              <div class="form-section">
-                <h3 class="section-title">Shipment Information</h3>
-                <div class="form-grid grid-3col">
-                  <div class="form-field">
-                    <label>Client</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Destination</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>HAWB Number</label>
-                    <div style="display:flex;gap:8px">
-                      <input style="flex:1"/>
-                      <button type="button" class="btn" style="padding:10px 14px;white-space:nowrap">🔍︎ Search</button>
+              <div class="form-columns">
+                <div class="panel-column">
+                  <div class="form-section">
+                    <h3 class="section-title">Shipment Information</h3>
+                    <div class="form-grid grid-3col">
+                      <div class="form-field">
+                        <label>Client</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Destination</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>HAWB Number</label>
+                        <div class="input-with-action">
+                          <input/>
+                          <button type="button" class="inline-scan-btn" data-target="scanModal" aria-label="Scan HAWB"><i class="bi bi-qr-code-scan"></i></button>
+                        </div>
+                      </div>
+                      <div class="form-field">
+                        <label>MAWB Number</label>
+                        <div class="input-with-action">
+                          <input/>
+                          <button type="button" class="inline-scan-btn" data-target="scanModal" aria-label="Scan MAWB"><i class="bi bi-qr-code-scan"></i></button>
+                        </div>
+                      </div>
+                      <div class="form-field">
+                        <label>Invoice / Markings</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Transaction Type</label>
+                        <select><option value="" disabled selected>Select transaction type</option><option>AFF Import</option><option>AFF Export</option><option>OFF Import</option><option>OFF Export</option></select>
+                      </div>
                     </div>
                   </div>
-                  <div class="form-field">
-                    <label>MAWB Number</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Invoice / Markings</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Transaction Type</label>
-                    <select><option value="" disabled selected>Select transaction type</option><option>AFF Import</option><option>AFF Export</option><option>OFF Import</option><option>OFF Export</option></select>
-                  </div>
                 </div>
-              </div>
 
-              <div class="form-section">
-                <h3 class="section-title">Release Information</h3>
-                <div class="form-grid grid-4col">
-                  <div class="form-field">
-                    <label>Date</label>
-                    <input type="date"/>
-                  </div>
-                  <div class="form-field">
-                    <label>Time</label>
-                    <input type="time"/>
-                  </div>
-                  <div class="form-field">
-                    <label>Released By</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Plate No.</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Trucker</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Driver</label>
-                    <input/>
-                  </div>
-                  <div class="form-field">
-                    <label>Cargo Condition</label>
-                    <select><option>Good</option><option>Broken UoM but still in Good Condition</option><option>Damaged</option></select>
-                  </div>
-                  <div class="form-field">
-                    <label>Warehouse Location</label>
-                    <select><option value="" disabled selected>Select warehouse location</option><option>Aisle A</option><option>Aisle B</option></select>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-section">
-                <h3 class="section-title">Quantity Information</h3>
-                <div class="quantity-section">
-                  <div class="qty-header">
-                    <div>Quantity</div>
-                    <div>Unit</div>
-                    <div></div>
-                  </div>
-                  <div class="quantity-list">
-                    <div class="qty-row">
-                      <input type="number" min="1" value="1" placeholder="Quantity"/>
-                      <select><option value="" disabled selected>Select unit</option><option>Carton</option><option>Pallet</option><option>Barrel</option><option>Box</option><option>Crate</option></select>
-                      <button type="button" class="btn-delete" aria-label="Delete quantity"><i class="bi bi-trash3-fill"></i></button>
+                <div class="panel-column">
+                  <div class="form-section">
+                    <h3 class="section-title">Release Information</h3>
+                    <div class="form-grid grid-4col">
+                      <div class="form-field">
+                        <label>Date</label>
+                        <input type="date"/>
+                      </div>
+                      <div class="form-field">
+                        <label>Time</label>
+                        <input type="time"/>
+                      </div>
+                      <div class="form-field">
+                        <label>Released By</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Plate No.</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Trucker</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Driver</label>
+                        <input/>
+                      </div>
+                      <div class="form-field">
+                        <label>Cargo Condition</label>
+                        <select><option>Good</option><option>Broken UoM but still in Good Condition</option><option>Damaged</option></select>
+                      </div>
+                      <div class="form-field">
+                        <label>Warehouse Location</label>
+                        <select><option value="" disabled selected>Select warehouse location</option><option>Aisle A</option><option>Aisle B</option></select>
+                      </div>
                     </div>
                   </div>
-                  <div style="margin-top:12px"><button type="button" class="add-qty btn">+ Add Another Quantity</button></div>
+                </div>
+
+                <div class="panel-column right-panel">
+                  <div class="form-section">
+                    <h3 class="section-title">Quantity Information</h3>
+                    <div class="quantity-section">
+                      <div class="quantity-list">
+                        <div class="qty-row">
+                          <div class="form-field qty-field">
+                            <label>Quantity</label>
+                            <input type="number" min="1" value="1" placeholder="Quantity"/>
+                          </div>
+                          <div class="form-field qty-field">
+                            <label>Unit</label>
+                            <select><option value="" disabled selected>Select unit</option><option>Carton</option><option>Pallet</option><option>Barrel</option><option>Box</option><option>Crate</option></select>
+                          </div>
+                          <button type="button" class="btn-delete" aria-label="Delete quantity"><i class="bi bi-trash3-fill"></i></button>
+                        </div>
+                      </div>
+                      <div class="quantity-actions"><button type="button" class="add-qty btn">+ Add Another Quantity</button></div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
