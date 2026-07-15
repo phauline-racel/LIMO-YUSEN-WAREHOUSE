@@ -52,19 +52,28 @@
         </div>
       </header>
       <div class="content">
-        <h1>Inventory</h1>
+        <div class="page-header">
+          <h1>Inventory</h1>
+        </div>
 
         <div class="inventory-toolbar">
           <div class="inventory-controls">
             <div class="search-container inventory-search-box">
               <span class="search-icon">🔍︎</span>
-              <input type="text" placeholder="Search by MAWB or HAWB" class="search-input"/>
+              <input type="text" placeholder="Search by HAWB, MAWB, Client..." class="search-input"/>
             </div>
 
             <button class="inventory-filter-toggle" id="inventoryFilterToggle" type="button" aria-expanded="false" aria-controls="inventoryFilterPanel">
               <span class="material-symbols-outlined">filter_alt</span>
               <span>Filters</span>
             </button>
+
+            <div class="page-size-control" role="group" aria-label="Rows per page">
+              <button type="button" class="page-size-button" data-size="5">5</button>
+              <button type="button" class="page-size-button active" data-size="10">10</button>
+              <button type="button" class="page-size-button" data-size="20">20</button>
+              <button type="button" class="page-size-button" data-size="all">All</button>
+            </div>
 
             <div class="inventory-filter-panel" id="inventoryFilterPanel" aria-hidden="true">
               <div class="filter-box">

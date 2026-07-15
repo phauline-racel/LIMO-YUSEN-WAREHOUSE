@@ -79,25 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const weeklyOverviewTrigger = document.getElementById('weeklyOverviewTrigger');
-  const activitySummaryCards = document.getElementById('activitySummaryCards');
-
-  if (weeklyOverviewTrigger && activitySummaryCards) {
-    const toggleSummaryCards = () => {
-      const isExpanded = weeklyOverviewTrigger.getAttribute('aria-expanded') === 'true';
-      weeklyOverviewTrigger.setAttribute('aria-expanded', String(!isExpanded));
-      activitySummaryCards.hidden = isExpanded;
-    };
-
-    weeklyOverviewTrigger.addEventListener('click', toggleSummaryCards);
-    weeklyOverviewTrigger.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        toggleSummaryCards();
-      }
-    });
-  }
-
   const activityTableBody = document.getElementById('activityTableBody');
   const activityPagination = document.getElementById('activityPagination');
 
@@ -132,12 +113,19 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
-    const rowsPerPage = 6;
-    const totalPages = Math.ceil(activityData.length / rowsPerPage);
+    const activityPageSizeButtons = document.querySelectorAll('.page-size-button');
+    const getActivityRowsPerPage = () => {
+      const activeButton = document.querySelector('.page-size-button.active');
+      const selected = activeButton?.dataset.size || '10';
+      return selected === 'all' ? activityData.length : Number(selected);
+    };
 
     const renderActivityPage = (pageNumber) => {
-      const start = (pageNumber - 1) * rowsPerPage;
-      const items = activityData.slice(start, start + rowsPerPage);
+      const currentRowsPerPage = getActivityRowsPerPage();
+      const totalPages = currentRowsPerPage === activityData.length ? 1 : Math.ceil(activityData.length / currentRowsPerPage);
+      const currentPage = Math.min(Math.max(pageNumber, 1), totalPages || 1);
+      const start = (currentPage - 1) * currentRowsPerPage;
+      const items = activityData.slice(start, start + currentRowsPerPage);
 
       activityTableBody.innerHTML = items.map((item) => `
         <tr>
@@ -153,21 +141,27 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>
       `).join('');
 
-      activityPagination.querySelectorAll('.page-box').forEach((button) => {
-        button.classList.toggle('active', Number(button.dataset.page) === pageNumber);
-      });
+      activityPagination.innerHTML = '';
+      for (let page = 1; page <= totalPages; page += 1) {
+        const pageButton = document.createElement('button');
+        pageButton.type = 'button';
+        pageButton.className = 'page-box';
+        pageButton.dataset.page = String(page);
+        pageButton.textContent = String(page);
+        if (page === currentPage) {
+          pageButton.classList.add('active');
+        }
+        activityPagination.appendChild(pageButton);
+      }
     };
 
-    activityPagination.querySelectorAll('.page-box').forEach((button) => button.remove());
-
-    for (let page = 1; page <= totalPages; page += 1) {
-      const pageButton = document.createElement('button');
-      pageButton.type = 'button';
-      pageButton.className = 'page-box';
-      pageButton.dataset.page = String(page);
-      pageButton.textContent = String(page);
-      activityPagination.appendChild(pageButton);
-    }
+    activityPageSizeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        activityPageSizeButtons.forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        renderActivityPage(1);
+      });
+    });
 
     activityPagination.addEventListener('click', (event) => {
       const targetButton = event.target.closest('.page-box');
@@ -247,12 +241,19 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
-    const rowsPerPage = 5;
-    const totalPages = Math.ceil(inventoryData.length / rowsPerPage);
+    const inventoryPageSizeButtons = document.querySelectorAll('.page-size-button');
+    const getRowsPerPage = () => {
+      const activeButton = document.querySelector('.page-size-button.active');
+      const selected = activeButton?.dataset.size || '10';
+      return selected === 'all' ? inventoryData.length : Number(selected);
+    };
 
     const renderInventoryPage = (pageNumber) => {
-      const start = (pageNumber - 1) * rowsPerPage;
-      const items = inventoryData.slice(start, start + rowsPerPage);
+      const currentRowsPerPage = getRowsPerPage();
+      const totalPages = currentRowsPerPage === inventoryData.length ? 1 : Math.ceil(inventoryData.length / currentRowsPerPage);
+      const currentPage = Math.min(Math.max(pageNumber, 1), totalPages || 1);
+      const start = (currentPage - 1) * currentRowsPerPage;
+      const items = inventoryData.slice(start, start + currentRowsPerPage);
 
       inventoryTableBody.innerHTML = items.map((item, index) => `
         <tr>
@@ -267,19 +268,27 @@ document.addEventListener('DOMContentLoaded', () => {
         </tr>
       `).join('');
 
-      inventoryPagination.querySelectorAll('.page-box').forEach((button) => {
-        button.classList.toggle('active', Number(button.dataset.page) === pageNumber);
-      });
+      inventoryPagination.innerHTML = '';
+      for (let page = 1; page <= totalPages; page += 1) {
+        const pageButton = document.createElement('button');
+        pageButton.type = 'button';
+        pageButton.className = 'page-box';
+        pageButton.dataset.page = String(page);
+        pageButton.textContent = String(page);
+        if (page === currentPage) {
+          pageButton.classList.add('active');
+        }
+        inventoryPagination.appendChild(pageButton);
+      }
     };
 
-    for (let page = 1; page <= totalPages; page += 1) {
-      const pageButton = document.createElement('button');
-      pageButton.type = 'button';
-      pageButton.className = 'page-box';
-      pageButton.dataset.page = String(page);
-      pageButton.textContent = String(page);
-      inventoryPagination.appendChild(pageButton);
-    }
+    inventoryPageSizeButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        inventoryPageSizeButtons.forEach((item) => item.classList.remove('active'));
+        button.classList.add('active');
+        renderInventoryPage(1);
+      });
+    });
 
     inventoryPagination.addEventListener('click', (event) => {
       const targetButton = event.target.closest('.page-box');
