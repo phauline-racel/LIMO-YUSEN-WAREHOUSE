@@ -53,51 +53,20 @@
       </header>
       <div class="content">
         <div class="page-header">
-          <div>
-            <h1>Activity Report</h1>
-            <p>Monitor inbound and outbound cargo movements, warehouse status, and shipment activity across all clients.</p>
-          </div>
-          <button class="page-badge overview-toggle" id="weeklyOverviewTrigger" type="button" aria-expanded="false" aria-controls="activitySummaryCards">
-            <span class="material-symbols-outlined">monitoring</span>
-            <span>Weekly Overview</span>
-          </button>
-        </div>
-
-        <div class="card-row report-summary" id="activitySummaryCards" hidden>
-          <div class="card card-animated">
-            <div class="card-content">
-              <div class="card-title">Total Transactions</div>
-              <div class="card-value">124</div>
-              <div class="card-subtitle">This month</div>
-            </div>
-            <div class="card-icon icon-blue"><span class="material-symbols-outlined">inventory_2</span></div>
-          </div>
-
-          <div class="card card-animated">
-            <div class="card-content">
-              <div class="card-title">Inbound Received</div>
-              <div class="card-value">68</div>
-              <div class="card-subtitle">Cargo in</div>
-            </div>
-            <div class="card-icon icon-green"><i class="bi bi-box-arrow-in-down"></i></div>
-          </div>
-
-          <div class="card card-animated">
-            <div class="card-content">
-              <div class="card-title">Outbound Released</div>
-              <div class="card-value">41</div>
-              <div class="card-subtitle">Cargo out</div>
-            </div>
-            <div class="card-icon icon-orange"><i class="bi bi-box-arrow-up"></i></div>
-          </div>
-
-          <div class="card card-animated">
-            <div class="card-content">
-              <div class="card-title">Pending Confirmation</div>
-              <div class="card-value">15</div>
-              <div class="card-subtitle">Awaiting release</div>
-            </div>
-            <div class="card-icon icon-yellow"><i class="bi bi-clock"></i></div>
+          <h1>Activity Report</h1>
+          <div class="toolbar-actions report-toolbar-actions">
+            <button class="btn toolbar-btn excel-btn" type="button">
+              <i class="bi bi-file-earmark-excel-fill"></i>
+              <span>Export Excel</span>
+            </button>
+            <button class="btn toolbar-btn pdf-btn" type="button">
+              <i class="bi bi-file-earmark-pdf-fill"></i>
+              <span>Export PDF</span>
+            </button>
+            <button class="btn toolbar-btn print-btn" type="button">
+              <i class="bi bi-printer"></i>
+              <span>Print</span>
+            </button>
           </div>
         </div>
 
@@ -105,17 +74,19 @@
           <div class="inventory-controls">
             <div class="search-container inventory-search-box">
               <span class="search-icon">🔍︎</span>
-              <input type="text" placeholder="Search by client, MAWB, or HAWB" class="search-input"/>
+              <input type="text" placeholder="Search by HAWB, MAWB, Client..." class="search-input"/>
             </div>
 
-            <div class="toolbar-actions">
-              <button class="inventory-filter-toggle" id="activityFilterToggle" type="button" aria-expanded="false" aria-controls="activityFilterPanel">
-                <span class="material-symbols-outlined">filter_alt</span>
-                <span>Filters</span>
-              </button>
-              <button class="btn toolbar-btn primary-btn">Export Excel</button>
-              <button class="btn toolbar-btn">Export PDF</button>
-              <button class="btn toolbar-btn">Print</button>
+            <button class="inventory-filter-toggle" id="activityFilterToggle" type="button" aria-expanded="false" aria-controls="activityFilterPanel">
+              <span class="material-symbols-outlined">filter_alt</span>
+              <span>Filters</span>
+            </button>
+
+            <div class="page-size-control" role="group" aria-label="Rows per page">
+              <button type="button" class="page-size-button" data-size="5">5</button>
+              <button type="button" class="page-size-button active" data-size="10">10</button>
+              <button type="button" class="page-size-button" data-size="20">20</button>
+              <button type="button" class="page-size-button" data-size="all">All</button>
             </div>
 
             <div class="inventory-filter-panel" id="activityFilterPanel" aria-hidden="true">
