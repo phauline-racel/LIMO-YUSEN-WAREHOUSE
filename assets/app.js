@@ -683,20 +683,105 @@ const createPlateTruckerIndex = () => {
 
 const PLATE_TRUCKER_INDEX = createPlateTruckerIndex();
 
+const TEXT_FIELD_SUGGESTIONS = {
+  receivedBy: ['AIVAN', 'DAN', 'RANDY', 'JULIUS', 'JESS', 'JOBERT', 'JOSEPH', 'LORENZO', 'ROY', 'RALPH', 'ROBERTO'],
+  releasedBy: ['AIVAN', 'DAN', 'RANDY', 'JULIUS', 'JESS', 'JOBERT', 'JOSEPH', 'LORENZO', 'ROY', 'RALPH', 'ROBERTO'],
+  cargoCondition: [
+    'GOOD',
+    'DAMAGED PALLET',
+    'MINOR DENT',
+    'SCRATCH ON OUTER PACKAGE BUT ACCEPTABLE',
+    'SLIGHTLY DENTED BUT ACCEPTABLE',
+    'WITH DENT BUT STILL ACCEPTABLE',
+    'WITH HOLES',
+    'WITH SCRATCHES',
+    'RETURN',
+    'DAMAGED PALLET BUT ACCEPTABLE',
+    'TORN',
+    'LOOSE STRAP',
+    'WET CARTON',
+    'DENTED BUT ACCEPTABLE',
+    'SLIGHTLY DENTED',
+    'CHIP OUT',
+    'DENTED',
+    'SCRATCH',
+    'BROKEN PALLET BUT CARGO STILL IN GOOD CONDITION',
+    'COLLAPSED PALLETS',
+    'DAMAGED (FOR BO REPORT)',
+    'RE-USED BOX BUT ACCEPTABLE',
+    'RE-ICING',
+    'TORN & DENTED BUT ACCEPTABLE',
+    'WITH B.O REPORT',
+    'B.O TO FOLLOW',
+    'OPEN & DENTED NO B.O REPORT',
+    'MINOR DENT BUT ACCEPTABLE',
+    'MINOR SCRATCH',
+    'PROCEED BY CS',
+    'WITH TAPE',
+    'RE-USED PLT',
+    'RETAPE',
+    'RE-USED PACKAGE BUT ACCEPTABLE',
+    'SUBJECT FOR SURVEY',
+    'SHOCK WATCH RED'
+  ],
+  location: (() => {
+    const racks = ['A', 'B', 'C', 'D'];
+    const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const cols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'];
+    const suggestions = [];
+
+    racks.forEach((rack) => {
+      rows.forEach((row) => {
+        cols.forEach((col) => {
+          suggestions.push(`RACK ${rack} ${row}${col}${row}`);
+        });
+      });
+    });
+
+    return suggestions;
+  })()
+};
+
 const getPlateSuggestions = (query) => {
   const normalizedQuery = String(query || '').trim().toUpperCase().replace(/\s+/g, '');
-  if (!normalizedQuery) {
-    return [];
-  }
 
   const suggestions = [];
   PLATE_TRUCKER_INDEX.forEach((trucker, plate) => {
-    if (plate.includes(normalizedQuery)) {
+    if (!normalizedQuery || plate.includes(normalizedQuery)) {
       suggestions.push({ plate, trucker });
     }
   });
 
   return suggestions.slice(0, 8);
+};
+
+const positionSuggestionBox = (wrapper, suggestionsBox) => {
+  const rect = wrapper.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const spaceBelow = viewportHeight - rect.bottom - 8;
+  const spaceAbove = rect.top - 8;
+  const preferredMaxHeight = Math.min(220, Math.max(120, Math.floor(viewportHeight * 0.4)));
+  const canOpenBelow = spaceBelow >= preferredMaxHeight;
+  const canOpenAbove = spaceAbove >= preferredMaxHeight;
+
+  let openUp = false;
+  let maxHeight = preferredMaxHeight;
+
+  if (canOpenBelow) {
+    openUp = false;
+    maxHeight = Math.min(preferredMaxHeight, Math.max(90, spaceBelow - 12));
+  } else if (canOpenAbove) {
+    openUp = true;
+    maxHeight = Math.min(preferredMaxHeight, Math.max(90, spaceAbove - 12));
+  } else {
+    openUp = spaceAbove > spaceBelow;
+    maxHeight = Math.min(preferredMaxHeight, Math.max(90, Math.max(spaceAbove, spaceBelow) - 12));
+  }
+
+  suggestionsBox.classList.toggle('open-up', openUp);
+  suggestionsBox.style.top = openUp ? 'auto' : 'calc(100% + 6px)';
+  suggestionsBox.style.bottom = openUp ? 'calc(100% + 6px)' : 'auto';
+  suggestionsBox.style.maxHeight = `${maxHeight}px`;
 };
 
 const attachPlateAutocomplete = (plateInput) => {
@@ -731,6 +816,7 @@ const attachPlateAutocomplete = (plateInput) => {
       </button>
     `).join('');
     suggestionsBox.classList.add('show');
+    positionSuggestionBox(wrapper, suggestionsBox);
   };
 
   plateInput.addEventListener('input', () => {
@@ -755,7 +841,90 @@ const attachPlateAutocomplete = (plateInput) => {
     }, 120);
   });
 
+  const handleViewportChange = () => {
+    if (suggestionsBox.classList.contains('show')) {
+      positionSuggestionBox(wrapper, suggestionsBox);
+    }
+  };
+
+  window.addEventListener('resize', handleViewportChange);
+  window.addEventListener('scroll', handleViewportChange, true);
+
   plateInput.dataset.autocompleteBound = 'true';
+};
+
+const attachTextAutocomplete = (input) => {
+  if (!input || input.dataset.autocompleteBound === 'true') {
+    return;
+  }
+
+  const field = input.dataset.field;
+  const options = TEXT_FIELD_SUGGESTIONS[field] || [];
+  if (!options.length) {
+    return;
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'plate-input-with-suggestions';
+  input.parentNode.insertBefore(wrapper, input);
+  wrapper.appendChild(input);
+
+  const suggestionsBox = document.createElement('div');
+  suggestionsBox.className = 'plate-suggestions';
+  wrapper.appendChild(suggestionsBox);
+
+  input.setAttribute('autocomplete', 'off');
+
+  const updateSuggestions = () => {
+    const query = input.value.trim().toUpperCase();
+    const matches = options.filter((option) => !query || option.toUpperCase().includes(query));
+
+    if (!matches.length) {
+      suggestionsBox.innerHTML = '';
+      suggestionsBox.classList.remove('show');
+      return;
+    }
+
+    suggestionsBox.innerHTML = matches.slice(0, 8).map((option) => `
+      <button type="button" class="plate-suggestion-item" data-value="${option}">
+        <span class="plate-suggestion-plate">${option}</span>
+      </button>
+    `).join('');
+    suggestionsBox.classList.add('show');
+    positionSuggestionBox(wrapper, suggestionsBox);
+  };
+
+  input.addEventListener('input', updateSuggestions);
+  input.addEventListener('focus', updateSuggestions);
+  input.addEventListener('click', updateSuggestions);
+  input.addEventListener('blur', () => {
+    window.setTimeout(() => {
+      suggestionsBox.classList.remove('show');
+    }, 120);
+  });
+
+  const handleViewportChange = () => {
+    if (suggestionsBox.classList.contains('show')) {
+      positionSuggestionBox(wrapper, suggestionsBox);
+    }
+  };
+
+  window.addEventListener('resize', handleViewportChange);
+  window.addEventListener('scroll', handleViewportChange, true);
+
+  suggestionsBox.addEventListener('mousedown', (event) => {
+    const suggestionButton = event.target.closest('.plate-suggestion-item');
+    if (!suggestionButton) {
+      return;
+    }
+
+    event.preventDefault();
+    input.value = suggestionButton.dataset.value || '';
+    suggestionsBox.classList.remove('show');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+
+  input.dataset.autocompleteBound = 'true';
 };
 
 const initPlateAutocompleteControls = () => {
@@ -764,12 +933,22 @@ const initPlateAutocompleteControls = () => {
   });
 };
 
+const initTextAutocompleteControls = () => {
+  document.querySelectorAll('input[data-field]').forEach((input) => {
+    const field = input.dataset.field;
+    if (field === 'plateNo' || !TEXT_FIELD_SUGGESTIONS[field]) {
+      return;
+    }
+    attachTextAutocomplete(input);
+  });
+};
+
 const buildActivitySeedData = () => Array.from({ length: 25 }, (_, index) => {
   const months = ['Jul 2026', 'Jun 2026', 'May 2026'];
   const clients = ['YAZAKI ORD', 'TOYOTA TSUSHO', 'DENSO PHIL.', 'NIPPON EXPRESS', 'KURASHIKI CORP'];
   const maws = ['SPSF-26A-030', '418650', 'TYC0018-26A', '5533899552', 'ICL-07-126'];
   const hawbs = ['YPH-04800983', 'YPH-04807585', 'YPH-04808204', 'YMY-05298532', 'YPH-63792105'];
-  const statuses = ['RECEIVED', 'RELEASED', 'PARTIAL', 'WAITING FOR CONFIRMATION'];
+  const statuses = ['DELIVERED', 'TRANSFERRED', 'HOLD', 'PULLED OUT', 'WAITING FOR CONFIRMATION', 'OFF LOAD', 'RETURN', 'BACK TO SHIPPER', 'PICK-UP BY CLIENT', 'RE-BOOK', 'CANCEL FLIGHT'];
   const locations = ['Aisle A', 'Aisle B', 'Aisle C', 'Aisle A', 'Aisle B'];
   const dateIns = ['2026-07-01', '2026-06-27', '2026-05-11', '2026-07-03', '2026-06-20'];
   const dateOuts = ['2026-07-05', '2026-06-29', '2026-05-14', '2026-07-06', '2026-06-23'];
@@ -787,12 +966,7 @@ const buildActivitySeedData = () => Array.from({ length: 25 }, (_, index) => {
     dateOut: dateOuts[index % dateOuts.length],
     qtyOut: quantityOuts[index % quantityOuts.length],
     status: statuses[index % statuses.length],
-    badgeClass: {
-      RECEIVED: 'badge-green',
-      RELEASED: 'badge-blue',
-      PARTIAL: 'badge-orange',
-      'WAITING FOR CONFIRMATION': 'badge-blue'
-    }[statuses[index % statuses.length]]
+    badgeClass: getBadgeClass(statuses[index % statuses.length])
   };
 });
 
@@ -803,7 +977,7 @@ const buildInventorySeedData = () => Array.from({ length: 50 }, (_, index) => {
   const transactionTypes = ['OFF EXPORT', 'AFF EXPORT', 'OFF EXPORT', 'OFF IMPORT', 'AFF EXPORT'];
   const locations = ['Aisle A', 'Aisle B', 'Aisle A', 'Aisle A', 'Aisle A'];
   const quantities = ['5 CTN', '11 CTN', '1 CRT', '11 PLT', '7 CTN'];
-  const statuses = ['WAITING FOR CONFIRMATION', 'HOLD', 'RETURN', 'WAITING FOR CONFIRMATION', 'HOLD'];
+  const statuses = ['WAITING FOR CONFIRMATION', 'HOLD', 'RETURN', 'PULLED OUT', 'OFF LOAD', 'BACK TO SHIPPER', 'DELIVERED', 'TRANSFERRED'];
   const destinations = ['Manila', 'Cebu', 'Davao', 'Clark', 'Iloilo'];
   const invoices = ['INV-001', 'INV-002', 'INV-003', 'INV-004', 'INV-005'];
   const modules = ['M1', 'M2', 'M3', 'M4', 'M5'];
@@ -823,11 +997,7 @@ const buildInventorySeedData = () => Array.from({ length: 50 }, (_, index) => {
   const releasePlates = ['PQR-1122', 'STU-3344', 'VWX-5566', 'YZA-7788', 'BCD-9900'];
   const releaseDrivers = ['Paul', 'Rita', 'Sam', 'Tina', 'Umar'];
   const remarks = ['Ready for release', 'Pending inspection', 'Awaiting docs', 'Hold for customs', 'Cleared'];
-  const badgeClass = {
-    'WAITING FOR CONFIRMATION': 'badge-blue',
-    HOLD: 'badge-green',
-    RETURN: 'badge-orange'
-  }[statuses[index % statuses.length]];
+  const badgeClass = getBadgeClass(statuses[index % statuses.length]);
 
   return {
     client: clients[index % clients.length],
@@ -890,13 +1060,25 @@ const saveStoredShipments = (shipments) => {
 };
 
 const getBadgeClass = (status) => {
-  if (!status) return 'badge-blue';
-  const normalizedStatus = String(status).toUpperCase();
-  if (normalizedStatus.includes('RELEASE')) return 'badge-green';
-  if (normalizedStatus.includes('HOLD')) return 'badge-green';
-  if (normalizedStatus.includes('RETURN')) return 'badge-orange';
-  if (normalizedStatus.includes('PARTIAL')) return 'badge-blue';
-  return 'badge-orange';
+  if (!status) return 'badge-waiting-confirmation';
+  const normalizedStatus = String(status).toUpperCase().trim();
+
+  if (normalizedStatus.includes('DELIVER')) return 'badge-delivered';
+  if (normalizedStatus.includes('TRANSFER')) return 'badge-transferred';
+  if (normalizedStatus.includes('HOLD')) return 'badge-hold';
+  if (normalizedStatus.includes('PULLED OUT')) return 'badge-pulled-out';
+  if (normalizedStatus.includes('WAITING FOR CONFIRMATION')) return 'badge-waiting-confirmation';
+  if (normalizedStatus.includes('OFF LOAD')) return 'badge-off-load';
+  if (normalizedStatus.includes('RETURN')) return 'badge-return';
+  if (normalizedStatus.includes('BACK TO SHIPPER')) return 'badge-back-to-shipper';
+  if (normalizedStatus.includes('PICK-UP BY CLIENT')) return 'badge-pick-up-by-client';
+  if (normalizedStatus.includes('RE-BOOK')) return 'badge-re-book';
+  if (normalizedStatus.includes('CANCEL FLIGHT')) return 'badge-cancel-flight';
+
+  if (normalizedStatus.includes('RELEASE')) return 'badge-transferred';
+  if (normalizedStatus.includes('RECEIVED')) return 'badge-delivered';
+  if (normalizedStatus.includes('PARTIAL')) return 'badge-waiting-confirmation';
+  return 'badge-blue';
 };
 
 const getMonthLabel = (dateValue) => {
@@ -1015,6 +1197,8 @@ const normalizeShipmentForInventory = (shipment) => {
     partialFull: shipment.partialFull || '',
     quantity: quantityText,
     unit: shipment.unit || '',
+    qtyIn: shipment.qtyIn || shipment.quantity || '',
+    qtyOut: shipment.qtyOut || shipment.releaseQty || '',
     remainingQuantity: quantityText,
     releaseDate: shipment.releaseDate || '',
     releaseTime: shipment.releaseTime || '',
@@ -1179,13 +1363,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const inventoryClearFilters = document.getElementById('inventoryClearFilters');
   const inventoryLocation = document.getElementById('inventory-location');
   const inventoryTransaction = document.getElementById('inventory-transaction');
-  const inventoryStatus = document.getElementById('inventory-status');
+  const inventorySort = document.getElementById('inventory-sort');
 
-  if (inventoryClearFilters && inventoryLocation && inventoryTransaction && inventoryStatus) {
+  if (inventoryClearFilters && inventoryLocation && inventoryTransaction && inventorySort) {
     inventoryClearFilters.addEventListener('click', () => {
       inventoryLocation.selectedIndex = 0;
       inventoryTransaction.selectedIndex = 0;
-      inventoryStatus.selectedIndex = 0;
+      inventorySort.selectedIndex = 0;
       if (typeof refreshInventory === 'function') {
         refreshInventory();
       }
@@ -1214,6 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activityMonthSelect = document.getElementById('activity-month');
     const activityStatusSelect = document.getElementById('activity-status');
     const activityLocationSelect = document.getElementById('activity-location');
+    const activityClearFilters = document.getElementById('activityClearFilters');
     const activityPageSizeButtons = document.querySelectorAll('.page-size-button');
 
     const getActivityRowsPerPage = () => {
@@ -1235,6 +1420,236 @@ document.addEventListener('DOMContentLoaded', () => {
         const locationMatch = !location || item.location.toLowerCase() === location.toLowerCase();
         return queryMatch && monthMatch && statusMatch && locationMatch;
       });
+    };
+
+    const getActivityReportExportRows = () => {
+      const rows = getFilteredActivityData();
+      return rows.map((item) => ({
+        month: item.month || '',
+        client: item.client || '',
+        mawb: item.mawb || '',
+        hawb: item.hawb || '',
+        dateIn: item.dateIn || '',
+        qtyIn: item.qtyIn || '',
+        dateOut: item.dateOut || '',
+        qtyOut: item.qtyOut || '',
+        status: item.status || ''
+      }));
+    };
+
+    const formatExportDate = () => {
+      const now = new Date();
+      return new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(now);
+    };
+
+    const formatExportFileDate = () => {
+      const now = new Date();
+      return new Intl.DateTimeFormat('en-CA', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(now).replace(/-/g, '-');
+    };
+
+    const exportToExcel = () => {
+      if (!window.XLSX) {
+        alert('Excel export library is unavailable.');
+        return;
+      }
+
+      const exportRows = getActivityReportExportRows();
+      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Status'];
+      const sheetRows = [
+        ['Amvel Warehouse Activity Report'],
+        ['Yusen Logistics Philippines Inc.'],
+        [`Export Date: ${formatExportDate()}`],
+        [],
+        headers,
+        ...exportRows.map((row) => [
+          row.month,
+          row.client,
+          row.mawb,
+          row.hawb,
+          row.dateIn,
+          row.qtyIn,
+          row.dateOut,
+          row.qtyOut,
+          row.status
+        ])
+      ];
+
+      const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
+      worksheet['!cols'] = headers.map((header, index) => ({
+        wch: index === 1 ? 28 : 16
+      }));
+      worksheet['!freeze'] = { ySplit: 4 };
+
+      const headerRow = 5;
+      const totalRows = sheetRows.length;
+      const totalCols = headers.length;
+      for (let rowIndex = 1; rowIndex <= totalRows; rowIndex += 1) {
+        for (let colIndex = 1; colIndex <= totalCols; colIndex += 1) {
+          const cellAddress = XLSX.utils.encode_cell({ r: rowIndex - 1, c: colIndex - 1 });
+          const cell = worksheet[cellAddress];
+          if (!cell) continue;
+
+          if (rowIndex === headerRow) {
+            cell.s = {
+              fill: { fgColor: { rgb: '06183D' } },
+              font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 10 },
+              alignment: { horizontal: 'center', vertical: 'center' },
+              border: {
+                top: { style: 'thin', color: { rgb: '000000' } },
+                right: { style: 'thin', color: { rgb: '000000' } },
+                bottom: { style: 'thin', color: { rgb: '000000' } },
+                left: { style: 'thin', color: { rgb: '000000' } }
+              }
+            };
+          } else if (rowIndex > headerRow) {
+            cell.s = {
+              alignment: { horizontal: colIndex === 2 ? 'left' : 'center', vertical: 'center' },
+              border: {
+                top: { style: 'thin', color: { rgb: 'D1D5DB' } },
+                right: { style: 'thin', color: { rgb: 'D1D5DB' } },
+                bottom: { style: 'thin', color: { rgb: 'D1D5DB' } },
+                left: { style: 'thin', color: { rgb: 'D1D5DB' } }
+              }
+            };
+          } else {
+            cell.s = {
+              font: { bold: true, sz: 12, color: { rgb: '06183D' } },
+              alignment: { horizontal: 'left', vertical: 'center' }
+            };
+          }
+        }
+      }
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Activity Report');
+      XLSX.writeFile(workbook, `Activity_Report_${formatExportFileDate()}.xlsx`);
+    };
+
+    const exportToPDF = () => {
+      if (!window.jspdf?.jsPDF || typeof window.jspdf?.autoTable !== 'function') {
+        alert('PDF export library is unavailable.');
+        return;
+      }
+
+      const exportRows = getActivityReportExportRows();
+      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Status'];
+      const bodyRows = exportRows.map((row) => [
+        row.month,
+        row.client,
+        row.mawb,
+        row.hawb,
+        row.dateIn,
+        row.qtyIn,
+        row.dateOut,
+        row.qtyOut,
+        row.status
+      ]);
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 36;
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('Amvel Warehouse Activity Report', margin, 48);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text('Yusen Logistics Philippines Inc.', margin, 70);
+      doc.text(`Export Date: ${formatExportDate()}`, pageWidth - margin - 140, 70);
+
+      doc.autoTable({
+        startY: 96,
+        head: [headers],
+        body: bodyRows,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [6, 24, 61],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          halign: 'center'
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252]
+        },
+        styles: {
+          fontSize: 8.5,
+          cellPadding: 4,
+          lineColor: [209, 213, 219],
+          lineWidth: 0.25
+        },
+        columnStyles: {
+          1: { halign: 'left' }
+        },
+        margin: { top: 96, right: margin, bottom: 40, left: margin },
+        didDrawPage: (data) => {
+          const pageNumberText = `Page ${data.pageNumber}`;
+          doc.setFontSize(8);
+          doc.text(pageNumberText, pageWidth - margin, pageHeight - 20, { align: 'right' });
+        }
+      });
+
+      doc.save(`Activity_Report_${formatExportFileDate()}.pdf`);
+    };
+
+    const printReport = () => {
+      const exportRows = getActivityReportExportRows();
+      const printWrapper = document.createElement('div');
+      printWrapper.className = 'print-report-wrapper';
+      printWrapper.innerHTML = `
+        <div class="print-report-header">
+          <h1>Amvel Warehouse Activity Report</h1>
+          <p>Yusen Logistics Philippines Inc.</p>
+          <p>Printed on ${formatExportDate()}</p>
+        </div>
+        <table class="print-report-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Client</th>
+              <th>MAWB</th>
+              <th>HAWB</th>
+              <th>Date In</th>
+              <th>Qty In</th>
+              <th>Date Out</th>
+              <th>Qty Out</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${exportRows.map((row) => `
+              <tr>
+                <td>${row.month}</td>
+                <td class="client-cell">${row.client}</td>
+                <td>${row.mawb}</td>
+                <td>${row.hawb}</td>
+                <td>${row.dateIn}</td>
+                <td>${row.qtyIn}</td>
+                <td>${row.dateOut}</td>
+                <td>${row.qtyOut}</td>
+                <td>${row.status}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+
+      document.body.appendChild(printWrapper);
+      document.body.classList.add('print-report-active');
+      window.print();
+      window.setTimeout(() => {
+        printWrapper.remove();
+        document.body.classList.remove('print-report-active');
+      }, 400);
     };
 
     const renderActivityPage = (pageNumber) => {
@@ -1275,10 +1690,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     refreshActivity = () => renderActivityPage(1);
 
+    const activityExportExcelButton = document.querySelector('.toolbar-btn.excel-btn');
+    const activityExportPdfButton = document.querySelector('.toolbar-btn.pdf-btn');
+    const activityPrintButton = document.querySelector('.toolbar-btn.print-btn');
+
+    activityExportExcelButton?.addEventListener('click', exportToExcel);
+    activityExportPdfButton?.addEventListener('click', exportToPDF);
+    activityPrintButton?.addEventListener('click', printReport);
+
     activitySearchInput?.addEventListener('input', refreshActivity);
     activityMonthSelect?.addEventListener('change', refreshActivity);
     activityStatusSelect?.addEventListener('change', refreshActivity);
     activityLocationSelect?.addEventListener('change', refreshActivity);
+
+    activityClearFilters?.addEventListener('click', () => {
+      if (activitySearchInput) {
+        activitySearchInput.value = '';
+      }
+      if (activityMonthSelect) {
+        activityMonthSelect.value = '';
+      }
+      if (activityStatusSelect) {
+        activityStatusSelect.value = '';
+      }
+      if (activityLocationSelect) {
+        activityLocationSelect.value = '';
+      }
+      refreshActivity();
+    });
 
     activityPageSizeButtons.forEach((button) => {
       button.addEventListener('click', () => {
@@ -1306,7 +1745,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const inventorySearchInput = document.getElementById('inventorySearchInput');
     const inventoryLocationSelect = document.getElementById('inventory-location');
     const inventoryTransactionSelect = document.getElementById('inventory-transaction');
-    const inventoryStatusSelect = document.getElementById('inventory-status');
+    const inventorySortSelect = document.getElementById('inventory-sort');
     const inventoryPageSizeButtons = document.querySelectorAll('.page-size-button');
 
     const getRowsPerPage = () => {
@@ -1315,19 +1754,32 @@ document.addEventListener('DOMContentLoaded', () => {
       return selected === 'all' ? inventoryData.length : Number(selected);
     };
 
+    const getInventoryQuantityValue = (item) => {
+      const quantityText = item?.remainingQuantity || item?.quantity || '';
+      const numericValue = Number(String(quantityText).match(/\d+/)?.[0] || 0);
+      return Number.isFinite(numericValue) ? numericValue : 0;
+    };
+
     const getFilteredInventoryData = () => {
       const query = inventorySearchInput?.value.trim().toLowerCase() || '';
       const location = inventoryLocationSelect?.value || '';
       const transactionType = inventoryTransactionSelect?.value || '';
-      const status = inventoryStatusSelect?.value || '';
+      const sortOrder = inventorySortSelect?.value || '';
 
-      return inventoryData.filter((item) => {
+      const filteredData = inventoryData.filter((item) => {
         const queryMatch = !query || [item.client, item.hawb, item.mawb].some((field) => field.toLowerCase().includes(query));
         const locationMatch = !location || item.location.toLowerCase() === location.toLowerCase();
         const transactionMatch = !transactionType || item.transactionType.toLowerCase() === transactionType.toLowerCase();
-        const statusMatch = !status || item.status.toLowerCase() === status.toLowerCase();
-        return queryMatch && locationMatch && transactionMatch && statusMatch;
+        return queryMatch && locationMatch && transactionMatch;
       });
+
+      if (sortOrder === 'asc') {
+        filteredData.sort((a, b) => getInventoryQuantityValue(a) - getInventoryQuantityValue(b));
+      } else if (sortOrder === 'desc') {
+        filteredData.sort((a, b) => getInventoryQuantityValue(b) - getInventoryQuantityValue(a));
+      }
+
+      return filteredData;
     };
 
     const renderInventoryPage = (pageNumber) => {
@@ -1345,8 +1797,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${item.mawb}</td>
           <td>${item.transactionType}</td>
           <td>${item.location}</td>
-          <td>${item.quantity}</td>
-          <td><span class="${item.badgeClass}">${item.status}</span></td>
+          <td>${item.qtyIn || ''}</td>
+          <td>${item.qtyOut || ''}</td>
+          <td>${item.remainingQuantity || item.quantity || ''}</td>
           <td><button type="button" class="view-details-btn" data-index="${start + index}">View</button></td>
         </tr>
       `).join('');
@@ -1370,7 +1823,7 @@ document.addEventListener('DOMContentLoaded', () => {
     inventorySearchInput?.addEventListener('input', refreshInventory);
     inventoryLocationSelect?.addEventListener('change', refreshInventory);
     inventoryTransactionSelect?.addEventListener('change', refreshInventory);
-    inventoryStatusSelect?.addEventListener('change', refreshInventory);
+    inventorySortSelect?.addEventListener('change', refreshInventory);
 
     inventoryPageSizeButtons.forEach((button) => {
       button.addEventListener('click', () => {
@@ -1483,6 +1936,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   initPlateAutocompleteControls();
+  initTextAutocompleteControls();
   renderDashboardData();
 
   window.addEventListener('warehouse:data-updated', () => {
@@ -1634,6 +2088,61 @@ const applySelectValue = (selectField, rawValue) => {
   }
 }
 
+const getScannedSearchValue = (payload) => {
+  const source = payload && typeof payload === 'object' ? payload : {}
+  const candidates = [
+    source.hawb,
+    source.HAWB,
+    source.mawb,
+    source.MAWB,
+    source.client,
+    source.Client,
+    source.shipmentId,
+    source.shipmentID,
+    source.id,
+    source.text,
+    payload
+  ]
+
+  for (const candidate of candidates) {
+    if (typeof candidate === 'string' && candidate.trim()) {
+      return candidate.trim()
+    }
+    if (typeof candidate === 'number') {
+      return String(candidate)
+    }
+  }
+
+  return ''
+}
+
+const applyScannedPayloadToPage = (payload) => {
+  const searchValue = getScannedSearchValue(payload)
+  if (!searchValue) {
+    return false
+  }
+
+  const inventorySearchInput = document.getElementById('inventorySearchInput')
+  if (inventorySearchInput) {
+    inventorySearchInput.value = searchValue
+    if (typeof refreshInventory === 'function') {
+      refreshInventory()
+    }
+    return true
+  }
+
+  const activitySearchInput = document.getElementById('activitySearchInput')
+  if (activitySearchInput) {
+    activitySearchInput.value = searchValue
+    if (typeof refreshActivity === 'function') {
+      refreshActivity()
+    }
+    return true
+  }
+
+  return false
+}
+
 // Populate the currently active shipment form with values from a scanned payload.
 const populateShipmentForm = (payload, context) => {
   const formContext = context || document.querySelector('.tab-content.active') || document
@@ -1665,11 +2174,16 @@ const populateShipmentForm = (payload, context) => {
   })
 }
 
-// Handle a decoded QR result and map it into the shipment form.
+// Handle a decoded QR result and map it into the shipment form or filter the current page.
 const handleScannedPayload = (text, modal, context) => {
   try {
     const parsedPayload = JSON.parse(text)
-    populateShipmentForm(parsedPayload, context)
+    const pageHandled = applyScannedPayloadToPage(parsedPayload)
+
+    if (!pageHandled) {
+      populateShipmentForm(parsedPayload, context)
+    }
+
     if (modal) {
       modal.style.display = 'none'
       modal.classList.remove('outbound', 'inbound')
@@ -1677,7 +2191,17 @@ const handleScannedPayload = (text, modal, context) => {
     stopQrScanner(modal)
     activeScanContext = null
   } catch (error) {
-    alert('Invalid QR Code')
+    const plainTextPayload = typeof text === 'string' ? text.trim() : ''
+    const pageHandled = plainTextPayload ? applyScannedPayloadToPage(plainTextPayload) : false
+
+    if (!pageHandled) {
+      alert('Invalid QR Code')
+    }
+
+    if (modal) {
+      modal.style.display = 'none'
+      modal.classList.remove('outbound', 'inbound')
+    }
     stopQrScanner(modal)
   }
 }
