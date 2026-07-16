@@ -23,6 +23,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const userDropdown = document.getElementById('userDropdown');
 
   if (userProfileBtn && userDropdown) {
+    let logoutConfirmModal = null;
+
+    const createLogoutConfirmModal = () => {
+      const modal = document.createElement('div');
+      modal.className = 'logout-confirm-overlay';
+      modal.innerHTML = `
+        <div class="logout-confirm-inner">
+          <h2>Confirm logout</h2>
+          <p>Are you sure you want to log out?</p>
+          <div class="logout-confirm-actions">
+            <button type="button" class="logout-confirm-btn logout-cancel">Cancel</button>
+            <button type="button" class="logout-confirm-btn logout-confirm danger">Logout</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.addEventListener('click', (event) => {
+        if (event.target === modal || event.target.classList.contains('logout-cancel')) {
+          modal.style.display = 'none';
+        }
+      });
+
+      const confirmButton = modal.querySelector('.logout-confirm');
+      if (confirmButton) {
+        confirmButton.addEventListener('click', () => {
+          window.location.href = '../index.html';
+        });
+      }
+
+      return modal;
+    };
+
+    const openLogoutConfirmModal = () => {
+      if (!logoutConfirmModal) {
+        logoutConfirmModal = createLogoutConfirmModal();
+      }
+      logoutConfirmModal.style.display = 'flex';
+    };
+
     userProfileBtn.addEventListener('click', () => {
       userDropdown.classList.toggle('open');
     });
@@ -36,7 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Close dropdown when clicking a link
     userDropdown.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
+      link.addEventListener('click', (event) => {
+        if (link.classList.contains('logout-link')) {
+          event.preventDefault();
+          userDropdown.classList.remove('open');
+          openLogoutConfirmModal();
+          return;
+        }
         userDropdown.classList.remove('open');
       });
     });
@@ -44,6 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const inventoryFilterToggle = document.getElementById('inventoryFilterToggle');
   const inventoryFilterPanel = document.getElementById('inventoryFilterPanel');
+  let refreshInventory = null;
+  let refreshActivity = null;
 
   if (inventoryFilterToggle && inventoryFilterPanel) {
     inventoryFilterToggle.addEventListener('click', () => {
@@ -64,6 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
       inventoryLocation.selectedIndex = 0;
       inventoryTransaction.selectedIndex = 0;
       inventoryStatus.selectedIndex = 0;
+      if (typeof refreshInventory === 'function') {
+        refreshInventory();
+      }
     });
   }
 
@@ -89,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const maws = ['SPSF-26A-030', '418650', 'TYC0018-26A', '5533899552', 'ICL-07-126'];
       const hawbs = ['YPH-04800983', 'YPH-04807585', 'YPH-04808204', 'YMY-05298532', 'YPH-63792105'];
       const statuses = ['RECEIVED', 'RELEASED', 'PARTIAL', 'WAITING FOR CONFIRMATION'];
+      const locations = ['Aisle A', 'Aisle B', 'Aisle C', 'Aisle A', 'Aisle B'];
       const dateIns = ['2026-07-01', '2026-06-27', '2026-05-11', '2026-07-03', '2026-06-20'];
       const dateOuts = ['2026-07-05', '2026-06-29', '2026-05-14', '2026-07-06', '2026-06-23'];
       const quantityIns = [12, 18, 9, 14, 21];
@@ -99,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         client: clients[index % clients.length],
         mawb: maws[index % maws.length],
         hawb: hawbs[index % hawbs.length],
+        location: locations[index % locations.length],
         dateIn: dateIns[index % dateIns.length],
         qtyIn: quantityIns[index % quantityIns.length],
         dateOut: dateOuts[index % dateOuts.length],
@@ -113,19 +166,40 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
+    const activitySearchInput = document.getElementById('activitySearchInput');
+    const activityMonthSelect = document.getElementById('activity-month');
+    const activityStatusSelect = document.getElementById('activity-status');
+    const activityLocationSelect = document.getElementById('activity-location');
     const activityPageSizeButtons = document.querySelectorAll('.page-size-button');
+
     const getActivityRowsPerPage = () => {
       const activeButton = document.querySelector('.page-size-button.active');
       const selected = activeButton?.dataset.size || '10';
       return selected === 'all' ? activityData.length : Number(selected);
     };
 
+    const getFilteredActivityData = () => {
+      const query = activitySearchInput?.value.trim().toLowerCase() || '';
+      const month = activityMonthSelect?.value || '';
+      const status = activityStatusSelect?.value || '';
+      const location = activityLocationSelect?.value || '';
+
+      return activityData.filter((item) => {
+        const queryMatch = !query || [item.month, item.client, item.mawb, item.hawb].some((field) => field.toLowerCase().includes(query));
+        const monthMatch = !month || item.month.toLowerCase() === month.toLowerCase();
+        const statusMatch = !status || item.status.toLowerCase() === status.toLowerCase();
+        const locationMatch = !location || item.location.toLowerCase() === location.toLowerCase();
+        return queryMatch && monthMatch && statusMatch && locationMatch;
+      });
+    };
+
     const renderActivityPage = (pageNumber) => {
+      const filteredData = getFilteredActivityData();
       const currentRowsPerPage = getActivityRowsPerPage();
-      const totalPages = currentRowsPerPage === activityData.length ? 1 : Math.ceil(activityData.length / currentRowsPerPage);
+      const totalPages = currentRowsPerPage === filteredData.length ? 1 : Math.ceil(filteredData.length / currentRowsPerPage);
       const currentPage = Math.min(Math.max(pageNumber, 1), totalPages || 1);
       const start = (currentPage - 1) * currentRowsPerPage;
-      const items = activityData.slice(start, start + currentRowsPerPage);
+      const items = filteredData.slice(start, start + currentRowsPerPage);
 
       activityTableBody.innerHTML = items.map((item) => `
         <tr>
@@ -154,6 +228,13 @@ document.addEventListener('DOMContentLoaded', () => {
         activityPagination.appendChild(pageButton);
       }
     };
+
+    refreshActivity = () => renderActivityPage(1);
+
+    activitySearchInput?.addEventListener('input', refreshActivity);
+    activityMonthSelect?.addEventListener('change', refreshActivity);
+    activityStatusSelect?.addEventListener('change', refreshActivity);
+    activityLocationSelect?.addEventListener('change', refreshActivity);
 
     activityPageSizeButtons.forEach((button) => {
       button.addEventListener('click', () => {
@@ -241,19 +322,40 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
+    const inventorySearchInput = document.getElementById('inventorySearchInput');
+    const inventoryLocationSelect = document.getElementById('inventory-location');
+    const inventoryTransactionSelect = document.getElementById('inventory-transaction');
+    const inventoryStatusSelect = document.getElementById('inventory-status');
     const inventoryPageSizeButtons = document.querySelectorAll('.page-size-button');
+
     const getRowsPerPage = () => {
       const activeButton = document.querySelector('.page-size-button.active');
       const selected = activeButton?.dataset.size || '10';
       return selected === 'all' ? inventoryData.length : Number(selected);
     };
 
+    const getFilteredInventoryData = () => {
+      const query = inventorySearchInput?.value.trim().toLowerCase() || '';
+      const location = inventoryLocationSelect?.value || '';
+      const transactionType = inventoryTransactionSelect?.value || '';
+      const status = inventoryStatusSelect?.value || '';
+
+      return inventoryData.filter((item) => {
+        const queryMatch = !query || [item.client, item.hawb, item.mawb].some((field) => field.toLowerCase().includes(query));
+        const locationMatch = !location || item.location.toLowerCase() === location.toLowerCase();
+        const transactionMatch = !transactionType || item.transactionType.toLowerCase() === transactionType.toLowerCase();
+        const statusMatch = !status || item.status.toLowerCase() === status.toLowerCase();
+        return queryMatch && locationMatch && transactionMatch && statusMatch;
+      });
+    };
+
     const renderInventoryPage = (pageNumber) => {
+      const filteredData = getFilteredInventoryData();
       const currentRowsPerPage = getRowsPerPage();
-      const totalPages = currentRowsPerPage === inventoryData.length ? 1 : Math.ceil(inventoryData.length / currentRowsPerPage);
+      const totalPages = currentRowsPerPage === filteredData.length ? 1 : Math.ceil(filteredData.length / currentRowsPerPage);
       const currentPage = Math.min(Math.max(pageNumber, 1), totalPages || 1);
       const start = (currentPage - 1) * currentRowsPerPage;
-      const items = inventoryData.slice(start, start + currentRowsPerPage);
+      const items = filteredData.slice(start, start + currentRowsPerPage);
 
       inventoryTableBody.innerHTML = items.map((item, index) => `
         <tr>
@@ -281,6 +383,13 @@ document.addEventListener('DOMContentLoaded', () => {
         inventoryPagination.appendChild(pageButton);
       }
     };
+
+    refreshInventory = () => renderInventoryPage(1);
+
+    inventorySearchInput?.addEventListener('input', refreshInventory);
+    inventoryLocationSelect?.addEventListener('change', refreshInventory);
+    inventoryTransactionSelect?.addEventListener('change', refreshInventory);
+    inventoryStatusSelect?.addEventListener('change', refreshInventory);
 
     inventoryPageSizeButtons.forEach((button) => {
       button.addEventListener('click', () => {
@@ -420,17 +529,60 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Basic UI interactions: scan modal and dynamic quantity rows
-document.addEventListener('click', (e)=>{
+let cameraStream = null
+
+document.addEventListener('click', async (e)=>{
   const scanTrigger = e.target.closest('.scan-btn, .inline-scan-btn')
   if(scanTrigger){
     e.preventDefault()
     const id = scanTrigger.getAttribute('data-target') || 'scanModal'
     const modal = document.getElementById(id)
-    if(modal) modal.style.display = 'flex'
+    if(modal){
+      const isOutbound = Boolean(scanTrigger.closest('#outbound-content'))
+      modal.classList.toggle('outbound', isOutbound)
+      modal.classList.toggle('inbound', !isOutbound)
+      modal.style.display = 'flex'
+      const video = modal.querySelector('video#cameraPreview')
+      const cameraBox = modal.querySelector('.scan-camera')
+      const fallback = modal.querySelector('.camera-fallback')
+      if(video && navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+        try {
+          if(cameraStream){
+            cameraStream.getTracks().forEach((track) => track.stop())
+            cameraStream = null
+          }
+          cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false })
+          video.srcObject = cameraStream
+          video.play().catch(() => {})
+          if(cameraBox) cameraBox.classList.add('active')
+          if(fallback) fallback.textContent = ''
+        } catch (err) {
+          if(fallback) fallback.textContent = 'Unable to access camera. Please allow camera permission or use a compatible device.'
+          console.error('Camera access failed', err)
+        }
+      } else if(fallback){
+        fallback.textContent = 'Camera not supported on this device or browser.'
+      }
+    }
   }
   if(e.target.matches('.scan-close')){
     const modal = e.target.closest('.scan-modal')
-    if(modal) modal.style.display = 'none'
+    if(modal){
+      modal.style.display = 'none'
+      modal.classList.remove('outbound', 'inbound')
+      const video = modal.querySelector('video#cameraPreview')
+      const cameraBox = modal.querySelector('.scan-camera')
+      const fallback = modal.querySelector('.camera-fallback')
+      if(video){
+        video.srcObject = null
+      }
+      if(cameraBox) cameraBox.classList.remove('active')
+      if(fallback) fallback.textContent = 'Camera preview will appear here'
+      if(cameraStream){
+        cameraStream.getTracks().forEach((track) => track.stop())
+        cameraStream = null
+      }
+    }
   }
   if(e.target.matches('.add-qty')){
     e.preventDefault()

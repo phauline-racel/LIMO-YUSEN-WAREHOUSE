@@ -45,8 +45,8 @@
               <span class="dropdown-icon">▾</span>
             </button>
             <div class="user-dropdown" id="userDropdown">
-              <a href="profile.html" class="dropdown-item">👤 Profile</a>
-              <a href="#logout" class="dropdown-item logout-link">🚪 Logout</a>
+              <a href="profile.html" class="dropdown-item"><i class="bi bi-person-fill"></i> Profile</a>
+              <a href="#logout" class="dropdown-item logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </div>
           </div>
         </div>
@@ -60,7 +60,8 @@
           <div class="inventory-controls">
             <div class="search-container inventory-search-box">
               <span class="search-icon">🔍︎</span>
-              <input type="text" placeholder="Search by HAWB, MAWB, Client..." class="search-input"/>
+              <input id="inventorySearchInput" type="text" placeholder="Search by HAWB, MAWB, Client..." class="search-input"/>
+              <button type="button" class="inline-scan-btn" data-target="scanModal" aria-label="Scan QR Code"><i class="bi bi-qr-code-scan"></i></button>
             </div>
 
             <button class="inventory-filter-toggle" id="inventoryFilterToggle" type="button" aria-expanded="false" aria-controls="inventoryFilterPanel">
@@ -79,7 +80,7 @@
               <div class="filter-box">
                 <label for="inventory-location">Location</label>
                 <select id="inventory-location" aria-label="Location">
-                  <option selected disabled>Select location</option>
+                  <option value="" selected disabled>Select location</option>
                   <option>Aisle A</option>
                   <option>Aisle B</option>
                 </select>
@@ -87,7 +88,7 @@
               <div class="filter-box">
                 <label for="inventory-transaction">Transaction Type</label>
                 <select id="inventory-transaction" aria-label="Transaction Type">
-                  <option selected disabled>Select type</option>
+                  <option value="" selected disabled>Select type</option>
                   <option>AFF Import</option>
                   <option>AFF Export</option>
                   <option>OFF Import</option>
@@ -97,7 +98,7 @@
               <div class="filter-box">
                 <label for="inventory-status">Status</label>
                 <select id="inventory-status" aria-label="Status">
-                  <option selected disabled>Select status</option>
+                  <option value="" selected disabled>Select status</option>
                   <option>Return</option>
                   <option>Hold</option>
                   <option>Waiting for Confirmation</option>
@@ -189,6 +190,16 @@
         </section>
       </div>
     </aside>
+  </div>
+  <div id="scanModal" class="scan-modal" style="display:none">
+    <div class="scan-inner">
+      <div class="scan-camera">
+        <video id="cameraPreview" autoplay muted playsinline></video>
+        <div class="camera-fallback"><i class="bi bi-camera"></i> Camera preview will appear here</div>
+        <div class="scan-overlay"><span>Align QR / barcode inside the frame</span></div>
+      </div>
+      <div class="scan-actions" style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
+    </div>
   </div>
   <script src="../assets/app.js"></script>
 </body>

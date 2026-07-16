@@ -45,8 +45,8 @@
               <span class="dropdown-icon">▾</span>
             </button>
             <div class="user-dropdown" id="userDropdown">
-              <a href="profile.html" class="dropdown-item">👤 Profile</a>
-              <a href="#logout" class="dropdown-item logout-link">🚪 Logout</a>
+              <a href="profile.html" class="dropdown-item"><i class="bi bi-person-fill"></i> Profile</a>
+              <a href="#logout" class="dropdown-item logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </div>
           </div>
         </div>
@@ -54,27 +54,14 @@
       <div class="content">
         <div class="page-header">
           <h1>Activity Report</h1>
-          <div class="toolbar-actions report-toolbar-actions">
-            <button class="btn toolbar-btn excel-btn" type="button">
-              <i class="bi bi-file-earmark-excel-fill"></i>
-              <span>Export Excel</span>
-            </button>
-            <button class="btn toolbar-btn pdf-btn" type="button">
-              <i class="bi bi-file-earmark-pdf-fill"></i>
-              <span>Export PDF</span>
-            </button>
-            <button class="btn toolbar-btn print-btn" type="button">
-              <i class="bi bi-printer"></i>
-              <span>Print</span>
-            </button>
-          </div>
         </div>
 
-        <div class="inventory-toolbar activity-toolbar">
+        <div class="inventory-toolbar">
           <div class="inventory-controls">
             <div class="search-container inventory-search-box">
               <span class="search-icon">🔍︎</span>
-              <input type="text" placeholder="Search by HAWB, MAWB, Client..." class="search-input"/>
+              <input id="activitySearchInput" type="text" placeholder="Search by HAWB, MAWB, Client..." class="search-input"/>
+              <button type="button" class="inline-scan-btn" data-target="scanModal" aria-label="Scan QR Code"><i class="bi bi-qr-code-scan"></i></button>
             </div>
 
             <button class="inventory-filter-toggle" id="activityFilterToggle" type="button" aria-expanded="false" aria-controls="activityFilterPanel">
@@ -89,11 +76,26 @@
               <button type="button" class="page-size-button" data-size="all">All</button>
             </div>
 
+            <div class="toolbar-actions">
+              <button class="btn toolbar-btn excel-btn" type="button">
+                <i class="bi bi-file-earmark-excel-fill"></i>
+                <span>Export Excel</span>
+              </button>
+              <button class="btn toolbar-btn pdf-btn" type="button">
+                <i class="bi bi-file-earmark-pdf-fill"></i>
+                <span>Export PDF</span>
+              </button>
+              <button class="btn toolbar-btn print-btn" type="button">
+                <i class="bi bi-printer"></i>
+                <span>Print</span>
+              </button>
+            </div>
+
             <div class="inventory-filter-panel" id="activityFilterPanel" aria-hidden="true">
               <div class="filter-box">
                 <label for="activity-month">Month</label>
                 <select id="activity-month" aria-label="Month">
-                  <option selected disabled>Select month</option>
+                  <option value="" selected disabled>Select month</option>
                   <option>Jul 2026</option>
                   <option>Jun 2026</option>
                   <option>May 2026</option>
@@ -102,7 +104,7 @@
               <div class="filter-box">
                 <label for="activity-status">Status</label>
                 <select id="activity-status" aria-label="Status">
-                  <option selected disabled>Select status</option>
+                  <option value="" selected disabled>Select status</option>
                   <option>Received</option>
                   <option>Released</option>
                   <option>Partial</option>
@@ -112,17 +114,18 @@
               <div class="filter-box">
                 <label for="activity-location">Warehouse Location</label>
                 <select id="activity-location" aria-label="Warehouse location">
-                  <option selected disabled>Select location</option>
+                  <option value="" selected disabled>Select location</option>
                   <option>Aisle A</option>
                   <option>Aisle B</option>
                   <option>Aisle C</option>
                 </select>
               </div>
+              <button type="button" class="filter-clear-btn" id="activityClearFilters">Clear filters</button>
             </div>
           </div>
         </div>
 
-        <div class="table report-table">
+        <div class="table">
           <table>
             <thead>
               <tr>
@@ -145,6 +148,16 @@
         </div>
 
       </div>
+    </div>
+  </div>
+  <div id="scanModal" class="scan-modal" style="display:none">
+    <div class="scan-inner">
+      <div class="scan-camera">
+        <video id="cameraPreview" autoplay muted playsinline></video>
+        <div class="camera-fallback"><i class="bi bi-camera"></i> Camera preview will appear here</div>
+        <div class="scan-overlay"><span>Align QR / barcode inside the frame</span></div>
+      </div>
+      <div class="scan-actions" style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
     </div>
   </div>
   <script src="../assets/app.js"></script>

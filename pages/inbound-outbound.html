@@ -45,8 +45,8 @@
               <span class="dropdown-icon">▾</span>
             </button>
             <div class="user-dropdown" id="userDropdown">
-              <a href="profile.html" class="dropdown-item">👤 Profile</a>
-              <a href="#logout" class="dropdown-item logout-link">🚪 Logout</a>
+              <a href="profile.html" class="dropdown-item"><i class="bi bi-person-fill"></i> Profile</a>
+              <a href="#logout" class="dropdown-item logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </div>
           </div>
         </div>
@@ -294,9 +294,12 @@
 
   <div id="scanModal" class="scan-modal" style="display:none">
     <div class="scan-inner">
-      <div class="camera-placeholder"><i class="bi bi-camera"></i> Camera preview placeholder</div>
-      <div style="margin-top:8px;text-align:center">Scanning...</div>
-      <div style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
+      <div class="scan-camera">
+        <video id="cameraPreview" autoplay muted playsinline></video>
+        <div class="camera-fallback"><i class="bi bi-camera"></i> Camera preview will appear here</div>
+        <div class="scan-overlay"><span>Align QR / barcode inside the frame</span></div>
+      </div>
+      <div class="scan-actions" style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
     </div>
   </div>
 
