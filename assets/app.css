@@ -221,6 +221,13 @@ table a:hover{text-decoration:underline}
 .form-field input,.form-field select{padding:5px 8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fdfdfd;font-size:0.8rem;color:var(--text)}
 .form-field input::placeholder,.form-field select:invalid{color:var(--muted)}
 .form-field input:focus,.form-field select:focus{outline:none;border-color:rgba(0,102,204,0.35);box-shadow:0 0 0 2px rgba(0,102,204,0.12)}
+.plate-input-with-suggestions{position:relative;width:100%;display:block}
+.plate-input-with-suggestions input{width:100%;display:block}
+.plate-suggestions{display:none;position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:8px;box-shadow:0 8px 18px rgba(6,24,61,0.12);max-height:180px;overflow:auto;z-index:25}
+.plate-suggestions.show{display:block}
+.plate-suggestion-item{display:block;width:100%;padding:7px 10px;border:none;background:transparent;text-align:left;cursor:pointer;font-size:0.78rem;color:#14233a}
+.plate-suggestion-item:hover{background:#f8f9fb}
+.plate-suggestion-plate{font-weight:600;color:var(--primary)}
 .input-with-action{display:flex;align-items:center;gap:6px}
 .input-with-action input{flex:1;min-width:0}
 .inline-scan-btn{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border:none;border-radius:8px;background:linear-gradient(90deg,#06183d,#0d2d5c);color:#fff;cursor:pointer;flex-shrink:0;font-size:0.95rem}
