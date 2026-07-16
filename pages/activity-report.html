@@ -105,10 +105,17 @@
                 <label for="activity-status">Status</label>
                 <select id="activity-status" aria-label="Status">
                   <option value="" selected disabled>Select status</option>
-                  <option>Received</option>
-                  <option>Released</option>
-                  <option>Partial</option>
+                  <option>Delivered</option>
+                  <option>Transferred</option>
+                  <option>Hold</option>
+                  <option>Pulled Out</option>
                   <option>Waiting for Confirmation</option>
+                  <option>Off Load</option>
+                  <option>Return</option>
+                  <option>Back to Shipper</option>
+                  <option>Pick-Up By Client</option>
+                  <option>Re-Book</option>
+                  <option>Cancel Flight</option>
                 </select>
               </div>
               <div class="filter-box">
@@ -160,6 +167,10 @@
       <div class="scan-actions" style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.1/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
   <script src="../assets/app.js"></script>
 </body>
 </html>

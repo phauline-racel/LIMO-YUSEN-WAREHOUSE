@@ -96,12 +96,11 @@
                 </select>
               </div>
               <div class="filter-box">
-                <label for="inventory-status">Status</label>
-                <select id="inventory-status" aria-label="Status">
-                  <option value="" selected disabled>Select status</option>
-                  <option>Return</option>
-                  <option>Hold</option>
-                  <option>Waiting for Confirmation</option>
+                <label for="inventory-sort">Sort by</label>
+                <select id="inventory-sort" aria-label="Sort by">
+                  <option value="" selected disabled>Remaining Quantity</option>
+                  <option value="asc">Lowest to Highest</option>
+                  <option value="desc">Highest to Lowest</option>
                 </select>
               </div>
               <button type="button" class="filter-clear-btn" id="inventoryClearFilters">Clear filters</button>
@@ -118,8 +117,9 @@
                 <th>MAWB</th>
                 <th>Transaction Type</th>
                 <th>Location</th>
-                <th>Remaining Quantity</th>
-                <th>Status</th>
+                <th>Qty In</th>
+                <th>Qty Out</th>
+                <th>Remaining Qty</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -201,6 +201,7 @@
       <div class="scan-actions" style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="../assets/app.js"></script>
 </body>
 </html>
