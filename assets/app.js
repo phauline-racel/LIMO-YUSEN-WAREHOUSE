@@ -3,6 +3,7 @@ let refreshInventory = null;
 let refreshActivity = null;
 let inventoryData = [];
 let activityData = [];
+let inMemoryShipmentStore = [];
 
 const PLATE_TRUCKER_REFERENCE = [
   ['30807', 'G888'],
@@ -1031,31 +1032,31 @@ const buildInventorySeedData = () => Array.from({ length: 50 }, (_, index) => {
   };
 });
 
-const getActivityData = () => {
-  const data = buildActivitySeedData();
-  data.unshift(...getStoredShipments().map(normalizeShipmentForActivity));
-  return data;
-};
+const getActivityData = () => getStoredShipments().map(normalizeShipmentForActivity);
 
-const getInventoryData = () => {
-  const data = buildInventorySeedData();
-  data.unshift(...getStoredShipments().map(normalizeShipmentForInventory));
-  return data;
-};
+const getInventoryData = () => getStoredShipments().map(normalizeShipmentForInventory);
 
 const getStoredShipments = () => {
   try {
     const storedValue = localStorage.getItem(STORAGE_KEY);
     const parsed = storedValue ? JSON.parse(storedValue) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
   } catch (error) {
-    console.error('Unable to read shipment storage', error);
-    return [];
+    console.warn('Unable to read shipment storage. Using in-memory fallback.', error);
   }
+
+  return Array.isArray(inMemoryShipmentStore) ? inMemoryShipmentStore : [];
 };
 
 const saveStoredShipments = (shipments) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(shipments));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(shipments));
+  } catch (error) {
+    console.warn('Unable to persist shipment storage. Using in-memory fallback.', error);
+    inMemoryShipmentStore = shipments;
+  }
   window.dispatchEvent(new Event('warehouse:data-updated'));
 };
 
@@ -1534,11 +1535,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const exportToPDF = () => {
-      if (!window.jspdf?.jsPDF || typeof window.jspdf?.autoTable !== 'function') {
-        alert('PDF export library is unavailable.');
-        return;
-      }
-
       const exportRows = getActivityReportExportRows();
       const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Status'];
       const bodyRows = exportRows.map((row) => [
@@ -1553,8 +1549,20 @@ document.addEventListener('DOMContentLoaded', () => {
         row.status
       ]);
 
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const jsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
+      if (typeof jsPDFConstructor !== 'function') {
+        console.warn('jsPDF library is unavailable. Falling back to print preview.');
+        printReport();
+        return;
+      }
+
+      const doc = new jsPDFConstructor({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      if (typeof doc.autoTable !== 'function') {
+        console.warn('jsPDF autoTable is unavailable. Falling back to print preview.');
+        printReport();
+        return;
+      }
+
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 36;
@@ -1660,19 +1668,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const start = (currentPage - 1) * currentRowsPerPage;
       const items = filteredData.slice(start, start + currentRowsPerPage);
 
-      activityTableBody.innerHTML = items.map((item) => `
-        <tr>
-          <td>${item.month}</td>
-          <td>${item.client}</td>
-          <td>${item.mawb}</td>
-          <td>${item.hawb}</td>
-          <td>${item.dateIn}</td>
-          <td>${item.qtyIn}</td>
-          <td>${item.dateOut}</td>
-          <td>${item.qtyOut}</td>
-          <td><span class="${item.badgeClass}">${item.status}</span></td>
-        </tr>
-      `).join('');
+      if (!items.length) {
+        activityTableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">No activity data saved yet.</td></tr>';
+      } else {
+        activityTableBody.innerHTML = items.map((item) => `
+          <tr>
+            <td>${item.month}</td>
+            <td>${item.client}</td>
+            <td>${item.mawb}</td>
+            <td>${item.hawb}</td>
+            <td>${item.dateIn}</td>
+            <td>${item.qtyIn}</td>
+            <td>${item.dateOut}</td>
+            <td>${item.qtyOut}</td>
+            <td><span class="${item.badgeClass}">${item.status}</span></td>
+          </tr>
+        `).join('');
+      }
 
       activityPagination.innerHTML = '';
       for (let page = 1; page <= totalPages; page += 1) {
@@ -1790,19 +1802,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const start = (currentPage - 1) * currentRowsPerPage;
       const items = filteredData.slice(start, start + currentRowsPerPage);
 
-      inventoryTableBody.innerHTML = items.map((item, index) => `
-        <tr>
-          <td>${item.client}</td>
-          <td>${item.hawb}</td>
-          <td>${item.mawb}</td>
-          <td>${item.transactionType}</td>
-          <td>${item.location}</td>
-          <td>${item.qtyIn || ''}</td>
-          <td>${item.qtyOut || ''}</td>
-          <td>${item.remainingQuantity || item.quantity || ''}</td>
-          <td><button type="button" class="view-details-btn" data-index="${start + index}">View</button></td>
-        </tr>
-      `).join('');
+      if (!items.length) {
+        inventoryTableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">No shipment data saved yet.</td></tr>';
+      } else {
+        inventoryTableBody.innerHTML = items.map((item, index) => `
+          <tr>
+            <td>${item.client}</td>
+            <td>${item.hawb}</td>
+            <td>${item.mawb}</td>
+            <td>${item.transactionType}</td>
+            <td>${item.location}</td>
+            <td>${item.qtyIn || ''}</td>
+            <td>${item.qtyOut || ''}</td>
+            <td>${item.remainingQuantity || item.quantity || ''}</td>
+            <td><button type="button" class="view-details-btn" data-index="${start + index}">View</button></td>
+          </tr>
+        `).join('');
+      }
 
       inventoryPagination.innerHTML = '';
       for (let page = 1; page <= totalPages; page += 1) {
