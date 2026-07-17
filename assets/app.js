@@ -753,7 +753,7 @@ const getPlateSuggestions = (query) => {
     }
   });
 
-  return suggestions.slice(0, 8);
+  return suggestions;
 };
 
 const positionSuggestionBox = (wrapper, suggestionsBox) => {
@@ -886,7 +886,7 @@ const attachTextAutocomplete = (input) => {
       return;
     }
 
-    suggestionsBox.innerHTML = matches.slice(0, 8).map((option) => `
+    suggestionsBox.innerHTML = matches.map((option) => `
       <button type="button" class="plate-suggestion-item" data-value="${option}">
         <span class="plate-suggestion-plate">${option}</span>
       </button>
@@ -922,7 +922,6 @@ const attachTextAutocomplete = (input) => {
     event.preventDefault();
     input.value = suggestionButton.dataset.value || '';
     suggestionsBox.classList.remove('show');
-    input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 
   input.dataset.autocompleteBound = 'true';
@@ -1032,9 +1031,9 @@ const buildInventorySeedData = () => Array.from({ length: 50 }, (_, index) => {
   };
 });
 
-const getActivityData = () => getStoredShipments().map(normalizeShipmentForActivity);
+const getActivityData = () => aggregateShipmentsByReference(getStoredShipments()).map(normalizeShipmentForActivity);
 
-const getInventoryData = () => getStoredShipments().map(normalizeShipmentForInventory);
+const getInventoryData = () => aggregateShipmentsByReference(getStoredShipments()).map(normalizeShipmentForInventory);
 
 const getStoredShipments = () => {
   try {
@@ -1097,6 +1096,154 @@ const getQuantityValue = (shipment) => {
   return Number.isFinite(numericValue) ? numericValue : 0;
 };
 
+const parseQuantityNumber = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return 0;
+  }
+
+  const numericText = String(value).trim();
+  const match = numericText.match(/-?\d+(?:\.\d+)?/);
+  if (!match) {
+    return 0;
+  }
+
+  const parsedValue = Number(match[0]);
+  return Number.isFinite(parsedValue) ? parsedValue : 0;
+};
+
+const formatQuantityDisplay = (value, unit) => {
+  const numericValue = parseQuantityNumber(value);
+  if (!numericValue) {
+    return '';
+  }
+
+  const unitText = unit ? ` ${unit}` : '';
+  return `${numericValue}${unitText}`;
+};
+
+const getShipmentAggregateKey = (shipment) => {
+  const hawb = String(shipment?.hawb || '').trim().toUpperCase();
+  const mawb = String(shipment?.mawb || '').trim().toUpperCase();
+
+  if (hawb) {
+    return `hawb:${hawb}`;
+  }
+
+  if (mawb) {
+    return `mawb:${mawb}`;
+  }
+
+  return `manual:${shipment?.savedAt || Date.now()}`;
+};
+
+const getShipmentEntryType = (shipment) => {
+  if (shipment?.entryType === 'outbound') {
+    return 'outbound';
+  }
+
+  if (shipment?.entryType === 'inbound') {
+    return 'inbound';
+  }
+
+  const hasOutboundSignals = [shipment?.qtyOut, shipment?.releaseQty, shipment?.releaseDate, shipment?.releaseTime, shipment?.releasePlate, shipment?.releaseDriver, shipment?.releasedBy].some((value) => String(value || '').trim());
+  return hasOutboundSignals ? 'outbound' : 'inbound';
+};
+
+const aggregateShipmentsByReference = (shipments) => {
+  const groupedEntries = new Map();
+
+  shipments.forEach((shipment) => {
+    const key = getShipmentAggregateKey(shipment);
+    if (!groupedEntries.has(key)) {
+      groupedEntries.set(key, {
+        client: '',
+        destination: '',
+        hawb: '',
+        mawb: '',
+        invoice: '',
+        transactionType: '',
+        module: '',
+        flight: '',
+        date: '',
+        time: '',
+        receivedBy: '',
+        receivingPlate: '',
+        trucker: '',
+        driver: '',
+        cargoCondition: '',
+        location: '',
+        cargoHandling: '',
+        status: 'WAITING FOR CONFIRMATION',
+        partialFull: '',
+        quantity: '',
+        unit: '',
+        qtyInValue: 0,
+        qtyOutValue: 0,
+        remainingValue: 0,
+        releaseDate: '',
+        releaseTime: '',
+        releasePlate: '',
+        releaseDriver: '',
+        remarks: '',
+        dateIn: '',
+        dateOut: '',
+        savedAt: 0
+      });
+    }
+
+    const groupedShipment = groupedEntries.get(key);
+    const savedAt = Number(shipment?.savedAt || 0);
+    const isLatestRecord = !groupedShipment.savedAt || savedAt >= groupedShipment.savedAt;
+    const entryType = getShipmentEntryType(shipment);
+
+    if (isLatestRecord) {
+      groupedShipment.client = shipment.client || groupedShipment.client;
+      groupedShipment.destination = shipment.destination || groupedShipment.destination;
+      groupedShipment.hawb = shipment.hawb || groupedShipment.hawb;
+      groupedShipment.mawb = shipment.mawb || groupedShipment.mawb;
+      groupedShipment.invoice = shipment.invoice || groupedShipment.invoice;
+      groupedShipment.transactionType = shipment.transactionType || groupedShipment.transactionType;
+      groupedShipment.module = shipment.module || groupedShipment.module;
+      groupedShipment.flight = shipment.flight || groupedShipment.flight;
+      groupedShipment.date = shipment.date || groupedShipment.date;
+      groupedShipment.time = shipment.time || groupedShipment.time;
+      groupedShipment.receivedBy = shipment.receivedBy || shipment.releasedBy || groupedShipment.receivedBy;
+      groupedShipment.receivingPlate = shipment.plateNo || groupedShipment.receivingPlate;
+      groupedShipment.trucker = shipment.trucker || groupedShipment.trucker;
+      groupedShipment.driver = shipment.driver || groupedShipment.driver;
+      groupedShipment.cargoCondition = shipment.cargoCondition || groupedShipment.cargoCondition;
+      groupedShipment.location = shipment.location || groupedShipment.location;
+      groupedShipment.cargoHandling = shipment.cargoHandling || groupedShipment.cargoHandling;
+      groupedShipment.status = shipment.status || groupedShipment.status;
+      groupedShipment.partialFull = shipment.partialFull || groupedShipment.partialFull;
+      groupedShipment.quantity = shipment.quantity || groupedShipment.quantity;
+      groupedShipment.unit = shipment.unit || groupedShipment.unit;
+      groupedShipment.releaseDate = shipment.releaseDate || groupedShipment.releaseDate;
+      groupedShipment.releaseTime = shipment.releaseTime || groupedShipment.releaseTime;
+      groupedShipment.releasePlate = shipment.releasePlate || groupedShipment.releasePlate;
+      groupedShipment.releaseDriver = shipment.releaseDriver || groupedShipment.releaseDriver;
+      groupedShipment.remarks = shipment.remarks || groupedShipment.remarks;
+      groupedShipment.savedAt = savedAt;
+    }
+
+    if (entryType === 'inbound') {
+      groupedShipment.qtyInValue += parseQuantityNumber(shipment.qtyIn || shipment.quantity || '');
+      if (shipment.date && (!groupedShipment.dateIn || shipment.date > groupedShipment.dateIn)) {
+        groupedShipment.dateIn = shipment.date;
+      }
+    } else if (entryType === 'outbound') {
+      groupedShipment.qtyOutValue += parseQuantityNumber(shipment.qtyOut || shipment.releaseQty || shipment.quantity || '');
+      if (shipment.date && (!groupedShipment.dateOut || shipment.date > groupedShipment.dateOut)) {
+        groupedShipment.dateOut = shipment.date;
+      }
+    }
+
+    groupedShipment.remainingValue = groupedShipment.qtyInValue - groupedShipment.qtyOutValue;
+  });
+
+  return Array.from(groupedEntries.values()).sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+};
+
 const buildShipmentRecord = (form) => {
   const formFields = form?.querySelectorAll('[data-field]') || [];
   const shipment = {};
@@ -1118,10 +1265,21 @@ const buildShipmentRecord = (form) => {
   })).filter((entry) => entry.quantity || entry.unit);
 
   const firstQuantity = quantityEntries[0] || {};
-  shipment.quantity = firstQuantity.quantity || '';
+  const quantityValue = firstQuantity.quantity || '';
+  const isOutboundForm = Boolean(form?.closest('#outbound-content'));
+
+  shipment.quantity = quantityValue;
   shipment.unit = firstQuantity.unit || '';
   shipment.quantityEntries = quantityEntries;
-  shipment.status = 'WAITING FOR CONFIRMATION';
+  shipment.entryType = isOutboundForm ? 'outbound' : 'inbound';
+  shipment.qtyIn = isOutboundForm ? '' : quantityValue;
+  shipment.qtyOut = isOutboundForm ? quantityValue : '';
+  shipment.releaseQty = isOutboundForm ? quantityValue : '';
+  shipment.releaseDate = isOutboundForm ? shipment.date : '';
+  shipment.releaseTime = isOutboundForm ? shipment.time : '';
+  shipment.releasePlate = isOutboundForm ? shipment.plateNo : '';
+  shipment.releaseDriver = isOutboundForm ? shipment.driver : '';
+  shipment.status = isOutboundForm ? 'RELEASED' : 'RECEIVED';
   shipment.savedAt = new Date().toISOString();
 
   return shipment;
@@ -1175,7 +1333,12 @@ const showShipmentNotice = (message) => {
 
 const normalizeShipmentForInventory = (shipment) => {
   const status = shipment.status || 'WAITING FOR CONFIRMATION';
-  const quantityText = shipment.quantity ? `${shipment.quantity}${shipment.unit ? ` ${shipment.unit}` : ''}` : '';
+  const unit = shipment.unit || '';
+  const inboundQuantity = formatQuantityDisplay(shipment.qtyInValue || 0, unit);
+  const outboundQuantity = formatQuantityDisplay(shipment.qtyOutValue || 0, unit);
+  const remainingQuantity = formatQuantityDisplay(shipment.remainingValue || 0, unit);
+  const quantityText = formatQuantityDisplay(shipment.quantity || Math.max(shipment.qtyInValue || 0, shipment.qtyOutValue || 0), unit);
+
   return {
     client: shipment.client || '',
     destination: shipment.destination || '',
@@ -1188,7 +1351,7 @@ const normalizeShipmentForInventory = (shipment) => {
     date: shipment.date || '',
     time: shipment.time || '',
     receivedBy: shipment.receivedBy || shipment.releasedBy || '',
-    receivingPlate: shipment.plateNo || '',
+    receivingPlate: shipment.receivingPlate || shipment.plateNo || '',
     trucker: shipment.trucker || '',
     driver: shipment.driver || '',
     cargoCondition: shipment.cargoCondition || '',
@@ -1197,10 +1360,10 @@ const normalizeShipmentForInventory = (shipment) => {
     status,
     partialFull: shipment.partialFull || '',
     quantity: quantityText,
-    unit: shipment.unit || '',
-    qtyIn: shipment.qtyIn || shipment.quantity || '',
-    qtyOut: shipment.qtyOut || shipment.releaseQty || '',
-    remainingQuantity: quantityText,
+    unit,
+    qtyIn: inboundQuantity,
+    qtyOut: outboundQuantity,
+    remainingQuantity,
     releaseDate: shipment.releaseDate || '',
     releaseTime: shipment.releaseTime || '',
     releasePlate: shipment.releasePlate || '',
@@ -1213,15 +1376,16 @@ const normalizeShipmentForInventory = (shipment) => {
 
 const normalizeShipmentForActivity = (shipment) => {
   const status = shipment.status || 'WAITING FOR CONFIRMATION';
+  const unit = shipment.unit || '';
   return {
-    month: getMonthLabel(shipment.date),
+    month: getMonthLabel(shipment.dateIn || shipment.date),
     client: shipment.client || '',
     mawb: shipment.mawb || '',
     hawb: shipment.hawb || '',
-    dateIn: shipment.date || '',
-    qtyIn: shipment.quantity || '',
-    dateOut: shipment.releaseDate || '',
-    qtyOut: shipment.releaseQty || '',
+    dateIn: shipment.dateIn || shipment.date || '',
+    qtyIn: formatQuantityDisplay(shipment.qtyInValue || 0, unit),
+    dateOut: shipment.dateOut || shipment.releaseDate || '',
+    qtyOut: formatQuantityDisplay(shipment.qtyOutValue || 0, unit),
     status,
     badgeClass: getBadgeClass(status),
     savedAt: shipment.savedAt || 0
@@ -1229,21 +1393,25 @@ const normalizeShipmentForActivity = (shipment) => {
 };
 
 const renderDashboardData = () => {
-  const shipmentRows = getStoredShipments().slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+  const shipmentRows = aggregateShipmentsByReference(getStoredShipments()).slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
   const totalShipments = shipmentRows.length;
-  const cargoInWarehouse = shipmentRows.reduce((sum, shipment) => sum + getQuantityValue(shipment), 0);
-  const incomingToday = shipmentRows.filter((shipment) => shipment.date === new Date().toISOString().slice(0, 10)).length;
+  const cargoInWarehouse = shipmentRows.reduce((sum, shipment) => sum + (shipment.remainingValue || 0), 0);
+  const today = new Date().toISOString().slice(0, 10);
+  const incomingToday = shipmentRows.filter((shipment) => shipment.dateIn === today).length;
+  const outgoingToday = shipmentRows.filter((shipment) => shipment.dateOut === today).length;
   const waitingForConfirmation = shipmentRows.filter((shipment) => String(shipment.status || '').toUpperCase() === 'WAITING FOR CONFIRMATION').length;
 
   const totalValue = document.getElementById('dashboardTotalShipments');
   const cargoValue = document.getElementById('dashboardCargoInWarehouse');
   const incomingValue = document.getElementById('dashboardIncomingToday');
+  const outgoingValue = document.getElementById('dashboardOutgoingToday');
   const waitingValue = document.getElementById('dashboardWaitingForConfirmation');
   const recentBody = document.getElementById('recentShipmentsBody');
 
   if (totalValue) totalValue.textContent = totalShipments.toLocaleString();
   if (cargoValue) cargoValue.textContent = cargoInWarehouse.toLocaleString();
   if (incomingValue) incomingValue.textContent = incomingToday.toLocaleString();
+  if (outgoingValue) outgoingValue.textContent = outgoingToday.toLocaleString();
   if (waitingValue) waitingValue.textContent = waitingForConfirmation.toLocaleString();
 
   if (recentBody) {
@@ -2067,6 +2235,7 @@ const normalizeShipmentPayload = (payload) => {
     mawb: source.mawb || source.MAWB || source.mawbNumber || '',
     invoice: source.invoice || source.invoiceNumber || source.markings || source.marking || '',
     transactionType: source.transactionType || source.transactionTypeName || source.transaction_type || source.transactionTypeLabel || source.transaction || source.type || '',
+    plateNo: source.plateNo || source.plate || source.plateNumber || source.vehiclePlate || source.vehiclePlateNo || '',
     date: source.date || '',
     time: source.time || ''
   }
@@ -2159,12 +2328,29 @@ const applyScannedPayloadToPage = (payload) => {
   return false
 }
 
+const findStoredShipmentByScanValue = (payload) => {
+  const searchValue = getScannedSearchValue(payload)
+  if (!searchValue) {
+    return null
+  }
+
+  const normalizedSearch = String(searchValue).trim().toLowerCase()
+  const shipments = getStoredShipments()
+
+  return shipments.find((shipment) => {
+    const hawb = String(shipment?.hawb || '').trim().toLowerCase()
+    const mawb = String(shipment?.mawb || '').trim().toLowerCase()
+    return hawb === normalizedSearch || mawb === normalizedSearch
+  }) || null
+}
+
 // Populate the currently active shipment form with values from a scanned payload.
 const populateShipmentForm = (payload, context) => {
   const formContext = context || document.querySelector('.tab-content.active') || document
 
   const fields = formContext.querySelectorAll('[data-field]')
   const fieldValues = normalizeShipmentPayload(payload)
+  const storedShipment = findStoredShipmentByScanValue(payload)
 
   const philippineDateTime = getPhilippineDateTime()
   if (!fieldValues.date) {
@@ -2172,6 +2358,24 @@ const populateShipmentForm = (payload, context) => {
   }
   if (!fieldValues.time) {
     fieldValues.time = philippineDateTime.time
+  }
+
+  if (storedShipment && formContext?.querySelector('input[data-field="location"]')) {
+    const locationField = formContext.querySelector('input[data-field="location"]')
+    const storedLocation = storedShipment.location || ''
+    if (storedLocation) {
+      locationField.value = storedLocation
+      locationField.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+  }
+
+  if (storedShipment && formContext?.querySelector('select[data-field="unit"]')) {
+    const unitField = formContext.querySelector('select[data-field="unit"]')
+    const storedUnit = storedShipment.unit || ''
+    if (storedUnit) {
+      applySelectValue(unitField, storedUnit)
+      unitField.dispatchEvent(new Event('change', { bubbles: true }))
+    }
   }
 
   fields.forEach((field) => {
@@ -2184,8 +2388,10 @@ const populateShipmentForm = (payload, context) => {
 
     if (field.tagName === 'SELECT') {
       applySelectValue(field, value)
+      field.dispatchEvent(new Event('change', { bubbles: true }))
     } else {
       field.value = value
+      field.dispatchEvent(new Event('input', { bubbles: true }))
     }
   })
 }
