@@ -93,17 +93,17 @@
 
             <div class="inventory-filter-panel" id="activityFilterPanel" aria-hidden="true">
               <div class="filter-box">
-                <label for="activity-month">Month</label>
-                <select id="activity-month" aria-label="Month">
-                  <option value="" selected disabled>Select month</option>
-                  <option>Jul 2026</option>
-                  <option>Jun 2026</option>
-                  <option>May 2026</option>
-                </select>
+                <label for="activity-date-in">Date In</label>
+                <input id="activity-date-in" type="date" data-field="activity-date-in" aria-label="Date In" />
+              </div>
+              <div class="filter-box">
+                <label for="activity-date-out">Date Out</label>
+                <input id="activity-date-out" type="date" data-field="activity-date-out" aria-label="Date Out" />
               </div>
               <div class="filter-box">
                 <label for="activity-status">Status</label>
-                <select id="activity-status" aria-label="Status">
+                <input id="activity-status" type="text" list="activity-status-options" data-field="activity-status" placeholder="Type or select status" autocomplete="off" aria-label="Status" />
+                <datalist id="activity-status-options">
                   <option value="" selected disabled>Select status</option>
                   <option>Delivered</option>
                   <option>Transferred</option>
@@ -116,11 +116,12 @@
                   <option>Pick-Up By Client</option>
                   <option>Re-Book</option>
                   <option>Cancel Flight</option>
-                </select>
+                </datalist>
               </div>
               <div class="filter-box">
                 <label for="activity-location">Warehouse Location</label>
-                <select id="activity-location" aria-label="Warehouse location">
+                <input id="activity-location" type="text" list="activity-location-options" data-field="activity-location" placeholder="Type or select location" autocomplete="off" aria-label="Warehouse location" />
+                <datalist id="activity-location-options">
                   <option value="" selected disabled>Select location</option>
                   <option>RACK A A1A</option>
                   <option>RACK A A2A</option>
@@ -324,12 +325,33 @@
   </div>
   <div id="scanModal" class="scan-modal" style="display:none">
     <div class="scan-inner">
+      <div class="scan-header">
+        <div class="scan-title">Scan QR Code or Barcode</div>
+        <div class="scan-subtitle">Align the code inside the frame. Scanning will happen automatically.</div>
+      </div>
       <div class="scan-camera">
         <video id="cameraPreview" autoplay muted playsinline></video>
-        <div class="camera-fallback"><i class="bi bi-camera"></i> Camera preview will appear here</div>
-        <div class="scan-overlay"><span>Align QR / barcode inside the frame</span></div>
+        <div class="camera-fallback">Camera preview will appear here</div>
+        <div class="scan-overlay">
+          <div class="scan-mask scan-mask-top"></div>
+          <div class="scan-mask scan-mask-left"></div>
+          <div class="scan-mask scan-mask-right"></div>
+          <div class="scan-mask scan-mask-bottom"></div>
+          <div class="scan-window">
+            <span class="scan-corner top-left"></span>
+            <span class="scan-corner top-right"></span>
+            <span class="scan-corner bottom-left"></span>
+            <span class="scan-corner bottom-right"></span>
+            <span class="scan-line"></span>
+          </div>
+        </div>
       </div>
-      <div class="scan-actions" style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
+      <div class="scan-instructions">
+        <p><strong>Scanning...</strong></p>
+      </div>
+      <div class="scan-actions">
+        <button class="scan-close btn" type="button">Cancel</button>
+      </div>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>

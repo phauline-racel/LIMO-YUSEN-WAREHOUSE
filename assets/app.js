@@ -854,13 +854,21 @@ const attachPlateAutocomplete = (plateInput) => {
   plateInput.dataset.autocompleteBound = 'true';
 };
 
+const getInputAutocompleteOptions = (input) => {
+  if (input?.list?.options) {
+    return Array.from(input.list.options).map((option) => option.value).filter(Boolean);
+  }
+
+  const field = input?.dataset?.field;
+  return TEXT_FIELD_SUGGESTIONS[field] || [];
+};
+
 const attachTextAutocomplete = (input) => {
   if (!input || input.dataset.autocompleteBound === 'true') {
     return;
   }
 
-  const field = input.dataset.field;
-  const options = TEXT_FIELD_SUGGESTIONS[field] || [];
+  const options = getInputAutocompleteOptions(input);
   if (!options.length) {
     return;
   }
@@ -895,14 +903,23 @@ const attachTextAutocomplete = (input) => {
     positionSuggestionBox(wrapper, suggestionsBox);
   };
 
+  const hideSuggestions = () => {
+    suggestionsBox.classList.remove('show');
+  };
+
+  const handleOutsideClick = (event) => {
+    if (!wrapper.contains(event.target)) {
+      hideSuggestions();
+    }
+  };
+
   input.addEventListener('input', updateSuggestions);
   input.addEventListener('focus', updateSuggestions);
+  input.addEventListener('focusin', updateSuggestions);
   input.addEventListener('click', updateSuggestions);
-  input.addEventListener('blur', () => {
-    window.setTimeout(() => {
-      suggestionsBox.classList.remove('show');
-    }, 120);
-  });
+  input.addEventListener('mousedown', updateSuggestions);
+  input.addEventListener('pointerdown', updateSuggestions);
+  document.addEventListener('mousedown', handleOutsideClick);
 
   const handleViewportChange = () => {
     if (suggestionsBox.classList.contains('show')) {
@@ -921,7 +938,7 @@ const attachTextAutocomplete = (input) => {
 
     event.preventDefault();
     input.value = suggestionButton.dataset.value || '';
-    suggestionsBox.classList.remove('show');
+    hideSuggestions();
   });
 
   input.dataset.autocompleteBound = 'true';
@@ -936,9 +953,13 @@ const initPlateAutocompleteControls = () => {
 const initTextAutocompleteControls = () => {
   document.querySelectorAll('input[data-field]').forEach((input) => {
     const field = input.dataset.field;
-    if (field === 'plateNo' || !TEXT_FIELD_SUGGESTIONS[field]) {
+    const hasListOptions = input.list && input.list.options.length > 0;
+    const hasStaticSuggestions = Boolean(field && TEXT_FIELD_SUGGESTIONS[field]);
+
+    if (field === 'plateNo' || (!hasListOptions && !hasStaticSuggestions)) {
       return;
     }
+
     attachTextAutocomplete(input);
   });
 };
@@ -1609,8 +1630,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (inventoryClearFilters && inventoryLocation && inventoryTransaction && inventorySort) {
     inventoryClearFilters.addEventListener('click', () => {
-      inventoryLocation.selectedIndex = 0;
-      inventoryTransaction.selectedIndex = 0;
+      inventoryLocation.value = '';
+      inventoryTransaction.value = '';
       inventorySort.selectedIndex = 0;
       if (typeof refreshInventory === 'function') {
         refreshInventory();
@@ -1637,7 +1658,8 @@ document.addEventListener('DOMContentLoaded', () => {
     activityData = getActivityData();
 
     const activitySearchInput = document.getElementById('activitySearchInput');
-    const activityMonthSelect = document.getElementById('activity-month');
+    const activityDateInInput = document.getElementById('activity-date-in');
+    const activityDateOutInput = document.getElementById('activity-date-out');
     const activityStatusSelect = document.getElementById('activity-status');
     const activityLocationSelect = document.getElementById('activity-location');
     const activityClearFilters = document.getElementById('activityClearFilters');
@@ -1651,16 +1673,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getFilteredActivityData = () => {
       const query = activitySearchInput?.value.trim().toLowerCase() || '';
-      const month = activityMonthSelect?.value || '';
+      const dateInFilter = activityDateInInput?.value || '';
+      const dateOutFilter = activityDateOutInput?.value || '';
       const status = activityStatusSelect?.value || '';
       const location = activityLocationSelect?.value || '';
 
       return activityData.filter((item) => {
         const queryMatch = !query || [item.month, item.client, item.mawb, item.hawb].some((field) => field.toLowerCase().includes(query));
-        const monthMatch = !month || item.month.toLowerCase() === month.toLowerCase();
-        const statusMatch = !status || item.status.toLowerCase() === status.toLowerCase();
-        const locationMatch = !location || item.location.toLowerCase() === location.toLowerCase();
-        return queryMatch && monthMatch && statusMatch && locationMatch;
+        const dateInMatch = !dateInFilter || item.dateIn === dateInFilter;
+        const dateOutMatch = !dateOutFilter || item.dateOut === dateOutFilter;
+        const statusMatch = !status || item.status.toLowerCase().includes(status.toLowerCase());
+        const locationMatch = !location || item.location.toLowerCase().includes(location.toLowerCase());
+        return queryMatch && dateInMatch && dateOutMatch && statusMatch && locationMatch;
       });
     };
 
@@ -1952,16 +1976,24 @@ document.addEventListener('DOMContentLoaded', () => {
     activityPrintButton?.addEventListener('click', printReport);
 
     activitySearchInput?.addEventListener('input', refreshActivity);
-    activityMonthSelect?.addEventListener('change', refreshActivity);
+    activityDateInInput?.addEventListener('input', refreshActivity);
+    activityDateInInput?.addEventListener('change', refreshActivity);
+    activityDateOutInput?.addEventListener('input', refreshActivity);
+    activityDateOutInput?.addEventListener('change', refreshActivity);
+    activityStatusSelect?.addEventListener('input', refreshActivity);
     activityStatusSelect?.addEventListener('change', refreshActivity);
+    activityLocationSelect?.addEventListener('input', refreshActivity);
     activityLocationSelect?.addEventListener('change', refreshActivity);
 
     activityClearFilters?.addEventListener('click', () => {
       if (activitySearchInput) {
         activitySearchInput.value = '';
       }
-      if (activityMonthSelect) {
-        activityMonthSelect.value = '';
+      if (activityDateInInput) {
+        activityDateInInput.value = '';
+      }
+      if (activityDateOutInput) {
+        activityDateOutInput.value = '';
       }
       if (activityStatusSelect) {
         activityStatusSelect.value = '';
@@ -2021,8 +2053,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const filteredData = inventoryData.filter((item) => {
         const queryMatch = !query || [item.client, item.hawb, item.mawb].some((field) => field.toLowerCase().includes(query));
-        const locationMatch = !location || item.location.toLowerCase() === location.toLowerCase();
-        const transactionMatch = !transactionType || item.transactionType.toLowerCase() === transactionType.toLowerCase();
+        const locationMatch = !location || item.location.toLowerCase().includes(location.toLowerCase());
+        const transactionMatch = !transactionType || item.transactionType.toLowerCase().includes(transactionType.toLowerCase());
         return queryMatch && locationMatch && transactionMatch;
       });
 
@@ -2078,7 +2110,9 @@ document.addEventListener('DOMContentLoaded', () => {
     refreshInventory = () => renderInventoryPage(1);
 
     inventorySearchInput?.addEventListener('input', refreshInventory);
+    inventoryLocationSelect?.addEventListener('input', refreshInventory);
     inventoryLocationSelect?.addEventListener('change', refreshInventory);
+    inventoryTransactionSelect?.addEventListener('input', refreshInventory);
     inventoryTransactionSelect?.addEventListener('change', refreshInventory);
     inventorySortSelect?.addEventListener('change', refreshInventory);
 

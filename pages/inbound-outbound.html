@@ -294,12 +294,33 @@
 
   <div id="scanModal" class="scan-modal" style="display:none">
     <div class="scan-inner">
+      <div class="scan-header">
+        <div class="scan-title">Scan QR Code or Barcode</div>
+        <div class="scan-subtitle">Align the code inside the frame. Scanning will happen automatically.</div>
+      </div>
       <div class="scan-camera">
         <video id="cameraPreview" autoplay muted playsinline></video>
-        <div class="camera-fallback"><i class="bi bi-camera"></i> Camera preview will appear here</div>
-        <div class="scan-overlay"><span>Align QR / barcode inside the frame</span></div>
+        <div class="camera-fallback">Camera preview will appear here</div>
+        <div class="scan-overlay">
+          <div class="scan-mask scan-mask-top"></div>
+          <div class="scan-mask scan-mask-left"></div>
+          <div class="scan-mask scan-mask-right"></div>
+          <div class="scan-mask scan-mask-bottom"></div>
+          <div class="scan-window">
+            <span class="scan-corner top-left"></span>
+            <span class="scan-corner top-right"></span>
+            <span class="scan-corner bottom-left"></span>
+            <span class="scan-corner bottom-right"></span>
+            <span class="scan-line"></span>
+          </div>
+        </div>
       </div>
-      <div class="scan-actions" style="margin-top:12px;text-align:right"><button class="scan-close btn">Cancel</button></div>
+      <div class="scan-instructions">
+        <p><strong>Scanning...</strong></p>
+      </div>
+      <div class="scan-actions">
+        <button class="scan-close btn" type="button">Cancel</button>
+      </div>
     </div>
   </div>
 
