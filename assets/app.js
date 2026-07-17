@@ -1038,8 +1038,44 @@ const getInventoryData = () => aggregateShipmentsByReference(getStoredShipments(
 const getStoredShipments = () => {
   try {
     const storedValue = localStorage.getItem(STORAGE_KEY);
-    const parsed = storedValue ? JSON.parse(storedValue) : [];
+    let parsed = storedValue ? JSON.parse(storedValue) : [];
     if (Array.isArray(parsed)) {
+      // Migration: populate release fields for old outbound entries
+      let needsSave = false;
+      parsed = parsed.map((shipment) => {
+        // Inline entry type detection (to avoid calling getShipmentEntryType before it's defined)
+        const entryType = shipment.entryType || (shipment.releaseQty || shipment.releaseDate || shipment.releasePlate || shipment.releaseDriver ? 'outbound' : 'inbound');
+        
+        if (entryType === 'outbound') {
+          if (!shipment.releaseDate && shipment.date) {
+            shipment.releaseDate = shipment.date;
+            needsSave = true;
+          }
+          if (!shipment.releaseTime && shipment.time) {
+            shipment.releaseTime = shipment.time;
+            needsSave = true;
+          }
+          if (!shipment.releasePlate && shipment.plateNo) {
+            shipment.releasePlate = shipment.plateNo;
+            needsSave = true;
+          }
+          if (!shipment.releaseDriver && shipment.driver) {
+            shipment.releaseDriver = shipment.driver;
+            needsSave = true;
+          }
+        }
+        return shipment;
+      });
+      
+      // Save migrated data back to localStorage
+      if (needsSave) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        } catch (error) {
+          console.warn('Unable to save migrated shipment data', error);
+        }
+      }
+      
       return parsed;
     }
   } catch (error) {
@@ -1149,6 +1185,21 @@ const getShipmentEntryType = (shipment) => {
   return hasOutboundSignals ? 'outbound' : 'inbound';
 };
 
+const resolveCargoHandling = (conditionIn, conditionOut) => {
+  const inbound = String(conditionIn || '').trim();
+  const outbound = String(conditionOut || '').trim();
+
+  if (!inbound) {
+    return '';
+  }
+
+  if (!outbound) {
+    return '';
+  }
+
+  return inbound.toUpperCase() === outbound.toUpperCase() ? 'GOOD' : 'FOR CHECKING';
+};
+
 const aggregateShipmentsByReference = (shipments) => {
   const groupedEntries = new Map();
 
@@ -1171,8 +1222,12 @@ const aggregateShipmentsByReference = (shipments) => {
         trucker: '',
         driver: '',
         cargoCondition: '',
-        location: '',
+        cargoConditionIn: '',
+        cargoConditionOut: '',
         cargoHandling: '',
+        cargoConditionInSavedAt: 0,
+        cargoConditionOutSavedAt: 0,
+        location: '',
         status: 'WAITING FOR CONFIRMATION',
         partialFull: '',
         quantity: '',
@@ -1231,13 +1286,31 @@ const aggregateShipmentsByReference = (shipments) => {
       if (shipment.date && (!groupedShipment.dateIn || shipment.date > groupedShipment.dateIn)) {
         groupedShipment.dateIn = shipment.date;
       }
+
+      const inboundCondition = String(shipment.cargoCondition || '').trim();
+      if (inboundCondition && (!groupedShipment.cargoConditionIn || savedAt >= (groupedShipment.cargoConditionInSavedAt || 0))) {
+        groupedShipment.cargoConditionIn = inboundCondition;
+        groupedShipment.cargoConditionInSavedAt = savedAt;
+      }
     } else if (entryType === 'outbound') {
       groupedShipment.qtyOutValue += parseQuantityNumber(shipment.qtyOut || shipment.releaseQty || shipment.quantity || '');
       if (shipment.date && (!groupedShipment.dateOut || shipment.date > groupedShipment.dateOut)) {
         groupedShipment.dateOut = shipment.date;
       }
+      // Always preserve release information from outbound entries
+      groupedShipment.releaseDate = shipment.releaseDate || groupedShipment.releaseDate;
+      groupedShipment.releaseTime = shipment.releaseTime || groupedShipment.releaseTime;
+      groupedShipment.releasePlate = shipment.releasePlate || groupedShipment.releasePlate;
+      groupedShipment.releaseDriver = shipment.releaseDriver || groupedShipment.releaseDriver;
+
+      const outboundCondition = String(shipment.cargoCondition || '').trim();
+      if (outboundCondition && (!groupedShipment.cargoConditionOut || savedAt >= (groupedShipment.cargoConditionOutSavedAt || 0))) {
+        groupedShipment.cargoConditionOut = outboundCondition;
+        groupedShipment.cargoConditionOutSavedAt = savedAt;
+      }
     }
 
+    groupedShipment.cargoHandling = resolveCargoHandling(groupedShipment.cargoConditionIn, groupedShipment.cargoConditionOut);
     groupedShipment.remainingValue = groupedShipment.qtyInValue - groupedShipment.qtyOutValue;
   });
 
@@ -1356,7 +1429,7 @@ const normalizeShipmentForInventory = (shipment) => {
     driver: shipment.driver || '',
     cargoCondition: shipment.cargoCondition || '',
     location: shipment.location || '',
-    cargoHandling: shipment.cargoHandling || '',
+    cargoHandling: shipment.cargoHandling || resolveCargoHandling(shipment.cargoConditionIn, shipment.cargoConditionOut),
     status,
     partialFull: shipment.partialFull || '',
     quantity: quantityText,
@@ -2074,7 +2147,13 @@ document.addEventListener('DOMContentLoaded', () => {
       drawerDriver.textContent = item.driver;
       drawerCargoCondition.textContent = item.cargoCondition;
       drawerLocation.textContent = item.location;
-      drawerCargoHandling.textContent = item.cargoHandling;
+      drawerCargoHandling.textContent = item.cargoHandling || '';
+      drawerCargoHandling.classList.remove('cargo-handling-good', 'cargo-handling-checking');
+      if (item.cargoHandling === 'GOOD') {
+        drawerCargoHandling.classList.add('cargo-handling-good');
+      } else if (item.cargoHandling === 'FOR CHECKING') {
+        drawerCargoHandling.classList.add('cargo-handling-checking');
+      }
       drawerStatus.textContent = item.status;
       drawerPartialFull.textContent = item.partialFull;
       drawerQty.textContent = item.quantity;
@@ -2495,7 +2574,7 @@ const startQrScanner = async (modal, context) => {
   }
 }
 
-document.addEventListener('click', async (e)=>{
+document.addEventListener('click', (e)=>{
   const suggestionButton = e.target.closest('.plate-suggestion-item');
   if (suggestionButton) {
     e.preventDefault();
@@ -2527,6 +2606,7 @@ document.addEventListener('click', async (e)=>{
     clearShipmentForm(form);
     showShipmentNotice('Shipment successfully received.');
     renderDashboardData();
+    return;
   }
   const scanTrigger = e.target.closest('.scan-btn, .inline-scan-btn')
   if(scanTrigger){
@@ -2539,8 +2619,9 @@ document.addEventListener('click', async (e)=>{
       modal.classList.toggle('inbound', !isOutbound)
       modal.style.display = 'flex'
       activeScanContext = scanTrigger.closest('.tab-content') || document.querySelector('.tab-content.active')
-      await startQrScanner(modal, activeScanContext)
+      startQrScanner(modal, activeScanContext)
     }
+    return;
   }
   if(e.target.matches('.scan-close')){
     const modal = e.target.closest('.scan-modal')
@@ -2562,10 +2643,12 @@ document.addEventListener('click', async (e)=>{
       list.appendChild(row)
     }
   }
-  if(e.target.matches('.btn-delete')){
-    e.preventDefault()
-    const row = e.target.closest('.qty-row')
-    if(row) row.remove()
+  const deleteButton = e.target.closest('.btn-delete');
+  if(deleteButton){
+    e.preventDefault();
+    const row = deleteButton.closest('.qty-row');
+    if(row) row.remove();
+    return;
   }
   if(e.target.matches('.remove-qty')){
     const row = e.target.closest('.qty-row')
