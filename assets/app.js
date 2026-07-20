@@ -1698,6 +1698,18 @@ const renderDashboardData = () => {
 document.addEventListener('DOMContentLoaded', () => {
   if (!guardPageAccess()) return;
 
+  const pendingLiveSearchSelection = (() => {
+    try {
+      const storedValue = sessionStorage.getItem('warehouseLiveSearchSelection');
+      if (!storedValue) return null;
+      const parsed = JSON.parse(storedValue);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch (error) {
+      console.warn('Unable to read live search selection.', error);
+      return null;
+    }
+  })();
+
   const revealShell = () => {
     requestAnimationFrame(() => {
       document.body.classList.add('app-ready');
@@ -2706,7 +2718,141 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   
   setupActionButtonTooltips();
-  
+
+  const setupGlobalSearchSuggestions = () => {
+    const searchContainers = Array.from(document.querySelectorAll('.topbar .search-container'));
+    if (!searchContainers.length) return;
+
+    const escapeHtml = (value) => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const escapeAttribute = (value) => escapeHtml(value).replace(/`/g, '&#96;');
+
+    const buildSearchResults = (query) => {
+      const normalizedQuery = String(query || '').trim().toLowerCase();
+      if (!normalizedQuery) return [];
+
+      const inventoryItems = getInventoryData();
+      const activityItems = getActivityData();
+      const results = [];
+
+      const addResult = (source, item, title, subtitle, value) => {
+        const haystack = `${title} ${subtitle} ${value}`.toLowerCase();
+        if (!haystack.includes(normalizedQuery)) return;
+
+        results.push({
+          source,
+          title,
+          subtitle,
+          value
+        });
+      };
+
+      inventoryItems.forEach((item) => {
+        const client = String(item.client || '').trim();
+        const hawb = String(item.hawb || '').trim();
+        const mawb = String(item.mawb || '').trim();
+        const searchableText = `${client} ${hawb} ${mawb}`.trim();
+
+        if (!searchableText.toLowerCase().includes(normalizedQuery)) return;
+
+        addResult(
+          'Inventory',
+          item,
+          client || 'Unknown Client',
+          [hawb, mawb].filter(Boolean).join(' • '),
+          hawb || ''
+        );
+      });
+
+      activityItems.forEach((item) => {
+        const client = String(item.client || '').trim();
+        const hawb = String(item.hawb || '').trim();
+        const mawb = String(item.mawb || '').trim();
+        const searchableText = `${client} ${hawb} ${mawb}`.trim();
+
+        if (!searchableText.toLowerCase().includes(normalizedQuery)) return;
+
+        addResult(
+          'Activity Report',
+          item,
+          client || 'Unknown Client',
+          [hawb, mawb].filter(Boolean).join(' • '),
+          hawb || ''
+        );
+      });
+
+      return results.slice(0, 8);
+    };
+
+    searchContainers.forEach((container) => {
+      const input = container.querySelector('.search-input');
+      if (!input) return;
+
+      let panel = container.querySelector('.search-results-panel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.className = 'search-results-panel';
+        container.appendChild(panel);
+      }
+
+      const renderResults = () => {
+        const query = input.value.trim();
+        const matches = buildSearchResults(query);
+
+        if (!query || !matches.length) {
+          panel.innerHTML = '<div class="search-result-empty">No matching shipments found.</div>';
+          panel.classList.remove('open');
+          return;
+        }
+
+        panel.innerHTML = matches.map((result) => `
+          <button type="button" class="search-result-item" data-value="${escapeAttribute(result.value)}" data-source="${escapeAttribute(result.source)}">
+            <span class="search-result-title">${escapeHtml(result.title)}</span>
+            <span class="search-result-meta">${escapeHtml(result.subtitle)}</span>
+            <span class="search-result-source">${escapeHtml(result.source)}</span>
+          </button>
+        `).join('');
+        panel.classList.add('open');
+      };
+
+      input.addEventListener('input', renderResults);
+      input.addEventListener('focus', renderResults);
+      input.addEventListener('blur', () => {
+        window.setTimeout(() => panel.classList.remove('open'), 140);
+      });
+
+      panel.addEventListener('mousedown', (event) => {
+        const resultButton = event.target.closest('.search-result-item');
+        if (!resultButton) return;
+        event.preventDefault();
+
+        const selectedValue = resultButton.dataset.value || '';
+        const selectedSource = resultButton.dataset.source || '';
+        if (selectedValue) {
+          input.value = selectedValue;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        panel.classList.remove('open');
+
+        const targetPage = selectedSource === 'Activity Report' ? 'activity-report.html' : 'inventory.html';
+        const targetPageKey = selectedSource === 'Activity Report' ? 'activity' : 'inventory';
+
+        if (selectedValue) {
+          sessionStorage.setItem('warehouseLiveSearchSelection', JSON.stringify({
+            targetPage: targetPageKey,
+            value: selectedValue
+          }));
+        }
+
+        if (selectedSource === 'Activity Report' || selectedSource === 'Inventory') {
+          window.location.assign(targetPage);
+        }
+      });
+    });
+  };
+
+  setupGlobalSearchSuggestions();
+
   window.addEventListener('load', () => {
     attachProfileModalHandlers();
     attachUserManagementHandlers();
@@ -3107,6 +3253,12 @@ document.addEventListener('DOMContentLoaded', () => {
       refreshActivity();
     });
 
+    if (pendingLiveSearchSelection?.targetPage === 'activity' && activitySearchInput) {
+      activitySearchInput.value = pendingLiveSearchSelection.value || '';
+      sessionStorage.removeItem('warehouseLiveSearchSelection');
+      refreshActivity();
+    }
+
     activityPageSizeButtons.forEach((button) => {
       button.addEventListener('click', () => {
         activityPageSizeButtons.forEach((item) => item.classList.remove('active'));
@@ -3226,6 +3378,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderInventoryPage(1);
       });
     });
+
+    if (pendingLiveSearchSelection?.targetPage === 'inventory' && inventorySearchInput) {
+      inventorySearchInput.value = pendingLiveSearchSelection.value || '';
+      sessionStorage.removeItem('warehouseLiveSearchSelection');
+      refreshInventory();
+    }
 
     inventoryPagination.addEventListener('click', (event) => {
       const targetButton = event.target.closest('.page-box');

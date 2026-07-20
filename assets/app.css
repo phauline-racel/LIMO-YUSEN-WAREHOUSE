@@ -33,8 +33,16 @@ body.app-ready .app-shell{opacity:1;transform:translateY(0)}
 .main-column{flex:1;display:flex;flex-direction:column}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--surface);border-bottom:1px solid rgba(0,0,0,0.06);gap:8px}
 .topbar-brand{font-size:1rem;font-weight:900;color:var(--primary);letter-spacing:0.01em;white-space:nowrap}
-.search-container{display:flex;align-items:center;gap:6px;background:#f5f7fa;padding:5px 10px;border-radius:10px;flex:1;max-width:320px;border:1px solid rgba(0,0,0,0.04)}
+.search-container{display:flex;align-items:center;gap:6px;background:#f5f7fa;padding:5px 10px;border-radius:10px;flex:1;max-width:320px;border:1px solid rgba(0,0,0,0.04);position:relative}
 .topbar .search-container{margin-left:auto}
+.search-results-panel{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--surface);border:1px solid rgba(6,24,61,0.08);border-radius:16px;box-shadow:0 20px 48px rgba(6,24,61,0.16);max-height:min(320px,50vh);overflow-y:auto;display:none;z-index:4200;padding:8px 8px 10px}
+.search-results-panel.open{display:block}
+.search-result-item{display:flex;flex-direction:column;gap:2px;width:100%;padding:10px 12px;border:none;background:transparent;text-align:left;border-radius:12px;cursor:pointer;color:var(--primary);transition:background 0.2s ease}
+.search-result-item:hover{background:#f8f9fb}
+.search-result-title{font-size:0.8rem;font-weight:700;color:var(--primary)}
+.search-result-meta{font-size:0.72rem;color:var(--muted)}
+.search-result-source{display:inline-flex;align-items:center;gap:4px;font-size:0.68rem;color:#2563eb;font-weight:600}
+.search-result-empty{padding:10px 12px;color:var(--muted);font-size:0.78rem;text-align:center}
 .search-icon{font-size:0.95rem}
 .search-input{border:none;background:transparent;outline:none;width:100%;font-size:0.78rem}
 .search-input::placeholder{color:var(--muted)}
@@ -390,17 +398,42 @@ table a:hover{text-decoration:underline}
   .recent-header{flex-direction:column;align-items:flex-start}
 }
 
+@media (max-width:768px){
+  .app-shell{flex-direction:column;height:100vh;overflow:hidden;}
+  .sidebar{position:fixed;top:auto;bottom:0;left:0;right:0;width:100%;height:auto;max-height:120px;padding:10px 12px 12px;background:linear-gradient(135deg,var(--primary),#0d2d5c);box-shadow:0 -12px 34px rgba(6,24,61,0.18);border-top-left-radius:18px;border-top-right-radius:18px;z-index:50;}
+  .sidebar-header{display:none}
+  .sidebar nav{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;}
+  .sidebar nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 8px;border-radius:14px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.92);}
+  .sidebar nav a:hover{background:rgba(255,255,255,0.14)}
+  .sidebar nav a span.icon{font-size:1.2rem;min-width:auto}
+  .sidebar nav a span.text{display:block;font-size:0.72rem;font-weight:700;}
+  .sidebar nav a .text{white-space:nowrap;}
+  .sidebar:not(.collapsed), .sidebar.collapsed{width:100%;min-width:100%;padding:10px 12px 12px;}
+  .sidebar-toggle{display:none}
+  .main-column{min-width:0;padding-bottom:132px;height:100%;overflow:auto;}
+  .dashboard-page .card-row{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .topbar{position:sticky;top:0;z-index:60;flex-wrap:nowrap;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--surface);}
+  .search-container{display:none}
+  .top-actions{flex-shrink:0;gap:10px}
+  .user-profile-container{display:none}
+}
+
 @media (max-width:560px){
-  .app-shell{flex-direction:row}
-  .sidebar{width:84px;min-width:84px;padding:12px 10px}
-  .sidebar:not(.collapsed){width:240px;min-width:240px}
-  .sidebar:not(.collapsed) .brand{display:block}
-  .sidebar:not(.collapsed) nav a{justify-content:flex-start}
-  .sidebar:not(.collapsed) nav a span.text{display:inline}
-  .sidebar.collapsed .brand{display:none}
-  .sidebar.collapsed nav a{justify-content:center}
-  .sidebar.collapsed nav a span.text{display:none}
-  .sidebar.collapsed .toggle-icon{transform:rotate(180deg)}
+  .app-shell{flex-direction:column;height:100vh;overflow:hidden;}
+  .sidebar{position:fixed;top:auto;bottom:0;left:0;right:0;width:100%;height:auto;max-height:120px;padding:10px 12px 12px;background:linear-gradient(135deg,var(--primary),#0d2d5c);box-shadow:0 -12px 34px rgba(6,24,61,0.18);border-top-left-radius:18px;border-top-right-radius:18px;z-index:50;}
+  .sidebar-header{display:none}
+  .sidebar nav{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:6px;}
+  .sidebar nav a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 8px;border-radius:14px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.92);}
+  .sidebar nav a:hover{background:rgba(255,255,255,0.14)}
+  .sidebar nav a span.icon{font-size:1.2rem;min-width:auto}
+  .sidebar nav a span.text{display:block;font-size:0.72rem;font-weight:700;white-space:nowrap;}
+  .sidebar:not(.collapsed), .sidebar.collapsed{width:100%;min-width:100%;padding:10px 12px 12px;}
+  .sidebar-toggle{display:none}
+  .main-column{min-width:0;padding-bottom:132px;height:100%;overflow:auto;}
+  .topbar{position:sticky;top:0;z-index:60;flex-wrap:nowrap;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--surface);}
+  .search-container{display:none}
+  .top-actions{flex-shrink:0;gap:10px}
+  .user-profile-container{display:none}
   .topbar{padding:10px 12px;gap:8px}
   .search-container{padding:8px 10px}
   .top-actions{gap:10px}
@@ -424,7 +457,10 @@ table a:hover{text-decoration:underline}
   .card-value{font-size:1.4rem}
   .card-title{font-size:0.8rem}
   .card-subtitle{font-size:0.7rem}
-  .recent-actions{flex-direction:column;align-items:stretch;width:100%}
+  .dashboard-page .recent-actions{flex-direction:row;align-items:center;justify-content:space-between;flex-wrap:nowrap;width:100%;}
+  .dashboard-page .search-compact{flex:1 1 auto;min-width:0;max-width:calc(100% - 110px);}
+  .dashboard-page .search-compact input{width:100%;}
+  .dashboard-page .recent-actions .btn.primary-btn{white-space:nowrap;flex-shrink:0;}
   .search-compact input{width:100%}
   .table{overflow-x:auto}
   table{font-size:0.8rem;min-width:unset}
