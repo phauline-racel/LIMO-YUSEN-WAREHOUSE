@@ -2107,6 +2107,102 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  let userManagementSortState = { key: 'employeeId', direction: 'asc' };
+
+  const showUserManagementNotice = (message) => {
+    if (typeof showShipmentNotice === 'function') {
+      showShipmentNotice(message);
+      return;
+    }
+    window.alert(message);
+  };
+
+  const showUserManagementConfirmModal = ({ title, message, confirmLabel, confirmClass = 'danger', onConfirm }) => {
+    const existingOverlay = document.querySelector('.user-management-confirm-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'user-management-confirm-overlay';
+    overlay.innerHTML = `
+      <div class="user-management-confirm-card">
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(message)}</p>
+        <div class="user-management-confirm-actions">
+          <button type="button" class="profile-modal-btn cancel-btn">Cancel</button>
+          <button type="button" class="profile-modal-btn ${confirmClass === 'primary' ? 'primary' : 'danger'}">${escapeHtml(confirmLabel)}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const closeModal = () => overlay.remove();
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay || event.target.classList.contains('cancel-btn')) {
+        closeModal();
+      }
+    });
+
+    const confirmButton = overlay.querySelector('.user-management-confirm-actions .profile-modal-btn:last-child');
+    confirmButton?.addEventListener('click', () => {
+      closeModal();
+      onConfirm?.();
+    });
+
+    document.addEventListener('keydown', function handleModalEscape(event) {
+      if (event.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleModalEscape);
+      }
+    });
+  };
+
+  const formatUserDate = (value) => {
+    if (!value) return 'Never';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Never';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const formatUserLastLogin = (value) => {
+    if (!value) return 'Never';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Never';
+
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    const isToday = date.getFullYear() === today.getFullYear() && date.getMonth() === today.getMonth() && date.getDate() === today.getDate();
+    const isYesterday = date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === yesterday.getDate();
+
+    if (isToday) {
+      return `Today, ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+    }
+
+    if (isYesterday) {
+      return 'Yesterday';
+    }
+
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const getUserManagementSortValue = (user, key) => {
+    switch (key) {
+      case 'name':
+        return String(user.name || '').toLowerCase();
+      case 'userId':
+        return String(user.userId || '').toLowerCase();
+      case 'role':
+        return String(user.role || '').toLowerCase();
+      case 'status':
+        return String(user.status || '').toLowerCase();
+      case 'lastLogin':
+        return user.lastLogin ? new Date(user.lastLogin).getTime() : 0;
+      case 'employeeId':
+      default:
+        return String(user.employeeId || '').toLowerCase();
+    }
+  };
+
   const renderUserManagementTable = () => {
     const tableBody = document.getElementById('userManagementTableBody');
     if (!tableBody) return;
@@ -2114,10 +2210,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const users = AuthService.getUserManagementList?.() || [];
     const query = String(document.getElementById('userSearchInput')?.value || '').toLowerCase();
     const roleFilter = String(document.getElementById('userRoleFilter')?.value || 'all');
-    const filteredUsers = users.filter((user) => {
+    let filteredUsers = users.filter((user) => {
       const matchesQuery = !query || [user.name, user.userId, user.employeeId].some((field) => String(field || '').toLowerCase().includes(query));
       const matchesRole = roleFilter === 'all' || String(user.role || '').toLowerCase() === roleFilter;
       return matchesQuery && matchesRole;
+    });
+
+    filteredUsers = filteredUsers.sort((left, right) => {
+      const leftValue = getUserManagementSortValue(left, userManagementSortState.key);
+      const rightValue = getUserManagementSortValue(right, userManagementSortState.key);
+      if (leftValue < rightValue) return userManagementSortState.direction === 'asc' ? -1 : 1;
+      if (leftValue > rightValue) return userManagementSortState.direction === 'asc' ? 1 : -1;
+      return 0;
     });
 
     const getRoleBadge = (role) => {
@@ -2134,93 +2238,156 @@ document.addEventListener('DOMContentLoaded', () => {
       return `<span class="badge-status ${normalizedStatus}">${statusText}</span>`;
     };
 
-    tableBody.innerHTML = filteredUsers.map((user) => `
-      <tr>
-        <td>${escapeHtml(user.employeeId || '')}</td>
-        <td>${escapeHtml(user.name || '')}</td>
-        <td>${escapeHtml(user.userId || '')}</td>
-        <td>${getRoleBadge(user.role)}</td>
-        <td>${getStatusBadge(user.status)}</td>
-        <td>${escapeHtml(user.lastLogin || 'Never')}</td>
-        <td>
-          <div class="action-cell">
-            <button type="button" class="action-btn view" data-action="view" data-user-id="${escapeHtml(user.userId || '')}" title="View" aria-label="View user"><i class="bi bi-eye-fill"></i></button>
-            <button type="button" class="action-btn edit" data-action="edit" data-user-id="${escapeHtml(user.userId || '')}" title="Edit" aria-label="Edit user"><i class="bi bi-pencil-fill"></i></button>
-            <button type="button" class="action-btn reset" data-action="reset" data-user-id="${escapeHtml(user.userId || '')}" title="Reset Password" aria-label="Reset password"><i class="bi bi-key-fill"></i></button>
-            <button type="button" class="action-btn toggle" data-action="toggle" data-user-id="${escapeHtml(user.userId || '')}" title="Toggle Status" aria-label="Toggle status"><i class="bi bi-toggle-on"></i></button>
-            <button type="button" class="action-btn danger" data-action="delete" data-user-id="${escapeHtml(user.userId || '')}" title="Delete" aria-label="Delete user"><i class="bi bi-trash-fill"></i></button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
+    tableBody.innerHTML = filteredUsers.map((user) => {
+      const normalizedStatus = String(user.status || 'active').toLowerCase();
+      const toggleTitle = normalizedStatus === 'active' ? 'Deactivate' : 'Activate';
+      const toggleIcon = normalizedStatus === 'active' ? 'bi-toggle-on' : 'bi-toggle-off';
+      const currentUserId = AuthService.getCurrentUser?.()?.userId || '';
+      const isCurrentUser = user.userId === currentUserId;
+      return `
+        <tr>
+          <td>${escapeHtml(user.employeeId || '')}</td>
+          <td>${escapeHtml(user.name || '')}</td>
+          <td>${escapeHtml(user.userId || '')}</td>
+          <td>${getRoleBadge(user.role)}</td>
+          <td>${getStatusBadge(user.status)}</td>
+          <td>${escapeHtml(formatUserLastLogin(user.lastLogin))}</td>
+          <td>
+            <div class="action-cell">
+              <button type="button" class="action-btn view" data-action="view" data-user-id="${escapeHtml(user.userId || '')}" title="View" aria-label="View user"><i class="bi bi-eye-fill"></i></button>
+              <button type="button" class="action-btn edit" data-action="edit" data-user-id="${escapeHtml(user.userId || '')}" title="Edit" aria-label="Edit user"><i class="bi bi-pencil-fill"></i></button>
+              <button type="button" class="action-btn reset" data-action="reset" data-user-id="${escapeHtml(user.userId || '')}" title="Reset Password" aria-label="Reset password"><i class="bi bi-key-fill"></i></button>
+              <button type="button" class="action-btn toggle" data-action="toggle" data-user-id="${escapeHtml(user.userId || '')}" title="${toggleTitle}" aria-label="${toggleTitle} user"><i class="bi ${toggleIcon}"></i></button>
+              <button type="button" class="action-btn danger" data-action="delete" data-user-id="${escapeHtml(user.userId || '')}" title="Delete" aria-label="Delete user" ${isCurrentUser ? 'disabled' : ''}><i class="bi bi-trash-fill"></i></button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   };
 
   const openUserModal = (mode, user = null) => {
-    // Remove any existing modal overlays first
     const existingOverlay = document.querySelector('.user-management-modal-overlay');
     if (existingOverlay) existingOverlay.remove();
-    
+
+    const isViewOnly = mode === 'view';
+    const isAddMode = mode === 'add';
     const overlay = document.createElement('div');
     overlay.className = 'user-management-modal-overlay';
     overlay.innerHTML = `
       <div class="user-management-modal-card">
-        <h3>${mode === 'edit' ? 'Edit User' : 'Add User'}</h3>
+        <h3>${mode === 'edit' ? 'Edit User' : mode === 'view' ? 'View User' : 'Add User'}</h3>
         <form id="userManagementForm">
           <div class="user-management-modal-grid">
             <div class="form-field">
               <label for="userEmployeeId">Employee ID</label>
-              <input id="userEmployeeId" name="employeeId" value="${escapeHtml(user?.employeeId || '')}" required />
+              <input id="userEmployeeId" name="employeeId" value="${escapeHtml(user?.employeeId || '')}" ${isViewOnly || mode === 'edit' ? 'readonly tabindex="-1" onfocus="this.blur()"' : 'required'} />
             </div>
             <div class="form-field">
               <label for="userFullName">Full Name</label>
-              <input id="userFullName" name="name" value="${escapeHtml(user?.name || '')}" required />
+              <input id="userFullName" name="name" value="${escapeHtml(user?.name || '')}" ${isViewOnly ? 'readonly tabindex="-1" onfocus="this.blur()"' : 'required'} />
             </div>
           </div>
           <div class="user-management-modal-grid">
             <div class="form-field">
               <label for="userUsername">Username</label>
-              <input id="userUsername" name="userId" value="${escapeHtml(user?.userId || '')}" required />
+              <input id="userUsername" name="userId" value="${escapeHtml(user?.userId || '')}" ${isViewOnly ? 'readonly tabindex="-1" onfocus="this.blur()"' : 'required'} />
             </div>
-            <div class="form-field">
+            ${isAddMode ? `<div class="form-field">
               <label for="userPassword">Password</label>
-              <input id="userPassword" name="password" type="password" ${user ? '' : 'required'} />
-            </div>
+              <input id="userPassword" name="password" type="password" required />
+            </div>` : ''}
           </div>
           <div class="user-management-modal-grid">
             <div class="form-field">
               <label for="userRole">Role</label>
-              <select id="userRole" name="role">
+              <select id="userRole" name="role" ${isViewOnly ? 'disabled' : ''}>
                 <option value="employee" ${user?.role === 'admin' ? '' : 'selected'}>Employee</option>
                 <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Admin</option>
               </select>
             </div>
             <div class="form-field">
               <label for="userStatus">Status</label>
-              <select id="userStatus" name="status">
+              <select id="userStatus" name="status" ${isViewOnly ? 'disabled' : ''}>
                 <option value="active" ${user?.status === 'inactive' ? '' : 'selected'}>Active</option>
                 <option value="inactive" ${user?.status === 'inactive' ? 'selected' : ''}>Inactive</option>
               </select>
             </div>
           </div>
+          ${isAddMode ? `
+            <div class="user-management-modal-grid">
+              <div class="form-field">
+                <label for="userConfirmPassword">Confirm Password</label>
+                <input id="userConfirmPassword" name="confirmPassword" type="password" required />
+              </div>
+              <div class="form-field">
+                <label for="userLastLogin">Last Login</label>
+                <input id="userLastLogin" value="Never" readonly tabindex="-1" onfocus="this.blur()" />
+              </div>
+            </div>
+          ` : `
+            <div class="user-management-modal-grid">
+              <div class="form-field">
+                <label for="userLastLogin">Last Login</label>
+                <input id="userLastLogin" value="${escapeHtml(formatUserLastLogin(user?.lastLogin))}" readonly tabindex="-1" onfocus="this.blur()" />
+              </div>
+              <div class="form-field">
+                <label for="userCreatedAt">Account Created</label>
+                <input id="userCreatedAt" value="${escapeHtml(formatUserDate(user?.createdAt))}" readonly tabindex="-1" onfocus="this.blur()" />
+              </div>
+            </div>
+          `}
+          <div id="userManagementFormError" class="form-error" role="alert" aria-live="polite"></div>
           <div class="user-management-modal-actions">
-            <button type="button" class="profile-modal-btn cancel-btn">Cancel</button>
-            <button type="submit" class="profile-modal-btn primary">Save</button>
+            <button type="button" class="profile-modal-btn cancel-btn">${isViewOnly ? 'Close' : 'Cancel'}</button>
+            ${isViewOnly ? '' : '<button type="submit" class="profile-modal-btn primary">Save</button>'}
           </div>
         </form>
       </div>
     `;
     document.body.appendChild(overlay);
 
+    const form = overlay.querySelector('#userManagementForm');
+    const formError = overlay.querySelector('#userManagementFormError');
+
     overlay.querySelector('.cancel-btn').addEventListener('click', () => overlay.remove());
-    overlay.querySelector('#userManagementForm').addEventListener('submit', (event) => {
+    form.addEventListener('submit', (event) => {
       event.preventDefault();
-      const formData = new FormData(event.target);
+      if (formError) formError.textContent = '';
+
+      const formData = new FormData(form);
       const payload = Object.fromEntries(formData.entries());
+      const userPayload = {
+        employeeId: String(payload.employeeId || '').trim(),
+        name: String(payload.name || '').trim(),
+        userId: String(payload.userId || '').trim(),
+        role: String(payload.role || 'employee').toLowerCase(),
+        status: String(payload.status || 'active').toLowerCase(),
+        password: String(payload.password || '').trim(),
+        confirmPassword: String(payload.confirmPassword || '').trim()
+      };
+
       if (mode === 'edit' && user?.userId) {
-        AuthService.updateUser?.(user.userId, payload);
+        const result = AuthService.updateUser?.(user.userId, {
+          name: userPayload.name,
+          userId: userPayload.userId,
+          role: userPayload.role,
+          status: userPayload.status
+        });
+        if (!result?.success) {
+          if (formError) formError.textContent = result?.message || 'Unable to save user.';
+          return;
+        }
+        showUserManagementNotice(result.message || 'User updated successfully.');
       } else {
-        AuthService.createUser?.(payload);
+        const result = AuthService.createUser?.(userPayload);
+        if (!result?.success) {
+          if (formError) formError.textContent = result?.message || 'Unable to save user.';
+          return;
+        }
+        showUserManagementNotice(result.message || 'User added successfully.');
       }
+
       overlay.remove();
       renderUserManagementTable();
     });
@@ -2405,21 +2572,89 @@ document.addEventListener('DOMContentLoaded', () => {
       roleFilter.addEventListener('change', renderUserManagementTable);
     }
 
+    document.querySelectorAll('.user-table th').forEach((header, index) => {
+      const sortKeys = ['employeeId', 'name', 'userId', 'role', 'status', 'lastLogin'];
+      const sortKey = sortKeys[index];
+      if (!sortKey) return;
+      header.style.cursor = 'pointer';
+      header.addEventListener('click', () => {
+        if (userManagementSortState.key === sortKey) {
+          userManagementSortState.direction = userManagementSortState.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+          userManagementSortState.key = sortKey;
+          userManagementSortState.direction = 'asc';
+        }
+        renderUserManagementTable();
+      });
+    });
+
     document.addEventListener('click', (event) => {
       const button = event.target.closest('[data-action]');
       if (!button) return;
       const action = button.getAttribute('data-action');
       const userId = button.getAttribute('data-user-id');
-      if (action === 'delete') {
-        AuthService.deleteUser?.(userId);
-        renderUserManagementTable();
+      const users = AuthService.getUserManagementList?.() || [];
+      const selectedUser = users.find((entry) => entry.userId === userId);
+
+      if (action === 'view' && selectedUser) {
+        openUserModal('view', selectedUser);
+        return;
       }
-      if (action === 'edit') {
-        const users = AuthService.getUserManagementList?.() || [];
-        const selectedUser = users.find((entry) => entry.userId === userId);
-        if (selectedUser) {
-          openUserModal('edit', selectedUser);
-        }
+
+      if (action === 'edit' && selectedUser) {
+        openUserModal('edit', selectedUser);
+        return;
+      }
+
+      if (action === 'reset' && selectedUser) {
+        showUserManagementConfirmModal({
+          title: 'Reset Password',
+          message: 'Are you sure you want to reset this user\'s password?',
+          confirmLabel: 'Reset Password',
+          confirmClass: 'primary',
+          onConfirm: () => {
+            const result = AuthService.resetPassword?.(userId);
+            if (result?.success) {
+              showUserManagementNotice(result.message || 'Password reset successfully.');
+              renderUserManagementTable();
+            }
+          }
+        });
+        return;
+      }
+
+      if (action === 'toggle' && selectedUser) {
+        showUserManagementConfirmModal({
+          title: 'Change Status',
+          message: `Are you sure you want to ${String(selectedUser.status || 'active').toLowerCase() === 'active' ? 'deactivate' : 'activate'} this account?`,
+          confirmLabel: 'Confirm',
+          confirmClass: 'primary',
+          onConfirm: () => {
+            const result = AuthService.toggleUserStatus?.(userId);
+            if (result?.success) {
+              showUserManagementNotice(result.message || 'User status updated.');
+              renderUserManagementTable();
+            }
+          }
+        });
+        return;
+      }
+
+      if (action === 'delete' && selectedUser) {
+        showUserManagementConfirmModal({
+          title: 'Delete User',
+          message: 'Are you sure you want to permanently delete this account?',
+          confirmLabel: 'Delete',
+          confirmClass: 'danger',
+          onConfirm: () => {
+            const result = AuthService.deleteUser?.(userId);
+            if (result?.success) {
+              showUserManagementNotice(result.message || 'User deleted successfully.');
+              renderUserManagementTable();
+            }
+          }
+        });
+        return;
       }
     });
   };

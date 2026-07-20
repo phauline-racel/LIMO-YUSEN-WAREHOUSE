@@ -448,17 +448,17 @@ table a:hover{text-decoration:underline}
 .btn-add-user:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(6,24,61,0.18)}
 .btn-add-user:active{transform:translateY(0);box-shadow:0 2px 8px rgba(6,24,61,0.12)}
 .btn-add-user i{font-size:1rem}
-.table-container{background:var(--surface);border-radius:12px;overflow:visible;box-shadow:0 1px 3px rgba(6,24,61,0.04);border:1px solid rgba(6,24,61,0.05);position:relative}
-.user-table{width:100%;border-collapse:collapse;border-spacing:0}
+.table-container{background:var(--surface);border-radius:12px;overflow:auto;box-shadow:0 1px 3px rgba(6,24,61,0.04);border:1px solid rgba(6,24,61,0.05);position:relative;max-width:100%}
+.user-table{width:100%;min-width:860px;border-collapse:collapse;border-spacing:0}
 .user-table thead{background:#f8f9fa;border-bottom:2px solid #e5e7eb;position:sticky;top:0;z-index:10}
-.user-table th{padding:14px 12px;text-align:center;font-weight:700;font-size:0.75rem;color:var(--primary);letter-spacing:0.5px;text-transform:uppercase}
-.user-table tbody tr{height:56px;border-bottom:1px solid #e5e7eb;transition:background-color 0.2s ease}
+.user-table th{padding:14px 12px;text-align:center;font-weight:700;font-size:0.7rem;color:var(--primary);letter-spacing:0.5px;text-transform:uppercase}
+.user-table tbody tr{height:48px;border-bottom:1px solid #e5e7eb;transition:background-color 0.2s ease}
 .user-table tbody tr:hover{background-color:#f8f9fa}
 .user-table tbody tr:nth-child(even){background-color:#fafbfc}
 .user-table tbody tr:nth-child(even):hover{background-color:#f3f5f8}
-.user-table td{padding:12px;text-align:center;font-size:0.85rem;color:#14233a;line-height:1.5;vertical-align:middle}
+.user-table td{padding:12px;text-align:center;font-size:0.65rem;color:#14233a;line-height:1.5;vertical-align:middle}
 .user-table td:nth-child(2){text-align:left}
-.badge-role,.badge-status{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.02em;white-space:nowrap}
+.badge-role,.badge-status{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.02em;white-space:nowrap}
 .badge-role{background:#06183d;color:#fff}
 .badge-role i{font-size:0.9rem}
 .badge-role.admin{background:#06183d}
@@ -492,6 +492,13 @@ table a:hover{text-decoration:underline}
 .user-management-modal-grid input,.user-management-modal-grid select{padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);background:#f8fafc;font-size:0.9rem;color:var(--text);font-family:inherit}
 .user-management-modal-grid input:focus,.user-management-modal-grid select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 2px rgba(6,24,61,0.08)}
 .user-management-modal-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;flex-wrap:wrap}
+.user-management-confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:2100;padding:20px}
+.user-management-confirm-card{width:min(420px,calc(100vw - 40px));background:#fff;border-radius:18px;padding:24px;box-shadow:0 24px 56px rgba(6,24,61,0.14);animation:modalSlideIn 0.3s ease-out}
+.user-management-confirm-card h3{margin:0 0 12px;font-size:1.1rem;color:var(--primary)}
+.user-management-confirm-card p{margin:0 0 20px;color:#475569;font-size:0.95rem;line-height:1.6}
+.user-management-confirm-actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.profile-modal-btn.danger{background:#cd2026;color:#fff;border-color:transparent}
+.profile-modal-btn.danger:hover{background:#b51e23}
 @keyframes modalSlideIn{from{opacity:0;transform:translateY(20px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 
 /* Responsive Design */
@@ -503,13 +510,14 @@ table a:hover{text-decoration:underline}
   .btn-add-user{width:100%;justify-content:center}
 }
 @media (max-width:768px){
-  .user-management-card{padding:16px}
-  .user-toolbar{gap:12px;padding:0}
-  .toolbar-left{gap:10px;flex-wrap:wrap}
+  .user-management-card{padding:14px}
+  .user-toolbar{gap:10px;padding:0}
+  .toolbar-left{gap:8px;flex-wrap:wrap}
   .search-box{flex:1 1 100%;min-width:unset;height:38px;font-size:0.85rem}
   .role-filter{width:100%;height:38px;min-width:unset}
   .btn-add-user{width:100%;height:38px;font-size:0.9rem}
-  .user-table{font-size:0.8rem;min-width:100%}
+  .table-container{border-radius:10px}
+  .user-table{font-size:0.8rem;min-width:860px}
   .user-table th,.user-table td{padding:10px 8px;font-size:0.75rem}
   .user-table tbody tr{height:48px}
   .action-cell{gap:4px}
@@ -523,8 +531,8 @@ table a:hover{text-decoration:underline}
   .search-box i{font-size:0.9rem}
   .role-filter{height:36px;min-width:unset;font-size:0.8rem}
   .btn-add-user{height:36px;font-size:0.8rem;gap:6px}
-  .table-container{border-radius:8px}
-  .user-table{font-size:0.7rem;min-width:900px}
+  .table-container{border-radius:8px;max-height:min(55vh,420px)}
+  .user-table{font-size:0.7rem;min-width:860px}
   .user-table th{padding:10px 6px}
   .user-table td{padding:8px 6px;font-size:0.7rem}
   .user-table tbody tr{height:44px}

@@ -65,10 +65,6 @@ const createdUser = AuthService.createUser({
   status: 'active'
 });
 assert.strictEqual(createdUser.success, true, 'creating a user should succeed');
-const createdAccount = AuthService.getAccounts().find((account) => account.userId === 'emp002');
-assert.ok(createdAccount, 'the created user should be stored');
-assert.strictEqual(createdAccount.role, 'employee', 'the created user should keep the requested role');
-
 const duplicateEmployeeId = AuthService.createUser({
   employeeId: 'EMP-002',
   name: 'Another User',
@@ -78,6 +74,39 @@ const duplicateEmployeeId = AuthService.createUser({
   status: 'active'
 });
 assert.strictEqual(duplicateEmployeeId.success, false, 'duplicate employee IDs should fail');
+const createdAccount = AuthService.getAccounts().find((account) => account.userId === 'emp002');
+assert.ok(createdAccount, 'the created user should be stored');
+assert.strictEqual(createdAccount.role, 'employee', 'the created user should keep the requested role');
+
+const loginAsEmp = AuthService.authenticateUser('emp002', 'Employee@456');
+assert.strictEqual(loginAsEmp.success, true, 'employee login should succeed');
+const loginStampedAccount = AuthService.getAccounts().find((account) => account.userId === 'emp002');
+assert.ok(loginStampedAccount.lastLogin, 'successful login should stamp a last-login timestamp');
+
+const loginAsAdmin = AuthService.authenticateUser('admin001', 'NewAdmin@123');
+assert.strictEqual(loginAsAdmin.success, true, 'admin login should succeed for management actions');
+
+const resetResult = AuthService.resetPassword('emp002');
+assert.strictEqual(resetResult.success, true, 'resetting a password should succeed');
+assert.strictEqual(AuthService.getAccounts().find((account) => account.userId === 'emp002').password, 'Password123', 'password reset should use the default password');
+
+const toggleResult = AuthService.toggleUserStatus('emp002');
+assert.strictEqual(toggleResult.success, true, 'toggling a user status should succeed');
+assert.strictEqual(AuthService.getAccounts().find((account) => account.userId === 'emp002').status, 'inactive', 'the account status should toggle to inactive');
+
+const updateResult = AuthService.updateUser('emp002', { name: 'Jane Smith', role: 'employee' });
+assert.strictEqual(updateResult.success, true, 'updating a user should succeed');
+assert.strictEqual(AuthService.getAccounts().find((account) => account.userId === 'emp002').name, 'Jane Smith', 'the updated profile should be persisted');
+
+const selfRoleChange = AuthService.updateUser('admin001', { role: 'employee' });
+assert.strictEqual(selfRoleChange.success, false, 'changing the current admin role to employee should be blocked');
+
+const deleteResult = AuthService.deleteUser('emp002');
+assert.strictEqual(deleteResult.success, true, 'deleting a user should succeed');
+assert.strictEqual(AuthService.getAccounts().some((account) => account.userId === 'emp002'), false, 'the deleted user should be removed from storage');
+
+const deleteAdminResult = AuthService.deleteUser('admin001');
+assert.strictEqual(deleteAdminResult.success, false, 'deleting the last remaining admin account should be blocked');
 
 const invalidUser = AuthService.authenticateUser('unknown', '123');
 assert.strictEqual(invalidUser.success, false, 'unknown user should fail');
