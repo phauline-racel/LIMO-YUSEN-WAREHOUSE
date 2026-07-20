@@ -39,13 +39,14 @@
             <button class="user-profile" id="userProfileBtn" type="button">
               <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Joseph" alt="User" class="user-avatar"/>
               <div class="user-info">
-                <div class="user-name">JOSEPH</div>
-                <div class="user-role">Warehouse Staff</div>
+                <div class="user-name">JUAN CRUZ</div>
+                <div class="user-role">Administrator</div>
               </div>
               <span class="dropdown-icon">▾</span>
             </button>
             <div class="user-dropdown" id="userDropdown">
               <a href="profile.html" class="dropdown-item"><i class="bi bi-person-fill"></i> Profile</a>
+              <a href="user-management.html" class="dropdown-item admin-only-nav"><i class="bi bi-people-fill"></i> User Management</a>
               <a href="#logout" class="dropdown-item logout-link"><i class="bi bi-box-arrow-right"></i> Logout</a>
             </div>
           </div>
@@ -58,19 +59,23 @@
         <div class="card-row">
           <div class="card">
             <div style="display:flex;gap:12px;align-items:center">
-              <div style="width:72px;height:72px;background:#ddd;border-radius:50%"></div>
+              <div id="profileAvatar" style="width:72px;height:72px;background:#06183d;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700">J</div>
               <div>
-                <div><strong>Juan Dela Cruz</strong></div>
-                <div>ID: EMP-001</div>
-                <div>Position: Warehouse Staff</div>
+                <div><strong id="profileDisplayName">Juan Cruz</strong></div>
+                <div id="profileEmployeeId">ID: ADM-001</div>
+                <div id="profilePosition">Position: Administrator</div>
               </div>
             </div>
-            <div style="margin-top:12px"><button class="btn">Edit Profile</button> <button class="btn">Change Password</button></div>
+            <div style="margin-top:12px">
+              <button class="btn" id="profileEditBtn" type="button">Edit Profile</button>
+              <button class="btn" id="changePasswordBtn" type="button">Change Password</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <script src="../assets/auth.js"></script>
   <script src="../assets/app.js"></script>
 </body>
 </html>

@@ -5,6 +5,32 @@ let inventoryData = [];
 let activityData = [];
 let inMemoryShipmentStore = [];
 
+const isProtectedPage = window.location.pathname.includes('/pages/');
+const isAdminRoute = /\/admin|\/settings|user-management/i.test(window.location.pathname);
+
+const getCurrentRole = () => {
+  const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
+  return currentUser?.role || 'employee';
+};
+
+const isAdminUser = () => getCurrentRole() === 'admin';
+
+const guardPageAccess = () => {
+  if (typeof AuthService === 'undefined' || !AuthService.isAuthenticated?.()) {
+    if (isProtectedPage) {
+      window.location.replace('../index.html');
+    }
+    return false;
+  }
+
+  if (isAdminRoute && AuthService.getCurrentUser?.()?.role !== 'admin') {
+    window.location.replace('dashboard.html');
+    return false;
+  }
+
+  return true;
+};
+
 const PLATE_TRUCKER_REFERENCE = [
   ['30807', 'G888'],
   ['AAJ-5410', 'CHIVA'],
@@ -1172,6 +1198,112 @@ const getBadgeClass = (status) => {
   return 'badge-blue';
 };
 
+const PROFILE_STORAGE_KEY = 'warehouseProfile';
+const defaultProfile = {
+  firstName: 'Joseph',
+  lastName: 'Dela Cruz',
+  employeeId: 'EMP-001',
+  position: 'Warehouseman',
+  email: 'joseph@warehouse.com',
+  phone: '+63 912 345 6789'
+};
+
+const getStoredProfile = () => {
+  try {
+    const storedValue = localStorage.getItem(PROFILE_STORAGE_KEY);
+    if (!storedValue) return { ...defaultProfile };
+    const parsed = JSON.parse(storedValue);
+    return {
+      ...defaultProfile,
+      ...(parsed || {})
+    };
+  } catch (error) {
+    console.warn('Unable to read profile storage.', error);
+    return { ...defaultProfile };
+  }
+};
+
+const saveStoredProfile = (profile) => {
+  const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
+  const sessionName = String(currentUser?.name || '').trim();
+  const sessionEmployeeId = String(currentUser?.employeeId || '').trim();
+  const sessionPosition = String(currentUser?.position || '').trim();
+  const storedProfile = {
+    ...defaultProfile,
+    ...(profile || {}),
+    ...(sessionName ? { firstName: sessionName.split(' ')[0] || profile?.firstName || defaultProfile.firstName, lastName: sessionName.split(' ').slice(1).join(' ') || profile?.lastName || defaultProfile.lastName } : {}),
+    ...(sessionEmployeeId ? { employeeId: sessionEmployeeId } : {}),
+    ...(sessionPosition ? { position: sessionPosition } : {})
+  };
+  try {
+    localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(storedProfile));
+  } catch (error) {
+    console.warn('Unable to save profile storage.', error);
+  }
+  updateProfileUi(storedProfile);
+};
+
+const updateProfileUi = (profile = getStoredProfile()) => {
+  const safeProfile = { ...defaultProfile, ...(profile || {}) };
+  const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
+  const currentRole = (currentUser?.role || 'employee').toLowerCase();
+  const sessionName = String(currentUser?.name || '').trim();
+  const sessionEmployeeId = String(currentUser?.employeeId || '').trim();
+  const sessionPosition = String(currentUser?.position || '').trim();
+  const firstNameFromSession = sessionName ? sessionName.split(' ')[0] : '';
+  const firstName = (currentRole === 'admin' && sessionName ? firstNameFromSession : String(safeProfile.firstName || '').trim()) || firstNameFromSession || 'User';
+  const fullName = (currentRole === 'admin' && sessionName ? sessionName : [safeProfile.firstName, safeProfile.lastName].filter(Boolean).join(' ').trim()) || sessionName || 'User';
+  const role = sessionPosition || (currentRole === 'admin' ? 'Administrator' : String(safeProfile.position || 'Warehouseman').trim()) || 'Warehouseman';
+  const roleLabel = currentRole === 'admin' ? 'Administrator' : role;
+
+  document.querySelectorAll('.user-name').forEach((element) => {
+    element.textContent = firstName.toUpperCase();
+  });
+
+  document.querySelectorAll('.user-role').forEach((element) => {
+    element.textContent = role;
+  });
+
+  const profileName = document.getElementById('profileDisplayName');
+  if (profileName) {
+    profileName.textContent = fullName;
+  }
+
+  const profileEmployeeId = document.getElementById('profileEmployeeId');
+  if (profileEmployeeId) {
+    profileEmployeeId.textContent = `ID: ${sessionEmployeeId || safeProfile.employeeId || 'EMP-001'}`;
+  }
+
+  const profilePosition = document.getElementById('profilePosition');
+  if (profilePosition) {
+    profilePosition.textContent = `Position: ${role}`;
+  }
+
+  document.querySelectorAll('.user-name').forEach((element) => {
+    element.textContent = fullName.toUpperCase();
+  });
+
+  document.querySelectorAll('.user-role').forEach((element) => {
+    element.textContent = roleLabel;
+  });
+
+  document.querySelectorAll('.admin-only-nav').forEach((element) => {
+    const shouldShow = currentRole === 'admin';
+    element.classList.toggle('visible', shouldShow);
+  });
+
+  document.querySelectorAll('.user-avatar').forEach((avatar) => {
+    const avatarSeed = currentRole === 'admin' ? 'Admin' : 'Joseph';
+    avatar.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(avatarSeed)}`;
+    avatar.alt = currentRole === 'admin' ? 'Admin avatar' : 'User avatar';
+  });
+
+  const profileAvatar = document.getElementById('profileAvatar');
+  if (profileAvatar) {
+    profileAvatar.textContent = firstName.charAt(0).toUpperCase();
+  }
+};
+
 const getMonthLabel = (dateValue) => {
   if (!dateValue) return 'N/A';
   const parsedDate = new Date(`${dateValue}T12:00:00`);
@@ -1520,6 +1652,13 @@ const normalizeShipmentForActivity = (shipment) => {
   };
 };
 
+const escapeHtml = (value = '') => String(value)
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
 const renderDashboardData = () => {
   const shipmentRows = aggregateShipmentsByReference(getStoredShipments()).slice().sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
   const totalShipments = shipmentRows.length;
@@ -1545,11 +1684,11 @@ const renderDashboardData = () => {
   if (recentBody) {
     recentBody.innerHTML = shipmentRows.slice(0, 5).map((shipment) => `
       <tr>
-        <td><strong>${shipment.client || ''}</strong></td>
-        <td><a href="#">${shipment.hawb || ''}</a></td>
-        <td><span class="${getBadgeClass(shipment.status)}">${shipment.status || 'WAITING FOR CONFIRMATION'}</span></td>
-        <td>${shipment.location || ''}</td>
-        <td>${shipment.date || ''} ${shipment.time || ''}</td>
+        <td><strong>${escapeHtml(shipment.client || '')}</strong></td>
+        <td><a href="#">${escapeHtml(shipment.hawb || '')}</a></td>
+        <td><span class="${getBadgeClass(shipment.status)}">${escapeHtml(shipment.status || 'WAITING FOR CONFIRMATION')}</span></td>
+        <td>${escapeHtml(shipment.location || '')}</td>
+        <td>${escapeHtml(shipment.date || '')} ${escapeHtml(shipment.time || '')}</td>
       </tr>
     `).join('');
   }
@@ -1557,8 +1696,324 @@ const renderDashboardData = () => {
 
 // Sidebar toggle functionality
 document.addEventListener('DOMContentLoaded', () => {
+  if (!guardPageAccess()) return;
+
+  const revealShell = () => {
+    requestAnimationFrame(() => {
+      document.body.classList.add('app-ready');
+    });
+  };
+
+  updateProfileUi(getStoredProfile());
+  revealShell();
+
+  if (!isAdminUser() && window.location.pathname.includes('user-management.html')) {
+    window.location.replace('dashboard.html');
+    return;
+  }
+
+  document.querySelectorAll('.admin-only-nav').forEach((element) => {
+    if (isAdminUser()) {
+      element.classList.add('visible');
+    } else {
+      element.classList.remove('visible');
+    }
+  });
+
   const sidebar = document.getElementById('sidebar');
   const sidebarToggle = document.getElementById('sidebarToggle');
+  const notificationButtons = Array.from(document.querySelectorAll('.notification-btn'));
+  const notificationButton = notificationButtons[0];
+  const notificationBadge = notificationButton ? notificationButton.querySelector('.badge') : null;
+  const notificationStateKey = 'warehouseNotificationState';
+  let notificationState = [];
+  let notificationPanel = null;
+
+  const loadNotificationState = () => {
+    try {
+      const storedValue = localStorage.getItem(notificationStateKey);
+      if (!storedValue) return [];
+      const parsed = JSON.parse(storedValue);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.warn('Unable to load notification state.', error);
+      return [];
+    }
+  };
+
+  const saveNotificationState = () => {
+    try {
+      localStorage.setItem(notificationStateKey, JSON.stringify(notificationState));
+    } catch (error) {
+      console.warn('Unable to save notification state.', error);
+    }
+  };
+
+  const buildNotificationState = () => {
+    const shipments = getStoredShipments().slice().sort((a, b) => (Number(b.savedAt || 0) - Number(a.savedAt || 0)));
+    const recentShipments = shipments.slice(0, 6);
+
+    if (!recentShipments.length) {
+      return [{ id: 'empty-notifications', type: 'shipment', title: 'No recent shipment activity', description: 'Save a shipment in inbound or outbound to see live updates here.', meta: 'Warehouse system', time: 'Just now', read: false }];
+    }
+
+    const getNotificationMeta = (shipment) => {
+      if (shipment?.hawb) {
+        return `HAWB ${shipment.hawb}`;
+      }
+      if (shipment?.mawb) {
+        return `MAWB ${shipment.mawb}`;
+      }
+      if (shipment?.client) {
+        return `Client ${shipment.client}`;
+      }
+      return 'Warehouse';
+    };
+
+    const items = [];
+    const latestShipment = recentShipments[0] || null;
+    const entryType = String(latestShipment?.entryType || '').toLowerCase();
+    const latestHawb = latestShipment?.hawb || latestShipment?.mawb || 'Pending';
+    const latestClient = latestShipment?.client || 'Warehouse';
+    const latestStatus = String(latestShipment?.status || '').trim().toUpperCase() || 'UPDATED';
+
+    if (latestShipment) {
+      items.push({
+        id: `latest-${latestShipment.savedAt || Date.now()}-${entryType}`,
+        type: entryType === 'outbound' ? 'outbound' : 'inbound',
+        title: entryType === 'outbound' ? 'New outbound shipment' : 'New inbound shipment',
+        description: entryType === 'outbound'
+          ? `A new outbound shipment for ${latestHawb} is ready for dispatch.`
+          : `A new inbound shipment for ${latestHawb} arrived and is ready for receiving.`,
+        meta: getNotificationMeta(latestShipment),
+        time: 'Just now',
+        read: false
+      });
+    }
+
+    const secondShipment = recentShipments[1] || null;
+    if (secondShipment) {
+      items.push({
+        id: `status-${secondShipment.savedAt || Date.now()}`,
+        type: 'status',
+        title: 'Shipment status updated',
+        description: `Shipment ${secondShipment.hawb || secondShipment.mawb || 'record'} now shows status ${latestStatus}.`,
+        meta: getNotificationMeta(secondShipment),
+        time: 'Recently updated',
+        read: false
+      });
+    }
+
+    const thirdShipment = recentShipments[2] || null;
+    if (thirdShipment) {
+      items.push({
+        id: `inventory-${thirdShipment.savedAt || Date.now()}`,
+        type: 'inventory',
+        title: 'Inventory updated',
+        description: `Inventory values were refreshed for ${thirdShipment.hawb || thirdShipment.mawb || 'the latest shipment'}.`,
+        meta: getNotificationMeta(thirdShipment),
+        time: 'Updated',
+        read: true
+      });
+    }
+
+    const lowInventoryShipment = recentShipments.find((shipment) => Number(shipment.quantity || shipment.qtyIn || shipment.qtyOut || 0) <= 2);
+    if (lowInventoryShipment) {
+      items.push({
+        id: `warning-${lowInventoryShipment.savedAt || Date.now()}`,
+        type: 'warning',
+        title: 'Low inventory warning',
+        description: `Quantity is running low for ${lowInventoryShipment.hawb || lowInventoryShipment.mawb || 'the selected shipment'}.`,
+        meta: getNotificationMeta(lowInventoryShipment),
+        time: 'Needs attention',
+        read: true
+      });
+    }
+
+    const fourthShipment = recentShipments[3] || null;
+    if (fourthShipment) {
+      items.push({
+        id: `added-${fourthShipment.savedAt || Date.now()}`,
+        type: 'shipment',
+        title: 'Shipment added',
+        description: `A new shipment entry for ${fourthShipment.hawb || fourthShipment.mawb || 'this record'} was added to the system.`,
+        meta: getNotificationMeta(fourthShipment),
+        time: 'Added',
+        read: true
+      });
+    }
+
+    return items;
+  };
+
+  const refreshNotificationState = () => {
+    const existingState = new Map(notificationState.map((item) => [item.id, item]));
+    const generated = buildNotificationState().map((item) => {
+      const existing = existingState.get(item.id);
+      return { ...item, read: existing ? existing.read : item.read };
+    });
+    notificationState = generated;
+    saveNotificationState();
+  };
+
+  notificationState = loadNotificationState();
+
+  const getNotificationTypeIcon = (type) => {
+    switch (type) {
+      case 'warning':
+        return '<i class="bi bi-exclamation-triangle-fill"></i>';
+      case 'inventory':
+        return '<i class="bi bi-box-seam"></i>';
+      case 'status':
+        return '<i class="bi bi-arrow-repeat"></i>';
+      default:
+        return '<i class="bi bi-truck"></i>';
+    }
+  };
+
+  const updateNotificationBadge = () => {
+    if (!notificationBadge) return;
+    const unreadCount = notificationState.filter((item) => !item.read).length;
+    notificationBadge.textContent = unreadCount > 0 ? unreadCount : '';
+    notificationBadge.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
+  };
+
+  const renderNotificationPanel = () => {
+    if (!notificationPanel) return;
+    const unreadCount = notificationState.filter((item) => !item.read).length;
+    notificationPanel.innerHTML = `
+      <div class="notification-panel-header">
+        <div class="notification-panel-title">
+          <i class="bi bi-bell-fill"></i>
+          <strong>Notifications</strong>
+        </div>
+        <div class="notification-panel-actions">
+          <button type="button" class="notification-panel-action mark-all-read" title="Mark all as read" aria-label="Mark all as read">
+            <i class="bi bi-check2-all"></i>
+          </button>
+        </div>
+      </div>
+      <div class="notification-panel-body">
+        ${notificationState.map((item) => `
+          <div class="notification-item ${item.read ? 'read' : 'unread'}" data-id="${item.id}">
+            <div class="notification-item-icon">${getNotificationTypeIcon(item.type)}</div>
+            <div class="notification-item-content">
+              <div class="notification-item-title">${escapeHtml(item.title)}</div>
+              <div class="notification-item-description">${escapeHtml(item.description)}</div>
+              <div class="notification-meta">
+                ${item.meta ? `<strong>${escapeHtml(item.meta)}</strong>` : ''}
+                <span>•</span>
+                <span>${escapeHtml(item.time)}</span>
+              </div>
+            </div>
+            <div class="notification-item-time">${item.read ? 'Read' : 'New'}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="notification-footer">
+        <a href="#" class="view-all-notifications">View All Notifications</a>
+      </div>
+    `;
+
+    const markAllReadButton = notificationPanel.querySelector('.mark-all-read');
+    if (markAllReadButton) {
+      markAllReadButton.addEventListener('click', (event) => {
+        event.stopPropagation();
+        notificationState = notificationState.map((item) => ({ ...item, read: true }));
+        saveNotificationState();
+        renderNotificationPanel();
+        updateNotificationBadge();
+      });
+    }
+
+    notificationPanel.querySelectorAll('.notification-item').forEach((itemElement) => {
+      itemElement.addEventListener('click', () => {
+        const id = itemElement.getAttribute('data-id');
+        notificationState = notificationState.map((item) => item.id === id ? { ...item, read: true } : item);
+        saveNotificationState();
+        renderNotificationPanel();
+        updateNotificationBadge();
+      });
+    });
+
+    const footerLink = notificationPanel.querySelector('.view-all-notifications');
+    if (footerLink) {
+      footerLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+    }
+
+  };
+
+  const openNotificationPanel = () => {
+    if (!notificationButton) return;
+    if (!notificationPanel) {
+      notificationPanel = document.createElement('div');
+      notificationPanel.className = 'notification-panel';
+      notificationPanel.setAttribute('role', 'dialog');
+      notificationPanel.setAttribute('aria-label', 'Notifications');
+      notificationPanel.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(notificationPanel);
+      renderNotificationPanel();
+    }
+
+    const rect = notificationButton.getBoundingClientRect();
+    const panelWidth = Math.min(410, window.innerWidth - 24);
+    const panelHeight = Math.min(600, window.innerHeight - 24);
+    const left = Math.min(window.innerWidth - panelWidth - 12, Math.max(12, rect.left + rect.width / 2 - panelWidth / 2));
+    const top = Math.min(window.innerHeight - panelHeight - 12, Math.max(12, rect.bottom + 10));
+
+    const arrowLeft = Math.min(100, Math.max(18, ((rect.left + rect.width / 2 - left) / panelWidth) * 100));
+    notificationPanel.style.left = `${Math.round(left)}px`;
+    notificationPanel.style.top = `${Math.round(top)}px`;
+    notificationPanel.style.width = `${panelWidth}px`;
+    notificationPanel.style.maxHeight = `${panelHeight}px`;
+    notificationPanel.style.setProperty('--arrow-left', `${arrowLeft}%`);
+    notificationPanel.classList.add('open');
+    notificationPanel.setAttribute('aria-hidden', 'false');
+    notificationButton.classList.add('active');
+  };
+
+  const closeNotificationPanel = () => {
+    if (!notificationPanel) return;
+    notificationPanel.classList.remove('open');
+    notificationPanel.setAttribute('aria-hidden', 'true');
+    notificationButton?.classList.remove('active');
+  };
+
+  if (notificationButton) {
+    notificationButton.setAttribute('type', 'button');
+    notificationButton.setAttribute('aria-label', 'Notifications');
+    notificationButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const isOpen = notificationPanel?.classList.contains('open');
+      if (isOpen) {
+        closeNotificationPanel();
+      } else {
+        openNotificationPanel();
+      }
+    });
+  }
+
+  document.addEventListener('click', (event) => {
+    if (!notificationPanel) return;
+    const clickedInsidePanel = notificationPanel.contains(event.target);
+    const clickedBell = notificationButton?.contains(event.target);
+    if (!clickedInsidePanel && !clickedBell && notificationPanel.classList.contains('open')) {
+      closeNotificationPanel();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && notificationPanel?.classList.contains('open')) {
+      closeNotificationPanel();
+    }
+  });
+
+  refreshNotificationState();
+  updateNotificationBadge();
+  renderNotificationPanel();
   
   if (sidebarToggle && sidebar) {
     // Load saved state from localStorage
@@ -1606,6 +2061,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const confirmButton = modal.querySelector('.logout-confirm');
       if (confirmButton) {
         confirmButton.addEventListener('click', () => {
+          if (typeof AuthService !== 'undefined') {
+            AuthService.logout?.();
+          }
           window.location.href = '../index.html';
         });
       }
@@ -1620,8 +2078,12 @@ document.addEventListener('DOMContentLoaded', () => {
       logoutConfirmModal.style.display = 'flex';
     };
 
-    userProfileBtn.addEventListener('click', () => {
+    userProfileBtn.addEventListener('click', (event) => {
+      event.stopPropagation();
       userDropdown.classList.toggle('open');
+      if (notificationPanel?.classList.contains('open')) {
+        closeNotificationPanel();
+      }
     });
 
     // Close dropdown when clicking outside
@@ -1644,6 +2106,311 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  const renderUserManagementTable = () => {
+    const tableBody = document.getElementById('userManagementTableBody');
+    if (!tableBody) return;
+
+    const users = AuthService.getUserManagementList?.() || [];
+    const query = String(document.getElementById('userSearchInput')?.value || '').toLowerCase();
+    const roleFilter = String(document.getElementById('userRoleFilter')?.value || 'all');
+    const filteredUsers = users.filter((user) => {
+      const matchesQuery = !query || [user.name, user.userId, user.employeeId].some((field) => String(field || '').toLowerCase().includes(query));
+      const matchesRole = roleFilter === 'all' || String(user.role || '').toLowerCase() === roleFilter;
+      return matchesQuery && matchesRole;
+    });
+
+    tableBody.innerHTML = filteredUsers.map((user) => `
+      <tr>
+        <td>${escapeHtml(user.employeeId || '')}</td>
+        <td>${escapeHtml(user.name || '')}</td>
+        <td>${escapeHtml(user.userId || '')}</td>
+        <td>${escapeHtml((user.role || 'employee').toUpperCase())}</td>
+        <td>${escapeHtml(String(user.status || 'active').toUpperCase())}</td>
+        <td>${escapeHtml(user.lastLogin || 'Never')}</td>
+        <td>
+          <button type="button" class="user-action-btn primary" data-action="view" data-user-id="${escapeHtml(user.userId || '')}">View</button>
+          <button type="button" class="user-action-btn" data-action="edit" data-user-id="${escapeHtml(user.userId || '')}">Edit</button>
+          <button type="button" class="user-action-btn" data-action="reset" data-user-id="${escapeHtml(user.userId || '')}">Reset</button>
+          <button type="button" class="user-action-btn" data-action="toggle" data-user-id="${escapeHtml(user.userId || '')}">Activate/Deactivate</button>
+          <button type="button" class="user-action-btn danger" data-action="delete" data-user-id="${escapeHtml(user.userId || '')}">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+  };
+
+  const openUserModal = (mode, user = null) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'user-management-modal-overlay';
+    overlay.innerHTML = `
+      <div class="user-management-modal-card">
+        <h3>${mode === 'edit' ? 'Edit User' : 'Add User'}</h3>
+        <form id="userManagementForm">
+          <div class="user-management-modal-grid">
+            <div class="form-field">
+              <label for="userEmployeeId">Employee ID</label>
+              <input id="userEmployeeId" name="employeeId" value="${escapeHtml(user?.employeeId || '')}" required />
+            </div>
+            <div class="form-field">
+              <label for="userFullName">Full Name</label>
+              <input id="userFullName" name="name" value="${escapeHtml(user?.name || '')}" required />
+            </div>
+          </div>
+          <div class="user-management-modal-grid">
+            <div class="form-field">
+              <label for="userUsername">Username</label>
+              <input id="userUsername" name="userId" value="${escapeHtml(user?.userId || '')}" required />
+            </div>
+            <div class="form-field">
+              <label for="userPassword">Password</label>
+              <input id="userPassword" name="password" type="password" ${user ? '' : 'required'} />
+            </div>
+          </div>
+          <div class="user-management-modal-grid">
+            <div class="form-field">
+              <label for="userRole">Role</label>
+              <select id="userRole" name="role">
+                <option value="employee" ${user?.role === 'admin' ? '' : 'selected'}>Employee</option>
+                <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="userStatus">Status</label>
+              <select id="userStatus" name="status">
+                <option value="active" ${user?.status === 'inactive' ? '' : 'selected'}>Active</option>
+                <option value="inactive" ${user?.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="user-management-modal-actions">
+            <button type="button" class="profile-modal-btn cancel-btn">Cancel</button>
+            <button type="submit" class="profile-modal-btn primary">Save</button>
+          </div>
+        </form>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.cancel-btn').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('#userManagementForm').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      const payload = Object.fromEntries(formData.entries());
+      if (mode === 'edit' && user?.userId) {
+        AuthService.updateUser?.(user.userId, payload);
+      } else {
+        AuthService.createUser?.(payload);
+      }
+      overlay.remove();
+      renderUserManagementTable();
+    });
+  };
+
+  const attachProfileModalHandlers = () => {
+    const editProfileButton = document.getElementById('profileEditBtn');
+    const changePasswordButton = document.getElementById('changePasswordBtn');
+
+    if (!editProfileButton || !changePasswordButton) return;
+
+    editProfileButton.onclick = (event) => {
+      event.preventDefault();
+      openProfileModal('edit');
+    };
+
+    changePasswordButton.onclick = (event) => {
+      event.preventDefault();
+      openProfileModal('password');
+    };
+  };
+
+  const openProfileModal = (mode) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'profile-modal-overlay';
+    overlay.style.display = 'flex';
+    overlay.innerHTML = `
+      <div class="profile-modal-inner">
+        <h2>${mode === 'password' ? 'Change Password' : 'Edit Profile'}</h2>
+        ${mode === 'password' ? '<p>Use this form to update your account password.</p>' : '<p>Update your personal details below.</p>'}
+        <form class="profile-modal-form" data-modal-mode="${mode}">
+          ${mode === 'password' ? `
+            <div class="form-field">
+              <label for="currentPassword">Current Password</label>
+              <input id="currentPassword" type="password" placeholder="Enter current password" />
+            </div>
+            <div class="profile-modal-grid">
+              <div class="form-field">
+                <label for="newPassword">New Password</label>
+                <input id="newPassword" type="password" placeholder="New password" />
+              </div>
+              <div class="form-field">
+                <label for="confirmPassword">Confirm Password</label>
+                <input id="confirmPassword" type="password" placeholder="Confirm password" />
+              </div>
+            </div>
+            <div id="passwordFormError" class="form-error" role="alert" aria-live="polite"></div>
+          ` : `
+            <div class="profile-modal-grid">
+              <div class="form-field">
+                <label for="firstName">First Name</label>
+                <input id="firstName" type="text" placeholder="First name" />
+              </div>
+              <div class="form-field">
+                <label for="lastName">Last Name</label>
+                <input id="lastName" type="text" placeholder="Last name" />
+              </div>
+            </div>
+            <div class="profile-modal-grid">
+              <div class="form-field">
+                <label for="employeeId">Employee ID</label>
+                <input id="employeeId" type="text" placeholder="Employee ID" readonly tabindex="-1" onfocus="this.blur()" />
+              </div>
+              <div class="form-field">
+                <label for="position">Position</label>
+                <input id="position" type="text" placeholder="Position" readonly tabindex="-1" onfocus="this.blur()" />
+              </div>
+            </div>
+            <div class="profile-modal-grid">
+              <div class="form-field">
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="Email" />
+              </div>
+              <div class="form-field">
+                <label for="phone">Phone</label>
+                <input id="phone" type="text" placeholder="Phone" />
+              </div>
+            </div>
+          `}
+          <div class="profile-modal-actions">
+            <button type="button" class="profile-modal-btn cancel-btn">Cancel</button>
+            <button type="submit" class="profile-modal-btn primary">${mode === 'password' ? 'Save Password' : 'Save Changes'}</button>
+          </div>
+        </form>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const profile = getStoredProfile();
+    const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
+    const currentRole = (currentUser?.role || 'employee').toLowerCase();
+    const sessionName = String(currentUser?.name || '').trim();
+    const sessionEmployeeId = String(currentUser?.employeeId || '').trim();
+    const sessionPosition = String(currentUser?.position || '').trim();
+    if (mode !== 'password') {
+      const modalFirstName = currentRole === 'admin' && sessionName ? sessionName.split(' ')[0] : profile.firstName || '';
+      const modalLastName = currentRole === 'admin' && sessionName ? sessionName.split(' ').slice(1).join(' ') : profile.lastName || '';
+      overlay.querySelector('#firstName').value = modalFirstName;
+      overlay.querySelector('#lastName').value = modalLastName;
+      const employeeIdField = overlay.querySelector('#employeeId');
+      if (employeeIdField) {
+        employeeIdField.value = sessionEmployeeId || profile.employeeId || '';
+        employeeIdField.readOnly = true;
+        employeeIdField.setAttribute('aria-readonly', 'true');
+      }
+      const positionField = overlay.querySelector('#position');
+      if (positionField) {
+        positionField.value = sessionPosition || profile.position || 'Warehouseman';
+        positionField.readOnly = true;
+        positionField.setAttribute('aria-readonly', 'true');
+      }
+      overlay.querySelector('#email').value = profile.email || '';
+      overlay.querySelector('#phone').value = profile.phone || '';
+    }
+
+    const closeModal = () => overlay.remove();
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay || event.target.classList.contains('cancel-btn')) {
+        closeModal();
+      }
+    });
+
+    overlay.querySelector('form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (mode === 'password') {
+        const passwordError = overlay.querySelector('#passwordFormError');
+        const currentPassword = String(overlay.querySelector('#currentPassword').value || '').trim();
+        const newPassword = String(overlay.querySelector('#newPassword').value || '').trim();
+        const confirmPassword = String(overlay.querySelector('#confirmPassword').value || '').trim();
+
+        if (passwordError) {
+          passwordError.textContent = '';
+        }
+
+        if (typeof AuthService !== 'undefined' && typeof AuthService.changePassword === 'function') {
+          const result = AuthService.changePassword(currentPassword, newPassword, confirmPassword);
+          if (!result?.success) {
+            if (passwordError) {
+              passwordError.textContent = result?.message || 'Unable to change password.';
+            }
+            return;
+          }
+        }
+
+        closeModal();
+        return;
+      }
+
+      const formData = new FormData(overlay.querySelector('form'));
+      const updatedProfile = {
+        ...profile,
+        firstName: String(overlay.querySelector('#firstName').value || '').trim() || profile.firstName || defaultProfile.firstName,
+        lastName: String(overlay.querySelector('#lastName').value || '').trim() || profile.lastName || defaultProfile.lastName,
+        employeeId: String(overlay.querySelector('#employeeId').value || '').trim() || profile.employeeId || defaultProfile.employeeId,
+        position: sessionPosition || profile.position || defaultProfile.position,
+        email: String(overlay.querySelector('#email').value || '').trim() || profile.email || defaultProfile.email,
+        phone: String(overlay.querySelector('#phone').value || '').trim() || profile.phone || defaultProfile.phone
+      };
+      saveStoredProfile(updatedProfile);
+      closeModal();
+    });
+
+    document.addEventListener('keydown', function handleModalEscape(event) {
+      if (event.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', handleModalEscape);
+      }
+    });
+  };
+
+  const attachUserManagementHandlers = () => {
+    const addUserButton = document.getElementById('addUserBtn');
+    const searchInput = document.getElementById('userSearchInput');
+    const roleFilter = document.getElementById('userRoleFilter');
+    if (addUserButton) {
+      addUserButton.addEventListener('click', () => openUserModal('add'));
+    }
+    if (searchInput) {
+      searchInput.addEventListener('input', renderUserManagementTable);
+    }
+    if (roleFilter) {
+      roleFilter.addEventListener('change', renderUserManagementTable);
+    }
+
+    document.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-action]');
+      if (!button) return;
+      const action = button.getAttribute('data-action');
+      const userId = button.getAttribute('data-user-id');
+      if (action === 'delete') {
+        AuthService.deleteUser?.(userId);
+        renderUserManagementTable();
+      }
+      if (action === 'edit') {
+        const users = AuthService.getUserManagementList?.() || [];
+        const selectedUser = users.find((entry) => entry.userId === userId);
+        if (selectedUser) {
+          openUserModal('edit', selectedUser);
+        }
+      }
+    });
+  };
+
+  attachProfileModalHandlers();
+  attachUserManagementHandlers();
+  window.addEventListener('load', () => {
+    attachProfileModalHandlers();
+    attachUserManagementHandlers();
+    renderUserManagementTable();
+  });
 
   const inventoryFilterToggle = document.getElementById('inventoryFilterToggle');
   const inventoryFilterPanel = document.getElementById('inventoryFilterPanel');
@@ -2274,6 +3041,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderDashboardData();
     activityData = getActivityData();
     inventoryData = getInventoryData();
+    refreshNotificationState();
+    updateNotificationBadge();
+    renderNotificationPanel();
     if (typeof refreshInventory === 'function') {
       refreshInventory();
     }
