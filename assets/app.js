@@ -740,7 +740,41 @@ const TEXT_FIELD_SUGGESTIONS = {
     });
 
     return suggestions;
-  })()
+  })(),
+  'activity-status': ['Delivered', 'Transferred', 'Hold', 'Pulled Out', 'Waiting for Confirmation', 'Off Load', 'Return', 'Back to Shipper', 'Pick-Up By Client', 'Re-Book', 'Cancel Flight'],
+  'activity-location': (() => {
+    const racks = ['A', 'B', 'C', 'D'];
+    const rows = ['A', 'B', 'C'];
+    const cols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'];
+    const suggestions = [];
+
+    racks.forEach((rack) => {
+      rows.forEach((row) => {
+        cols.forEach((col) => {
+          suggestions.push(`RACK ${rack} ${row}${col}${row}`);
+        });
+      });
+    });
+
+    return suggestions;
+  })(),
+  'inventory-location': (() => {
+    const racks = ['A', 'B', 'C', 'D'];
+    const rows = ['A', 'B', 'C'];
+    const cols = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14'];
+    const suggestions = [];
+
+    racks.forEach((rack) => {
+      rows.forEach((row) => {
+        cols.forEach((col) => {
+          suggestions.push(`RACK ${rack} ${row}${col}${row}`);
+        });
+      });
+    });
+
+    return suggestions;
+  })(),
+  'inventory-transaction': ['AFF Import', 'AFF Export', 'OFF Import', 'OFF Export']
 };
 
 const getPlateSuggestions = (query) => {
