@@ -2120,26 +2120,46 @@ document.addEventListener('DOMContentLoaded', () => {
       return matchesQuery && matchesRole;
     });
 
+    const getRoleBadge = (role) => {
+      const normalizedRole = String(role || 'employee').toLowerCase();
+      if (normalizedRole === 'admin') {
+        return '<span class="badge-role admin"><i class="bi bi-shield-fill"></i> Admin</span>';
+      }
+      return '<span class="badge-role employee"><i class="bi bi-person-fill"></i> Employee</span>';
+    };
+
+    const getStatusBadge = (status) => {
+      const normalizedStatus = String(status || 'active').toLowerCase();
+      const statusText = normalizedStatus.charAt(0).toUpperCase() + normalizedStatus.slice(1);
+      return `<span class="badge-status ${normalizedStatus}">${statusText}</span>`;
+    };
+
     tableBody.innerHTML = filteredUsers.map((user) => `
       <tr>
         <td>${escapeHtml(user.employeeId || '')}</td>
         <td>${escapeHtml(user.name || '')}</td>
         <td>${escapeHtml(user.userId || '')}</td>
-        <td>${escapeHtml((user.role || 'employee').toUpperCase())}</td>
-        <td>${escapeHtml(String(user.status || 'active').toUpperCase())}</td>
+        <td>${getRoleBadge(user.role)}</td>
+        <td>${getStatusBadge(user.status)}</td>
         <td>${escapeHtml(user.lastLogin || 'Never')}</td>
         <td>
-          <button type="button" class="user-action-btn primary" data-action="view" data-user-id="${escapeHtml(user.userId || '')}">View</button>
-          <button type="button" class="user-action-btn" data-action="edit" data-user-id="${escapeHtml(user.userId || '')}">Edit</button>
-          <button type="button" class="user-action-btn" data-action="reset" data-user-id="${escapeHtml(user.userId || '')}">Reset</button>
-          <button type="button" class="user-action-btn" data-action="toggle" data-user-id="${escapeHtml(user.userId || '')}">Activate/Deactivate</button>
-          <button type="button" class="user-action-btn danger" data-action="delete" data-user-id="${escapeHtml(user.userId || '')}">Delete</button>
+          <div class="action-cell">
+            <button type="button" class="action-btn view" data-action="view" data-user-id="${escapeHtml(user.userId || '')}" title="View" aria-label="View user"><i class="bi bi-eye-fill"></i></button>
+            <button type="button" class="action-btn edit" data-action="edit" data-user-id="${escapeHtml(user.userId || '')}" title="Edit" aria-label="Edit user"><i class="bi bi-pencil-fill"></i></button>
+            <button type="button" class="action-btn reset" data-action="reset" data-user-id="${escapeHtml(user.userId || '')}" title="Reset Password" aria-label="Reset password"><i class="bi bi-key-fill"></i></button>
+            <button type="button" class="action-btn toggle" data-action="toggle" data-user-id="${escapeHtml(user.userId || '')}" title="Toggle Status" aria-label="Toggle status"><i class="bi bi-toggle-on"></i></button>
+            <button type="button" class="action-btn danger" data-action="delete" data-user-id="${escapeHtml(user.userId || '')}" title="Delete" aria-label="Delete user"><i class="bi bi-trash-fill"></i></button>
+          </div>
         </td>
       </tr>
     `).join('');
   };
 
   const openUserModal = (mode, user = null) => {
+    // Remove any existing modal overlays first
+    const existingOverlay = document.querySelector('.user-management-modal-overlay');
+    if (existingOverlay) existingOverlay.remove();
+    
     const overlay = document.createElement('div');
     overlay.className = 'user-management-modal-overlay';
     overlay.innerHTML = `
@@ -2406,10 +2426,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
   attachProfileModalHandlers();
   attachUserManagementHandlers();
+  
+  // Add dynamic tooltip handler for action buttons
+  const setupActionButtonTooltips = () => {
+    document.addEventListener('mouseover', (event) => {
+      const actionBtn = event.target.closest('.action-btn');
+      if (!actionBtn || !actionBtn.hasAttribute('title')) return;
+      
+      const existingTooltip = document.getElementById('floating-tooltip');
+      if (existingTooltip) existingTooltip.remove();
+      
+      const tooltip = document.createElement('div');
+      tooltip.id = 'floating-tooltip';
+      tooltip.textContent = actionBtn.getAttribute('title');
+      tooltip.style.cssText = `
+        position: fixed;
+        background: #14233a;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+        z-index: 99999;
+        pointer-events: none;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,255,255,0.2);
+      `;
+      
+      document.body.appendChild(tooltip);
+      
+      const rect = actionBtn.getBoundingClientRect();
+      tooltip.style.left = (rect.left + rect.width / 2 - tooltip.offsetWidth / 2) + 'px';
+      tooltip.style.top = (rect.top - tooltip.offsetHeight - 10) + 'px';
+    });
+    
+    document.addEventListener('mouseout', (event) => {
+      const actionBtn = event.target.closest('.action-btn');
+      if (actionBtn) {
+        const tooltip = document.getElementById('floating-tooltip');
+        if (tooltip) tooltip.remove();
+      }
+    });
+  };
+  
+  setupActionButtonTooltips();
+  
   window.addEventListener('load', () => {
     attachProfileModalHandlers();
     attachUserManagementHandlers();
     renderUserManagementTable();
+    setupActionButtonTooltips();
   });
 
   const inventoryFilterToggle = document.getElementById('inventoryFilterToggle');

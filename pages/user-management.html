@@ -55,27 +55,36 @@
       <div class="content">
         <div class="page-header">
           <h1>User Management</h1>
-          <div class="page-actions">
-            <button class="btn primary-btn" id="addUserBtn" type="button">Add User</button>
-          </div>
         </div>
-        <div class="card">
-          <div class="table-toolbar">
-            <div class="search-compact">
-              <input type="text" id="userSearchInput" placeholder="Search user..." />
+        
+        <div class="user-management-card">
+          <!-- Toolbar -->
+          <div class="user-toolbar">
+            <div class="toolbar-left">
+              <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" id="userSearchInput" placeholder="Search by Employee ID, Name or Username" />
+              </div>
+              <select id="userRoleFilter" class="role-filter">
+                <option value="all">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="employee">Employee</option>
+              </select>
             </div>
-            <select id="userRoleFilter" class="form-select">
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="employee">Employee</option>
-            </select>
+            <div class="toolbar-right">
+              <button class="btn-add-user" id="addUserBtn" type="button">
+                <i class="bi bi-plus"></i> Add User
+              </button>
+            </div>
           </div>
-          <div class="table">
-            <table>
+
+          <!-- Table Container -->
+          <div class="table-container">
+            <table class="user-table">
               <thead>
                 <tr>
                   <th>Employee ID</th>
-                  <th>Full Name</th>
+                  <th style="text-align: left;">Full Name</th>
                   <th>Username</th>
                   <th>Role</th>
                   <th>Status</th>
