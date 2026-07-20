@@ -200,6 +200,14 @@ h1 {
   outline: none;
 }
 
+.form-error {
+  min-height: 1.2rem;
+  margin-bottom: 12px;
+  color: #b42318;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
 button {
   width: 100%;
   border: none;

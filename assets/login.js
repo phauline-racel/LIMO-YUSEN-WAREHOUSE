@@ -1,27 +1,50 @@
-// UI-only login handler — validates fields and redirects to dashboard (no backend)
-document.addEventListener('DOMContentLoaded', ()=>{
-  const form = document.getElementById('loginForm')
-  if(!form) return
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
+  if (!form) return;
 
-  form.addEventListener('submit', (e)=>{
-    e.preventDefault()
-    const username = form.querySelector('input[name="username"]').value.trim()
-    const password = form.querySelector('input[name="password"]').value.trim()
+  const errorBox = document.getElementById('loginError');
+  const userIdInput = form.querySelector('input[name="userId"]') || form.querySelector('input[name="username"]');
+  const passwordInput = form.querySelector('input[name="password"]');
+  const submitButton = form.querySelector('button[type="submit"]');
 
-    if(!username || !password){
-      alert('Please enter username and password')
-      return
+  const setError = (message) => {
+    if (errorBox) {
+      errorBox.textContent = message;
+    }
+  };
+
+  const setLoading = (isLoading) => {
+    if (!submitButton) return;
+    submitButton.disabled = isLoading;
+    submitButton.textContent = isLoading ? 'Signing in...' : 'Login';
+  };
+
+  if (window.AuthService?.isAuthenticated?.()) {
+    window.location.href = 'pages/dashboard.html';
+    return;
+  }
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    setError('');
+
+    const userId = userIdInput?.value.trim() || '';
+    const password = passwordInput?.value.trim() || '';
+
+    if (!userId || !password) {
+      setError('Please enter your User ID and Password.');
+      return;
     }
 
-    // show a quick fake-auth loading state
-    const btn = form.querySelector('button[type="submit"]')
-    const previous = btn.textContent
-    btn.textContent = 'Signing in...'
-    btn.disabled = true
+    setLoading(true);
+    const result = window.AuthService?.authenticateUser?.(userId, password);
 
-    setTimeout(()=>{
-      // redirect to the dashboard page (static UI)
-      window.location.href = 'pages/dashboard.html'
-    }, 700)
-  })
-})
+    if (result?.success) {
+      window.location.href = 'pages/dashboard.html';
+      return;
+    }
+
+    setLoading(false);
+    setError(result?.message || 'Invalid credentials.');
+  });
+});
