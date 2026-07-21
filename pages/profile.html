@@ -52,25 +52,67 @@
           </div>
         </div>
       </header>
-      <div class="content">
-        <div class="page-header">
-          <h1>Profile</h1>
+      <div class="content profile-page">
+        <div class="page-header profile-page-header">
+          <div>
+            <p class="page-subtitle">My Profile</p>
+            <h1>Profile Information</h1>
+          </div>
+          <button class="btn primary" id="profileEditBtn" type="button">Edit Profile</button>
         </div>
-        <div class="card-row">
-          <div class="card">
-            <div style="display:flex;gap:12px;align-items:center">
-              <div id="profileAvatar" style="width:72px;height:72px;background:#06183d;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700">J</div>
-              <div>
-                <div><strong id="profileDisplayName">Juan Cruz</strong></div>
-                <div id="profileEmployeeId">ID: ADM-001</div>
-                <div id="profilePosition">Position: Administrator</div>
+        <div class="tabs-header">
+          <div class="tabs">
+            <button class="tab active" type="button" data-tab="profile-info">Profile Information</button>
+            <button class="tab" type="button" data-tab="change-password">Change Password</button>
+          </div>
+        </div>
+        <div class="tab-content active" id="profile-info-content">
+          <div class="profile-grid">
+            <section class="profile-card card">
+              <div class="profile-avatar-block">
+                <div id="profileAvatar" class="profile-avatar">J</div>
+                <div class="profile-card-info">
+                  <h2 class="profile-name">Juan Dela Cruz</h2>
+                  <p class="profile-role">Warehouse Staff</p>
+                  <span class="profile-badge">ADMIN</span>
+                </div>
+              </div>
+            </section>
+            <section class="profile-details-card card">
+              <div class="profile-details-grid">
+                <div class="profile-detail-row"><span>Employee ID</span><strong id="profileEmployeeId">EMP001</strong></div>
+                <div class="profile-detail-row"><span>Full Name</span><strong id="profileDisplayName">Juan Cruz</strong></div>
+                <div class="profile-detail-row"><span>Username</span><strong id="profileUsername">juan.dc</strong></div>
+                <div class="profile-detail-row"><span>Email</span><strong id="profileEmail">juan.dc@yusen.com.ph</strong></div>
+                <div class="profile-detail-row"><span>Role</span><strong id="profilePosition">Administrator</strong></div>
+                <div class="profile-detail-row"><span>Status</span><strong id="profileStatus">Active</strong></div>
+                <div class="profile-detail-row"><span>Last Login</span><strong id="profileLastLogin">Today, 6:45 AM</strong></div>
+                <div class="profile-detail-row"><span>Date Created</span><strong id="profileDateCreated">May 15, 2026 10:30 AM</strong></div>
+              </div>
+            </section>
+          </div>
+        </div>
+        <div class="tab-content" id="change-password-content" style="display:none;">
+          <section class="profile-details-card card">
+            <div class="profile-details-grid">
+              <div class="form-field">
+                <label for="currentPassword">Current Password</label>
+                <input id="currentPassword" type="password" placeholder="Enter current password" />
+              </div>
+              <div class="form-field">
+                <label for="newPassword">New Password</label>
+                <input id="newPassword" type="password" placeholder="Enter new password" />
+              </div>
+              <div class="form-field">
+                <label for="confirmPassword">Confirm Password</label>
+                <input id="confirmPassword" type="password" placeholder="Confirm new password" />
               </div>
             </div>
-            <div style="margin-top:12px">
-              <button class="btn" id="profileEditBtn" type="button">Edit Profile</button>
-              <button class="btn" id="changePasswordBtn" type="button">Change Password</button>
+            <div class="profile-form-actions">
+              <button class="btn" type="button">Cancel</button>
+              <button class="btn primary" type="button">Update Password</button>
             </div>
-          </div>
+          </section>
         </div>
       </div>
     </div>
