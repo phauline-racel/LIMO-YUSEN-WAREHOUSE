@@ -1199,6 +1199,7 @@ const getBadgeClass = (status) => {
 };
 
 const PROFILE_STORAGE_KEY = 'warehouseProfile';
+const PROFILE_PICTURE_STORAGE_KEY = 'warehouseProfilePictures';
 const defaultProfile = {
   firstName: 'Joseph',
   lastName: 'Dela Cruz',
@@ -1223,17 +1224,80 @@ const getStoredProfile = () => {
   }
 };
 
+const getCurrentProfileUserId = () => {
+  const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
+  return String(currentUser?.userId || '').trim();
+};
+
+const getStoredProfilePicture = (userId = getCurrentProfileUserId()) => {
+  if (!userId) return null;
+  try {
+    const storedValue = localStorage.getItem(PROFILE_PICTURE_STORAGE_KEY);
+    if (!storedValue) return null;
+    const parsed = JSON.parse(storedValue);
+    return parsed?.[userId] || null;
+  } catch (error) {
+    console.warn('Unable to read profile picture storage.', error);
+    return null;
+  }
+};
+
+const saveStoredProfilePicture = (dataUrl, userId = getCurrentProfileUserId()) => {
+  if (!userId) return;
+  try {
+    const storedValue = localStorage.getItem(PROFILE_PICTURE_STORAGE_KEY);
+    const currentPictures = storedValue ? JSON.parse(storedValue) : {};
+    const nextPictures = { ...currentPictures, [userId]: dataUrl || null };
+    localStorage.setItem(PROFILE_PICTURE_STORAGE_KEY, JSON.stringify(nextPictures));
+  } catch (error) {
+    console.warn('Unable to save profile picture storage.', error);
+  }
+};
+
+const applyProfilePictureToAvatar = (dataUrl = getStoredProfilePicture()) => {
+  const profileAvatar = document.getElementById('profileAvatar');
+  const userAvatar = document.querySelector('.user-avatar');
+  const firstLetter = String(document.querySelector('.profile-name')?.textContent || '').trim().charAt(0).toUpperCase() || 'U';
+
+  if (profileAvatar) {
+    profileAvatar.classList.toggle('has-image', Boolean(dataUrl));
+    if (dataUrl) {
+      profileAvatar.style.backgroundImage = `url(${dataUrl})`;
+      profileAvatar.textContent = '';
+    } else {
+      profileAvatar.style.backgroundImage = 'none';
+      profileAvatar.textContent = firstLetter;
+    }
+  }
+
+  if (userAvatar) {
+    userAvatar.classList.toggle('has-image', Boolean(dataUrl));
+    if (dataUrl) {
+      userAvatar.style.backgroundImage = `url(${dataUrl})`;
+      userAvatar.textContent = '';
+    } else {
+      userAvatar.style.backgroundImage = 'none';
+      userAvatar.textContent = firstLetter;
+    }
+  }
+};
+
 const saveStoredProfile = (profile) => {
   const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
   const sessionName = String(currentUser?.name || '').trim();
   const sessionEmployeeId = String(currentUser?.employeeId || '').trim();
   const sessionPosition = String(currentUser?.position || '').trim();
-  const storedProfile = {
+  const baseProfile = {
     ...defaultProfile,
-    ...(profile || {}),
-    ...(sessionName ? { firstName: sessionName.split(' ')[0] || profile?.firstName || defaultProfile.firstName, lastName: sessionName.split(' ').slice(1).join(' ') || profile?.lastName || defaultProfile.lastName } : {}),
+    ...(profile || {})
+  };
+  const firstName = String(baseProfile.firstName || '').trim();
+  const lastName = String(baseProfile.lastName || '').trim();
+  const storedProfile = {
+    ...baseProfile,
     ...(sessionEmployeeId ? { employeeId: sessionEmployeeId } : {}),
-    ...(sessionPosition ? { position: sessionPosition } : {})
+    ...(sessionPosition ? { position: sessionPosition } : {}),
+    ...(sessionName && !firstName && !lastName ? { firstName: sessionName.split(' ')[0] || defaultProfile.firstName, lastName: sessionName.split(' ').slice(1).join(' ') || defaultProfile.lastName } : {})
   };
   try {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(storedProfile));
@@ -1243,6 +1307,19 @@ const saveStoredProfile = (profile) => {
   updateProfileUi(storedProfile);
 };
 
+const formatProfileTimestamp = (value) => {
+  if (!value) return 'Never';
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return 'Never';
+  return parsed.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
+};
+
 const updateProfileUi = (profile = getStoredProfile()) => {
   const safeProfile = { ...defaultProfile, ...(profile || {}) };
   const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
@@ -1250,34 +1327,15 @@ const updateProfileUi = (profile = getStoredProfile()) => {
   const sessionName = String(currentUser?.name || '').trim();
   const sessionEmployeeId = String(currentUser?.employeeId || '').trim();
   const sessionPosition = String(currentUser?.position || '').trim();
-  const firstNameFromSession = sessionName ? sessionName.split(' ')[0] : '';
-  const firstName = (currentRole === 'admin' && sessionName ? firstNameFromSession : String(safeProfile.firstName || '').trim()) || firstNameFromSession || 'User';
-  const fullName = (currentRole === 'admin' && sessionName ? sessionName : [safeProfile.firstName, safeProfile.lastName].filter(Boolean).join(' ').trim()) || sessionName || 'User';
-  const role = sessionPosition || (currentRole === 'admin' ? 'Administrator' : String(safeProfile.position || 'Warehouseman').trim()) || 'Warehouseman';
-  const roleLabel = currentRole === 'admin' ? 'Administrator' : role;
-
-  document.querySelectorAll('.user-name').forEach((element) => {
-    element.textContent = firstName.toUpperCase();
-  });
-
-  document.querySelectorAll('.user-role').forEach((element) => {
-    element.textContent = role;
-  });
-
-  const profileName = document.getElementById('profileDisplayName');
-  if (profileName) {
-    profileName.textContent = fullName;
-  }
-
-  const profileEmployeeId = document.getElementById('profileEmployeeId');
-  if (profileEmployeeId) {
-    profileEmployeeId.textContent = `ID: ${sessionEmployeeId || safeProfile.employeeId || 'EMP-001'}`;
-  }
-
-  const profilePosition = document.getElementById('profilePosition');
-  if (profilePosition) {
-    profilePosition.textContent = `Position: ${role}`;
-  }
+  const profileFirstName = String(safeProfile.firstName || '').trim();
+  const profileLastName = String(safeProfile.lastName || '').trim();
+  const firstName = profileFirstName || (sessionName ? sessionName.split(' ')[0] : '') || 'User';
+  const fullName = [profileFirstName, profileLastName].filter(Boolean).join(' ').trim() || sessionName || 'User';
+  const isAdmin = currentRole === 'admin';
+  const role = sessionPosition || (isAdmin ? 'Administrator' : 'Warehouseman');
+  const roleLabel = isAdmin ? 'Administrator' : 'Warehouseman';
+  const username = safeProfile.username || currentUser?.userId || 'user';
+  const email = safeProfile.email || defaultProfile.email;
 
   document.querySelectorAll('.user-name').forEach((element) => {
     element.textContent = fullName.toUpperCase();
@@ -1287,21 +1345,452 @@ const updateProfileUi = (profile = getStoredProfile()) => {
     element.textContent = roleLabel;
   });
 
+  document.querySelectorAll('.profile-badge').forEach((element) => {
+    element.textContent = roleLabel.toUpperCase();
+  });
+
+  const profileName = document.getElementById('profileDisplayName');
+  if (profileName) {
+    profileName.textContent = fullName;
+  }
+
+  const profileCardName = document.querySelector('.profile-name');
+  if (profileCardName) {
+    profileCardName.textContent = fullName;
+  }
+
+  const profileEmployeeId = document.getElementById('profileEmployeeId');
+  if (profileEmployeeId) {
+    profileEmployeeId.textContent = sessionEmployeeId || safeProfile.employeeId || 'EMP-001';
+  }
+
+  const profileUsername = document.getElementById('profileUsername');
+  if (profileUsername) {
+    profileUsername.textContent = username;
+  }
+
+  const profileEmail = document.getElementById('profileEmail');
+  if (profileEmail) {
+    profileEmail.textContent = email;
+  }
+
+  const profilePosition = document.getElementById('profilePosition');
+  if (profilePosition) {
+    profilePosition.textContent = role;
+  }
+
+  const profileLastLogin = document.getElementById('profileLastLogin');
+  if (profileLastLogin) {
+    const accountList = typeof AuthService !== 'undefined' && typeof AuthService.getAccounts === 'function' ? AuthService.getAccounts() : [];
+    const currentAccount = accountList.find((entry) => String(entry?.userId || '') === String(currentUser?.userId || '')) || null;
+    const lastLoginValue = currentAccount?.lastLogin || currentUser?.lastLogin || null;
+    profileLastLogin.textContent = formatProfileTimestamp(lastLoginValue);
+  }
+
   document.querySelectorAll('.admin-only-nav').forEach((element) => {
     const shouldShow = currentRole === 'admin';
     element.classList.toggle('visible', shouldShow);
   });
 
   document.querySelectorAll('.user-avatar').forEach((avatar) => {
-    const avatarSeed = currentRole === 'admin' ? 'Admin' : 'Joseph';
-    avatar.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(avatarSeed)}`;
-    avatar.alt = currentRole === 'admin' ? 'Admin avatar' : 'User avatar';
+    avatar.textContent = firstName.charAt(0).toUpperCase();
+    avatar.setAttribute('aria-label', `${firstName} avatar`);
   });
 
-  const profileAvatar = document.getElementById('profileAvatar');
-  if (profileAvatar) {
-    profileAvatar.textContent = firstName.charAt(0).toUpperCase();
+  applyProfilePictureToAvatar(getStoredProfilePicture(getCurrentProfileUserId()));
+};
+
+const setProfileInlineEditMode = (isEditing) => {
+  const editButton = document.getElementById('profileEditBtn');
+  const cancelButton = document.getElementById('profileCancelEditBtn');
+  const rows = document.querySelectorAll('.profile-detail-row[data-profile-row]');
+
+  rows.forEach((row) => row.classList.toggle('editing', isEditing));
+
+  if (editButton) {
+    editButton.textContent = isEditing ? 'Save Changes' : 'Edit Profile';
+    editButton.dataset.editing = String(isEditing);
   }
+
+  if (cancelButton) {
+    cancelButton.style.display = isEditing ? 'inline-flex' : 'none';
+  }
+};
+
+const populateProfileInlineFields = () => {
+  const profile = getStoredProfile();
+  const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
+  const fullNameInput = document.getElementById('profileDisplayNameInput');
+  const usernameInput = document.getElementById('profileUsernameInput');
+  const emailInput = document.getElementById('profileEmailInput');
+
+  if (fullNameInput) {
+    fullNameInput.value = [profile.firstName, profile.lastName].filter(Boolean).join(' ').trim() || String(currentUser?.name || '').trim() || '';
+  }
+
+  if (usernameInput) {
+    usernameInput.value = profile.username || currentUser?.userId || '';
+  }
+
+  if (emailInput) {
+    emailInput.value = profile.email || defaultProfile.email || '';
+  }
+};
+
+const saveProfileInlineEdits = () => {
+  const profile = getStoredProfile();
+  const fullNameInput = document.getElementById('profileDisplayNameInput');
+  const usernameInput = document.getElementById('profileUsernameInput');
+  const emailInput = document.getElementById('profileEmailInput');
+  const fullNameValue = String(fullNameInput?.value || '').trim();
+  const splitName = fullNameValue.split(/\s+/).filter(Boolean);
+  const firstName = splitName[0] || '';
+  const lastName = splitName.slice(1).join(' ');
+
+  const updatedProfile = {
+    ...profile,
+    firstName,
+    lastName,
+    username: String(usernameInput?.value || '').trim() || profile.username || '',
+    email: String(emailInput?.value || '').trim() || profile.email || defaultProfile.email
+  };
+
+  saveStoredProfile(updatedProfile);
+  setProfileInlineEditMode(false);
+};
+
+let pendingProfilePictureDataUrl = null;
+
+const cropState = {
+  scale: 1,
+  rotate: 0,
+  translateX: 0,
+  translateY: 0,
+  isDragging: false,
+  lastX: 0,
+  lastY: 0,
+  baseDisplayWidth: 0,
+  baseDisplayHeight: 0
+};
+
+const getProfilePictureModalPreviewText = () => {
+  const profileName = String(document.querySelector('.profile-name')?.textContent || '').trim();
+  return profileName.charAt(0).toUpperCase() || 'U';
+};
+
+let _cropperInitialized = false;
+
+const updateModalImageTransform = () => {
+  const img = document.getElementById('profilePictureModalImg');
+  if (!img) return;
+  const { scale, rotate, translateX, translateY } = cropState;
+  img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale}) rotate(${rotate}deg)`;
+};
+
+const resetCropState = (img) => {
+  cropState.scale = 1;
+  cropState.rotate = 0;
+  cropState.translateX = 0;
+  cropState.translateY = 0;
+  cropState.isDragging = false;
+  cropState.lastX = 0;
+  cropState.lastY = 0;
+  if (img && img.naturalWidth && img.naturalHeight) {
+    const previewEl = document.getElementById('profilePictureModalPreview');
+    const size = Math.min(previewEl.clientWidth, previewEl.clientHeight) || 180;
+    const baseScale = Math.max(size / img.naturalWidth, size / img.naturalHeight);
+    cropState.baseDisplayWidth = img.naturalWidth * baseScale;
+    cropState.baseDisplayHeight = img.naturalHeight * baseScale;
+    img.style.width = `${cropState.baseDisplayWidth}px`;
+    img.style.height = `${cropState.baseDisplayHeight}px`;
+  }
+  updateModalImageTransform();
+};
+
+const renderProfilePictureModalPreview = (dataUrl = pendingProfilePictureDataUrl) => {
+  const previewElement = document.getElementById('profilePictureModalPreview');
+  const removeButton = document.getElementById('profilePictureRemoveBtn');
+  const img = document.getElementById('profilePictureModalImg');
+  const fallback = document.getElementById('profilePictureModalFallback');
+  const stored = getStoredProfilePicture(getCurrentProfileUserId());
+  const useData = dataUrl || stored || '';
+
+  if (img) {
+    if (useData) {
+      img.src = useData;
+      img.style.display = '';
+      fallback.style.display = 'none';
+      img.onload = () => {
+        resetCropState(img);
+      };
+    } else {
+      img.src = '';
+      img.style.display = 'none';
+      fallback.style.display = '';
+      fallback.textContent = getProfilePictureModalPreviewText();
+      // reset transform so any previous drag/zoom doesn't persist
+      cropState.scale = 1;
+      cropState.rotate = 0;
+      cropState.translateX = 0;
+      cropState.translateY = 0;
+    }
+  }
+
+  if (previewElement) {
+    previewElement.classList.toggle('has-image', Boolean(useData));
+  }
+
+  if (removeButton) {
+    const hasStoredPicture = Boolean(stored);
+    const shouldDisable = !hasStoredPicture && !useData;
+    removeButton.disabled = shouldDisable;
+    removeButton.classList.toggle('is-disabled', shouldDisable);
+  }
+  // show/hide rotate control depending on whether an image is present
+  const rotateBtn = document.getElementById('profilePictureRotateBtn');
+  if (rotateBtn) {
+    rotateBtn.style.display = useData ? '' : 'none';
+  }
+  // show/hide zoom row when no image present
+  const zoomRow = document.querySelector('.profile-picture-zoom-row');
+  if (zoomRow) {
+    zoomRow.style.display = useData ? '' : 'none';
+  }
+};
+
+const openProfilePictureModal = () => {
+  const modalOverlay = document.getElementById('profilePictureModalOverlay');
+  if (!modalOverlay) return;
+
+  pendingProfilePictureDataUrl = getStoredProfilePicture(getCurrentProfileUserId()) || null;
+  renderProfilePictureModalPreview(pendingProfilePictureDataUrl);
+  modalOverlay.style.display = 'flex';
+  modalOverlay.setAttribute('aria-hidden', 'false');
+};
+
+const closeProfilePictureModal = () => {
+  const modalOverlay = document.getElementById('profilePictureModalOverlay');
+  if (!modalOverlay) return;
+
+  pendingProfilePictureDataUrl = null;
+  modalOverlay.style.display = 'none';
+  modalOverlay.setAttribute('aria-hidden', 'true');
+};
+
+const getCroppedDataUrl = () => {
+  const img = document.getElementById('profilePictureModalImg');
+  const preview = document.getElementById('profilePictureModalPreview');
+  if (!img || !img.src) return null;
+  const previewSize = Math.min(preview.clientWidth, preview.clientHeight) || 180;
+  const canvas = document.createElement('canvas');
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = previewSize * dpr;
+  canvas.height = previewSize * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.save();
+  // center
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  const rad = (cropState.rotate || 0) * (Math.PI / 180);
+  ctx.rotate(rad);
+  const drawWidth = cropState.baseDisplayWidth * (cropState.scale || 1);
+  const drawHeight = cropState.baseDisplayHeight * (cropState.scale || 1);
+  // account for device pixel ratio
+  const dx = (cropState.translateX || 0) * dpr;
+  const dy = (cropState.translateY || 0) * dpr;
+  // draw image centered, apply translations
+  ctx.drawImage(img, -drawWidth * dpr / 2 + dx, -drawHeight * dpr / 2 + dy, drawWidth * dpr, drawHeight * dpr);
+  ctx.restore();
+  try {
+    return canvas.toDataURL('image/png');
+  } catch (e) {
+    console.warn('Unable to export cropped image', e);
+    return null;
+  }
+};
+
+const initCropperEvents = () => {
+  if (_cropperInitialized) return;
+  _cropperInitialized = true;
+  const preview = document.getElementById('profilePictureModalPreview');
+  const img = document.getElementById('profilePictureModalImg');
+  const zoomRange = document.getElementById('profilePictureZoomRange');
+  const rotateBtn = document.getElementById('profilePictureRotateBtn');
+  const fileInput = document.getElementById('profilePictureModalInput');
+
+  if (!preview || !img) return;
+
+  // Drag to pan
+  const onPointerDown = (ev) => {
+    ev.preventDefault();
+    cropState.isDragging = true;
+    cropState.lastX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
+    cropState.lastY = ev.clientY || (ev.touches && ev.touches[0].clientY) || 0;
+  };
+
+  const onPointerMove = (ev) => {
+    if (!cropState.isDragging) return;
+    const clientX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
+    const clientY = ev.clientY || (ev.touches && ev.touches[0].clientY) || 0;
+    const dx = clientX - cropState.lastX;
+    const dy = clientY - cropState.lastY;
+    cropState.lastX = clientX;
+    cropState.lastY = clientY;
+    cropState.translateX += dx;
+    cropState.translateY += dy;
+    updateModalImageTransform();
+  };
+
+  const onPointerUp = () => {
+    cropState.isDragging = false;
+  };
+
+  preview.addEventListener('mousedown', onPointerDown);
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+
+  preview.addEventListener('touchstart', onPointerDown, { passive: false });
+  window.addEventListener('touchmove', onPointerMove, { passive: false });
+  window.addEventListener('touchend', onPointerUp);
+
+  // wheel to zoom
+  preview.addEventListener('wheel', (ev) => {
+    ev.preventDefault();
+    const delta = ev.deltaY < 0 ? 1.06 : 0.94;
+    cropState.scale = Math.min(3, Math.max(0.5, cropState.scale * delta));
+    if (zoomRange) zoomRange.value = String(cropState.scale);
+    updateModalImageTransform();
+  }, { passive: false });
+
+  if (zoomRange) {
+    zoomRange.addEventListener('input', (ev) => {
+      const val = Number(ev.target.value || 1);
+      cropState.scale = val;
+      updateModalImageTransform();
+    });
+  }
+
+  if (rotateBtn) {
+    rotateBtn.addEventListener('click', () => {
+      cropState.rotate = (cropState.rotate + 90) % 360;
+      updateModalImageTransform();
+    });
+  }
+
+  // Upload is triggered by the upload label; no separate change button.
+};
+
+const attachProfileModalHandlers = () => {
+  const editProfileButton = document.getElementById('profileEditBtn');
+  const cancelEditButton = document.getElementById('profileCancelEditBtn');
+  const picturePickerButton = document.getElementById('profilePicturePickerBtn');
+  const pictureInput = document.getElementById('profilePictureModalInput');
+  const modalCloseButton = document.getElementById('profilePictureModalCloseBtn');
+  const modalCancelButton = document.getElementById('profilePictureCancelBtn');
+  const modalSaveButton = document.getElementById('profilePictureSaveBtn');
+  const removeButton = document.getElementById('profilePictureRemoveBtn');
+  const modalOverlay = document.getElementById('profilePictureModalOverlay');
+  const uploadLabel = document.querySelector('.upload-btn');
+
+  if (picturePickerButton) {
+    picturePickerButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      openProfilePictureModal();
+    });
+  }
+
+  if (modalCloseButton) {
+    modalCloseButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      closeProfilePictureModal();
+    });
+  }
+
+  if (modalCancelButton) {
+    modalCancelButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      closeProfilePictureModal();
+    });
+  }
+
+  if (modalSaveButton) {
+    modalSaveButton.addEventListener('click', async (event) => {
+      event.preventDefault();
+      // export cropped image
+      const exported = getCroppedDataUrl();
+      if (exported) {
+        pendingProfilePictureDataUrl = exported;
+        saveStoredProfilePicture(exported);
+        applyProfilePictureToAvatar(exported);
+      } else {
+        // if no image, clear stored
+        saveStoredProfilePicture(null);
+        applyProfilePictureToAvatar(null);
+      }
+      closeProfilePictureModal();
+    });
+  }
+
+  if (removeButton) {
+    removeButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      // clear pending and preview
+      pendingProfilePictureDataUrl = null;
+      renderProfilePictureModalPreview(null);
+    });
+  }
+
+  if (pictureInput) {
+    pictureInput.addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const isValidType = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type);
+      if (!isValidType) {
+        event.target.value = '';
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+        pendingProfilePictureDataUrl = dataUrl;
+        renderProfilePictureModalPreview(dataUrl);
+        // initialize cropper events when image is set
+        initCropperEvents();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (modalOverlay) {
+    modalOverlay.addEventListener('click', (event) => {
+      if (event.target === modalOverlay) {
+        closeProfilePictureModal();
+      }
+    });
+  }
+
+  if (editProfileButton) {
+    editProfileButton.onclick = (event) => {
+      event.preventDefault();
+      const isEditing = editProfileButton.dataset.editing === 'true';
+      if (isEditing) {
+        saveProfileInlineEdits();
+      } else {
+        populateProfileInlineFields();
+        setProfileInlineEditMode(true);
+      }
+    };
+  }
+
+  if (cancelEditButton) {
+    cancelEditButton.onclick = (event) => {
+      event.preventDefault();
+      setProfileInlineEditMode(false);
+    };
+  }
+
+  // initialize cropper listeners once if modal exists
+  initCropperEvents();
 };
 
 const getMonthLabel = (dateValue) => {
@@ -2407,167 +2896,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const attachProfileModalHandlers = () => {
     const editProfileButton = document.getElementById('profileEditBtn');
-    const changePasswordButton = document.getElementById('changePasswordBtn');
+    const cancelEditButton = document.getElementById('profileCancelEditBtn');
+    const picturePickerButton = document.getElementById('profilePicturePickerBtn');
+    const pictureInput = document.getElementById('profilePictureModalInput');
+    const modalCloseButton = document.getElementById('profilePictureModalCloseBtn');
+    const modalCancelButton = document.getElementById('profilePictureCancelBtn');
+    const modalSaveButton = document.getElementById('profilePictureSaveBtn');
+    const removeButton = document.getElementById('profilePictureRemoveBtn');
+    const modalOverlay = document.getElementById('profilePictureModalOverlay');
 
-    if (!editProfileButton || !changePasswordButton) return;
-
-    editProfileButton.onclick = (event) => {
-      event.preventDefault();
-      openProfileModal('edit');
-    };
-
-    changePasswordButton.onclick = (event) => {
-      event.preventDefault();
-      openProfileModal('password');
-    };
-  };
-
-  const openProfileModal = (mode) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'profile-modal-overlay';
-    overlay.style.display = 'flex';
-    overlay.innerHTML = `
-      <div class="profile-modal-inner">
-        <h2>${mode === 'password' ? 'Change Password' : 'Edit Profile'}</h2>
-        ${mode === 'password' ? '<p>Use this form to update your account password.</p>' : '<p>Update your personal details below.</p>'}
-        <form class="profile-modal-form" data-modal-mode="${mode}">
-          ${mode === 'password' ? `
-            <div class="form-field">
-              <label for="currentPassword">Current Password</label>
-              <input id="currentPassword" type="password" placeholder="Enter current password" />
-            </div>
-            <div class="profile-modal-grid">
-              <div class="form-field">
-                <label for="newPassword">New Password</label>
-                <input id="newPassword" type="password" placeholder="New password" />
-              </div>
-              <div class="form-field">
-                <label for="confirmPassword">Confirm Password</label>
-                <input id="confirmPassword" type="password" placeholder="Confirm password" />
-              </div>
-            </div>
-            <div id="passwordFormError" class="form-error" role="alert" aria-live="polite"></div>
-          ` : `
-            <div class="profile-modal-grid">
-              <div class="form-field">
-                <label for="firstName">First Name</label>
-                <input id="firstName" type="text" placeholder="First name" />
-              </div>
-              <div class="form-field">
-                <label for="lastName">Last Name</label>
-                <input id="lastName" type="text" placeholder="Last name" />
-              </div>
-            </div>
-            <div class="profile-modal-grid">
-              <div class="form-field">
-                <label for="employeeId">Employee ID</label>
-                <input id="employeeId" type="text" placeholder="Employee ID" readonly tabindex="-1" onfocus="this.blur()" />
-              </div>
-              <div class="form-field">
-                <label for="position">Position</label>
-                <input id="position" type="text" placeholder="Position" readonly tabindex="-1" onfocus="this.blur()" />
-              </div>
-            </div>
-            <div class="profile-modal-grid">
-              <div class="form-field">
-                <label for="email">Email</label>
-                <input id="email" type="email" placeholder="Email" />
-              </div>
-              <div class="form-field">
-                <label for="phone">Phone</label>
-                <input id="phone" type="text" placeholder="Phone" />
-              </div>
-            </div>
-          `}
-          <div class="profile-modal-actions">
-            <button type="button" class="profile-modal-btn cancel-btn">Cancel</button>
-            <button type="submit" class="profile-modal-btn primary">${mode === 'password' ? 'Save Password' : 'Save Changes'}</button>
-          </div>
-        </form>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    const profile = getStoredProfile();
-    const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
-    const currentRole = (currentUser?.role || 'employee').toLowerCase();
-    const sessionName = String(currentUser?.name || '').trim();
-    const sessionEmployeeId = String(currentUser?.employeeId || '').trim();
-    const sessionPosition = String(currentUser?.position || '').trim();
-    if (mode !== 'password') {
-      const modalFirstName = currentRole === 'admin' && sessionName ? sessionName.split(' ')[0] : profile.firstName || '';
-      const modalLastName = currentRole === 'admin' && sessionName ? sessionName.split(' ').slice(1).join(' ') : profile.lastName || '';
-      overlay.querySelector('#firstName').value = modalFirstName;
-      overlay.querySelector('#lastName').value = modalLastName;
-      const employeeIdField = overlay.querySelector('#employeeId');
-      if (employeeIdField) {
-        employeeIdField.value = sessionEmployeeId || profile.employeeId || '';
-        employeeIdField.readOnly = true;
-        employeeIdField.setAttribute('aria-readonly', 'true');
-      }
-      const positionField = overlay.querySelector('#position');
-      if (positionField) {
-        positionField.value = sessionPosition || profile.position || 'Warehouseman';
-        positionField.readOnly = true;
-        positionField.setAttribute('aria-readonly', 'true');
-      }
-      overlay.querySelector('#email').value = profile.email || '';
-      overlay.querySelector('#phone').value = profile.phone || '';
+    if (picturePickerButton) {
+      picturePickerButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        openProfilePictureModal();
+      });
     }
 
-    const closeModal = () => overlay.remove();
-    overlay.addEventListener('click', (event) => {
-      if (event.target === overlay || event.target.classList.contains('cancel-btn')) {
-        closeModal();
-      }
-    });
+    if (modalCloseButton) {
+      modalCloseButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeProfilePictureModal();
+      });
+    }
 
-    overlay.querySelector('form').addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (mode === 'password') {
-        const passwordError = overlay.querySelector('#passwordFormError');
-        const currentPassword = String(overlay.querySelector('#currentPassword').value || '').trim();
-        const newPassword = String(overlay.querySelector('#newPassword').value || '').trim();
-        const confirmPassword = String(overlay.querySelector('#confirmPassword').value || '').trim();
+    if (modalCancelButton) {
+      modalCancelButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeProfilePictureModal();
+      });
+    }
 
-        if (passwordError) {
-          passwordError.textContent = '';
+    if (modalSaveButton) {
+      modalSaveButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        saveStoredProfilePicture(pendingProfilePictureDataUrl);
+        applyProfilePictureToAvatar(pendingProfilePictureDataUrl);
+        closeProfilePictureModal();
+      });
+    }
+
+    if (removeButton) {
+      removeButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        pendingProfilePictureDataUrl = null;
+        renderProfilePictureModalPreview(null);
+      });
+    }
+
+    if (pictureInput) {
+      pictureInput.addEventListener('change', (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const isValidType = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file.type);
+        if (!isValidType) {
+          event.target.value = '';
+          return;
         }
 
-        if (typeof AuthService !== 'undefined' && typeof AuthService.changePassword === 'function') {
-          const result = AuthService.changePassword(currentPassword, newPassword, confirmPassword);
-          if (!result?.success) {
-            if (passwordError) {
-              passwordError.textContent = result?.message || 'Unable to change password.';
-            }
-            return;
-          }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = typeof reader.result === 'string' ? reader.result : '';
+          pendingProfilePictureDataUrl = dataUrl;
+          renderProfilePictureModalPreview(dataUrl);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    if (modalOverlay) {
+      modalOverlay.addEventListener('click', (event) => {
+        if (event.target === modalOverlay) {
+          closeProfilePictureModal();
         }
+      });
+    }
 
-        closeModal();
-        return;
-      }
-
-      const formData = new FormData(overlay.querySelector('form'));
-      const updatedProfile = {
-        ...profile,
-        firstName: String(overlay.querySelector('#firstName').value || '').trim() || profile.firstName || defaultProfile.firstName,
-        lastName: String(overlay.querySelector('#lastName').value || '').trim() || profile.lastName || defaultProfile.lastName,
-        employeeId: String(overlay.querySelector('#employeeId').value || '').trim() || profile.employeeId || defaultProfile.employeeId,
-        position: sessionPosition || profile.position || defaultProfile.position,
-        email: String(overlay.querySelector('#email').value || '').trim() || profile.email || defaultProfile.email,
-        phone: String(overlay.querySelector('#phone').value || '').trim() || profile.phone || defaultProfile.phone
+    if (editProfileButton) {
+      editProfileButton.onclick = (event) => {
+        event.preventDefault();
+        const isEditing = editProfileButton.dataset.editing === 'true';
+        if (isEditing) {
+          saveProfileInlineEdits();
+        } else {
+          populateProfileInlineFields();
+          setProfileInlineEditMode(true);
+        }
       };
-      saveStoredProfile(updatedProfile);
-      closeModal();
-    });
+    }
 
-    document.addEventListener('keydown', function handleModalEscape(event) {
-      if (event.key === 'Escape') {
-        closeModal();
-        document.removeEventListener('keydown', handleModalEscape);
-      }
-    });
+    if (cancelEditButton) {
+      cancelEditButton.onclick = (event) => {
+        event.preventDefault();
+        setProfileInlineEditMode(false);
+      };
+    }
   };
 
   const attachUserManagementHandlers = () => {

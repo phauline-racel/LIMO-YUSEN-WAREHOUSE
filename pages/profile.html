@@ -37,7 +37,7 @@
           <button class="icon notification-btn" type="button"><i class="bi bi-bell-fill"></i><span class="badge">1</span></button>
           <div class="user-profile-container">
             <button class="user-profile" id="userProfileBtn" type="button">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Joseph" alt="User" class="user-avatar"/>
+              <div class="user-avatar" aria-hidden="true"></div>
               <div class="user-info">
                 <div class="user-name">JUAN CRUZ</div>
                 <div class="user-role">Administrator</div>
@@ -53,12 +53,8 @@
         </div>
       </header>
       <div class="content profile-page">
-        <div class="page-header profile-page-header">
-          <div>
-            <p class="page-subtitle">My Profile</p>
-            <h1>Profile Information</h1>
-          </div>
-          <button class="btn primary" id="profileEditBtn" type="button">Edit Profile</button>
+        <div class="page-header">
+          <h1>My Profile</h1>
         </div>
         <div class="tabs-header">
           <div class="tabs">
@@ -70,20 +66,46 @@
           <div class="profile-grid">
             <section class="profile-card card">
               <div class="profile-avatar-block">
-                <div id="profileAvatar" class="profile-avatar">J</div>
+                <div class="profile-avatar-wrap">
+                  <div id="profileAvatar" class="profile-avatar">J</div>
+                  <button class="profile-picture-picker" id="profilePicturePickerBtn" type="button" title="Change Profile Picture" aria-label="Change Profile Picture">
+                    <i class="bi bi-camera-fill"></i>
+                  </button>
+                </div>
                 <div class="profile-card-info">
                   <h2 class="profile-name">Juan Dela Cruz</h2>
-                  <p class="profile-role">Warehouse Staff</p>
-                  <span class="profile-badge">ADMIN</span>
+                  <span class="profile-badge"></span>
                 </div>
               </div>
             </section>
             <section class="profile-details-card card">
+              <div class="profile-details-header">
+                <button class="btn primary" id="profileEditBtn" type="button">Edit Profile</button>
+                <button class="btn" id="profileCancelEditBtn" type="button" style="display:none;">Cancel</button>
+              </div>
               <div class="profile-details-grid">
                 <div class="profile-detail-row"><span>Employee ID</span><strong id="profileEmployeeId">EMP001</strong></div>
-                <div class="profile-detail-row"><span>Full Name</span><strong id="profileDisplayName">Juan Cruz</strong></div>
-                <div class="profile-detail-row"><span>Username</span><strong id="profileUsername">juan.dc</strong></div>
-                <div class="profile-detail-row"><span>Email</span><strong id="profileEmail">juan.dc@yusen.com.ph</strong></div>
+                <div class="profile-detail-row" data-profile-row="fullName">
+                  <span>Full Name</span>
+                  <div class="profile-detail-value-wrap">
+                    <strong id="profileDisplayName" class="profile-detail-value">Juan Cruz</strong>
+                    <input id="profileDisplayNameInput" class="profile-detail-input" type="text" />
+                  </div>
+                </div>
+                <div class="profile-detail-row" data-profile-row="username">
+                  <span>Username</span>
+                  <div class="profile-detail-value-wrap">
+                    <strong id="profileUsername" class="profile-detail-value">juan.dc</strong>
+                    <input id="profileUsernameInput" class="profile-detail-input" type="text" />
+                  </div>
+                </div>
+                <div class="profile-detail-row" data-profile-row="email">
+                  <span>Email</span>
+                  <div class="profile-detail-value-wrap">
+                    <strong id="profileEmail" class="profile-detail-value">juan.dc@yusen.com.ph</strong>
+                    <input id="profileEmailInput" class="profile-detail-input" type="email" />
+                  </div>
+                </div>
                 <div class="profile-detail-row"><span>Role</span><strong id="profilePosition">Administrator</strong></div>
                 <div class="profile-detail-row"><span>Status</span><strong id="profileStatus">Active</strong></div>
                 <div class="profile-detail-row"><span>Last Login</span><strong id="profileLastLogin">Today, 6:45 AM</strong></div>
@@ -114,6 +136,39 @@
             </div>
           </section>
         </div>
+      </div>
+    </div>
+  </div>
+  <div class="profile-picture-modal-overlay" id="profilePictureModalOverlay" aria-hidden="true">
+    <div class="profile-picture-modal" role="dialog" aria-modal="true" aria-labelledby="profilePictureModalTitle">
+      <div class="profile-picture-modal-header">
+        <h3 id="profilePictureModalTitle">Change Photo</h3>
+        <button class="profile-picture-modal-close" id="profilePictureModalCloseBtn" type="button" aria-label="Close">×</button>
+      </div>
+        <div class="profile-picture-modal-body">
+        <div class="profile-picture-preview-wrap">
+          <div id="profilePictureModalPreview" class="profile-picture-modal-preview">
+            <img id="profilePictureModalImg" src="" alt="Preview" draggable="false" />
+            <div class="profile-picture-modal-fallback" id="profilePictureModalFallback">J</div>
+          </div>
+        </div>
+        <div class="profile-picture-zoom-row">
+          <label for="profilePictureZoomRange">Zoom</label>
+          <input id="profilePictureZoomRange" type="range" min="0.5" max="3" step="0.01" value="1" />
+        </div>
+        <div class="profile-picture-modal-actions">
+          <label class="profile-picture-action-btn upload-btn" for="profilePictureModalInput">
+            <i class="bi bi-upload"></i>
+            <span>Upload</span>
+          </label>
+          <button class="profile-picture-action-btn rotate-btn" id="profilePictureRotateBtn" type="button"><i class="bi bi-arrow-clockwise"></i> Rotate</button>
+          <button class="profile-picture-action-btn remove-btn" id="profilePictureRemoveBtn" type="button">Remove Profile</button>
+          <input id="profilePictureModalInput" type="file" accept="image/jpeg,image/jpg,image/png,image/webp" hidden />
+        </div>
+      </div>
+      <div class="profile-picture-modal-footer">
+        <button class="btn" id="profilePictureCancelBtn" type="button">Cancel</button>
+        <button class="btn primary" id="profilePictureSaveBtn" type="button">Save</button>
       </div>
     </div>
   </div>
