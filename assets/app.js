@@ -1256,8 +1256,10 @@ const saveStoredProfilePicture = (dataUrl, userId = getCurrentProfileUserId()) =
 
 const applyProfilePictureToAvatar = (dataUrl = getStoredProfilePicture()) => {
   const profileAvatar = document.getElementById('profileAvatar');
-  const userAvatar = document.querySelector('.user-avatar');
-  const firstLetter = String(document.querySelector('.profile-name')?.textContent || '').trim().charAt(0).toUpperCase() || 'U';
+  const userAvatars = document.querySelectorAll('.user-avatar');
+  const currentUser = typeof AuthService !== 'undefined' ? AuthService.getCurrentUser?.() : null;
+  const name = String(currentUser?.name || document.querySelector('.user-name')?.textContent || document.querySelector('.profile-name')?.textContent || '').trim();
+  const firstLetter = name.charAt(0).toUpperCase() || 'U';
 
   if (profileAvatar) {
     profileAvatar.classList.toggle('has-image', Boolean(dataUrl));
@@ -1270,16 +1272,16 @@ const applyProfilePictureToAvatar = (dataUrl = getStoredProfilePicture()) => {
     }
   }
 
-  if (userAvatar) {
-    userAvatar.classList.toggle('has-image', Boolean(dataUrl));
+  userAvatars.forEach((avatar) => {
+    avatar.classList.toggle('has-image', Boolean(dataUrl));
     if (dataUrl) {
-      userAvatar.style.backgroundImage = `url(${dataUrl})`;
-      userAvatar.textContent = '';
+      avatar.style.backgroundImage = `url(${dataUrl})`;
+      avatar.textContent = '';
     } else {
-      userAvatar.style.backgroundImage = 'none';
-      userAvatar.textContent = firstLetter;
+      avatar.style.backgroundImage = 'none';
+      avatar.textContent = firstLetter;
     }
-  }
+  });
 };
 
 const saveStoredProfile = (profile) => {
@@ -1480,11 +1482,36 @@ const getProfilePictureModalPreviewText = () => {
 
 let _cropperInitialized = false;
 
+const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+const getPreviewSize = () => {
+  const previewEl = document.getElementById('profilePictureModalPreview');
+  return Math.min(previewEl?.clientWidth || 180, previewEl?.clientHeight || 180) || 180;
+};
+
+const clampCropTranslation = () => {
+  const img = document.getElementById('profilePictureModalImg');
+  const preview = document.getElementById('profilePictureModalPreview');
+  if (!img || !preview) return;
+
+  const previewSize = getPreviewSize();
+  const drawWidth = (cropState.baseDisplayWidth || img.naturalWidth || previewSize) * (cropState.scale || 1);
+  const drawHeight = (cropState.baseDisplayHeight || img.naturalHeight || previewSize) * (cropState.scale || 1);
+  const maxTranslateX = Math.max(0, (drawWidth - previewSize) / 2);
+  const maxTranslateY = Math.max(0, (drawHeight - previewSize) / 2);
+
+  cropState.translateX = clamp(cropState.translateX, -maxTranslateX, maxTranslateX);
+  cropState.translateY = clamp(cropState.translateY, -maxTranslateY, maxTranslateY);
+};
+
 const updateModalImageTransform = () => {
   const img = document.getElementById('profilePictureModalImg');
   if (!img) return;
+
+  clampCropTranslation();
+
   const { scale, rotate, translateX, translateY } = cropState;
-  img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale}) rotate(${rotate}deg)`;
+  img.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale}) rotate(${rotate}deg)`;
 };
 
 const resetCropState = (img) => {
@@ -1497,7 +1524,7 @@ const resetCropState = (img) => {
   cropState.lastY = 0;
   if (img && img.naturalWidth && img.naturalHeight) {
     const previewEl = document.getElementById('profilePictureModalPreview');
-    const size = Math.min(previewEl.clientWidth, previewEl.clientHeight) || 180;
+    const size = Math.min(previewEl?.clientWidth || 180, previewEl?.clientHeight || 180) || 180;
     const baseScale = Math.max(size / img.naturalWidth, size / img.naturalHeight);
     cropState.baseDisplayWidth = img.naturalWidth * baseScale;
     cropState.baseDisplayHeight = img.naturalHeight * baseScale;
@@ -1563,9 +1590,9 @@ const openProfilePictureModal = () => {
   if (!modalOverlay) return;
 
   pendingProfilePictureDataUrl = getStoredProfilePicture(getCurrentProfileUserId()) || null;
-  renderProfilePictureModalPreview(pendingProfilePictureDataUrl);
   modalOverlay.style.display = 'flex';
   modalOverlay.setAttribute('aria-hidden', 'false');
+  renderProfilePictureModalPreview(pendingProfilePictureDataUrl);
 };
 
 const closeProfilePictureModal = () => {
@@ -1615,11 +1642,12 @@ const initCropperEvents = () => {
   const img = document.getElementById('profilePictureModalImg');
   const zoomRange = document.getElementById('profilePictureZoomRange');
   const rotateBtn = document.getElementById('profilePictureRotateBtn');
-  const fileInput = document.getElementById('profilePictureModalInput');
 
   if (!preview || !img) return;
 
-  // Drag to pan
+  let pinchDistance = null;
+  let pinchStartScale = 1;
+
   const onPointerDown = (ev) => {
     ev.preventDefault();
     cropState.isDragging = true;
@@ -1629,10 +1657,12 @@ const initCropperEvents = () => {
 
   const onPointerMove = (ev) => {
     if (!cropState.isDragging) return;
+
     const clientX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
     const clientY = ev.clientY || (ev.touches && ev.touches[0].clientY) || 0;
     const dx = clientX - cropState.lastX;
     const dy = clientY - cropState.lastY;
+
     cropState.lastX = clientX;
     cropState.lastY = clientY;
     cropState.translateX += dx;
@@ -1642,21 +1672,51 @@ const initCropperEvents = () => {
 
   const onPointerUp = () => {
     cropState.isDragging = false;
+    pinchDistance = null;
   };
 
   preview.addEventListener('mousedown', onPointerDown);
   window.addEventListener('mousemove', onPointerMove);
   window.addEventListener('mouseup', onPointerUp);
 
-  preview.addEventListener('touchstart', onPointerDown, { passive: false });
-  window.addEventListener('touchmove', onPointerMove, { passive: false });
+  preview.addEventListener('touchstart', (ev) => {
+    if (ev.touches.length === 2) {
+      ev.preventDefault();
+      pinchDistance = Math.hypot(
+        ev.touches[0].clientX - ev.touches[1].clientX,
+        ev.touches[0].clientY - ev.touches[1].clientY
+      );
+      pinchStartScale = cropState.scale;
+      cropState.isDragging = false;
+      return;
+    }
+
+    onPointerDown(ev);
+  }, { passive: false });
+
+  window.addEventListener('touchmove', (ev) => {
+    if (ev.touches.length === 2 && pinchDistance) {
+      ev.preventDefault();
+      const nextDistance = Math.hypot(
+        ev.touches[0].clientX - ev.touches[1].clientX,
+        ev.touches[0].clientY - ev.touches[1].clientY
+      );
+      const ratio = nextDistance / pinchDistance || 1;
+      cropState.scale = clamp(pinchStartScale * ratio, 0.5, 3);
+      if (zoomRange) zoomRange.value = String(cropState.scale);
+      updateModalImageTransform();
+      return;
+    }
+
+    onPointerMove(ev);
+  }, { passive: false });
+
   window.addEventListener('touchend', onPointerUp);
 
-  // wheel to zoom
   preview.addEventListener('wheel', (ev) => {
     ev.preventDefault();
     const delta = ev.deltaY < 0 ? 1.06 : 0.94;
-    cropState.scale = Math.min(3, Math.max(0.5, cropState.scale * delta));
+    cropState.scale = clamp(cropState.scale * delta, 0.5, 3);
     if (zoomRange) zoomRange.value = String(cropState.scale);
     updateModalImageTransform();
   }, { passive: false });
@@ -1664,7 +1724,7 @@ const initCropperEvents = () => {
   if (zoomRange) {
     zoomRange.addEventListener('input', (ev) => {
       const val = Number(ev.target.value || 1);
-      cropState.scale = val;
+      cropState.scale = clamp(val, 0.5, 3);
       updateModalImageTransform();
     });
   }
@@ -1676,7 +1736,9 @@ const initCropperEvents = () => {
     });
   }
 
-  // Upload is triggered by the upload label; no separate change button.
+  if (zoomRange) {
+    zoomRange.value = String(cropState.scale || 1);
+  }
 };
 
 const attachProfileModalHandlers = () => {
@@ -1754,7 +1816,7 @@ const attachProfileModalHandlers = () => {
         const dataUrl = typeof reader.result === 'string' ? reader.result : '';
         pendingProfilePictureDataUrl = dataUrl;
         renderProfilePictureModalPreview(dataUrl);
-        // initialize cropper events when image is set
+        requestAnimationFrame(() => updateModalImageTransform());
         initCropperEvents();
       };
       reader.readAsDataURL(file);
