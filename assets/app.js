@@ -3318,7 +3318,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         panel.classList.remove('open');
 
-        const targetPage = selectedSource === 'Activity Report' ? 'activity-report.html' : 'inventory.html';
+        const targetPage = selectedSource === 'Activity Report' ? 'dashboard.html' : 'inventory.html';
         const targetPageKey = selectedSource === 'Activity Report' ? 'activity' : 'inventory';
 
         if (selectedValue) {
