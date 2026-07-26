@@ -56,7 +56,7 @@
           <h1>Dashboard</h1>
         </div>
         <div class="card-row">
-          <div class="card card-animated">
+          <div id="dashboardTotalShipmentsCard" class="card card-animated clickable-card" data-dashboard-filter="all">
             <div class="card-content">
               <div>
                 <div class="card-title">Total Shipments</div>
@@ -66,7 +66,7 @@
             </div>
             <div class="card-icon icon-blue"><span class="material-symbols-outlined">local_shipping</span></div>
           </div>
-          <div class="card card-animated">
+          <div id="dashboardCargoInWarehouseCard" class="card card-animated clickable-card" data-dashboard-filter="remaining">
             <div class="card-content">
               <div>
                 <div class="card-title">Cargo in Warehouse</div>
@@ -76,17 +76,7 @@
             </div>
             <div class="card-icon icon-green"><span class="material-symbols-outlined">warehouse</span></div>
           </div>
-          <div class="card card-animated">
-            <div class="card-content">
-              <div>
-                <div class="card-title">Incoming Today</div>
-                <div class="card-value" id="dashboardIncomingToday">28</div>
-                <div class="card-subtitle">Shipments</div>
-              </div>
-            </div>
-            <div class="card-icon icon-blue"><i class="bi bi-box-arrow-in-down"></i></div>
-          </div>
-          <div class="card card-animated">
+          <div id="dashboardOutgoingTodayCard" class="card card-animated clickable-card" data-dashboard-filter="outgoingToday">
             <div class="card-content">
               <div>
                 <div class="card-title">Outgoing Today</div>
@@ -95,16 +85,6 @@
               </div>
             </div>
             <div class="card-icon icon-orange"><i class="bi bi-box-arrow-up"></i></div>
-          </div>
-          <div class="card card-animated">
-            <div class="card-content">
-              <div>
-                <div class="card-title">Waiting for Confirmation</div>
-                <div class="card-value" id="dashboardWaitingForConfirmation">17</div>
-                <div class="card-subtitle">Shipments</div>
-              </div>
-            </div>
-            <div class="card-icon icon-yellow"><i class="bi bi-clock"></i></div>
           </div>
         </div>
 
@@ -197,14 +177,6 @@
                 </div>
               </div>
               <div class="filter-box">
-                <label for="activity-status">Activity</label>
-                <select id="activity-status" data-field="activity-status" aria-label="Activity">
-                  <option value="">All</option>
-                  <option value="Inbound">Inbound</option>
-                  <option value="Outbound">Outbound</option>
-                </select>
-              </div>
-              <div class="filter-box">
                 <label for="activity-transaction">Transaction Type</label>
                 <input id="activity-transaction" type="text" data-field="activity-transaction" placeholder="Type or select type" autocomplete="off" aria-label="Transaction Type" />
               </div>
@@ -216,7 +188,7 @@
 
         <div class="table">
           <table>
-            <thead><tr><th>Month</th><th>Client</th><th>MAWB</th><th>HAWB</th><th>Date In</th><th>Qty In</th><th>Date Out</th><th>Qty Out</th><th>Activity</th></tr></thead>
+            <thead><tr><th>Month</th><th>Client</th><th>MAWB</th><th>HAWB</th><th>Date In</th><th>Qty In</th><th>Date Out</th><th>Qty Out</th></tr></thead>
             <tbody id="activityTableBody"></tbody>
           </table>
         </div>

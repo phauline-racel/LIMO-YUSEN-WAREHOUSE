@@ -1071,6 +1071,7 @@ const attachOutboundHawbAutocomplete = (hawbInput) => {
       const today = now.toISOString().slice(0, 10);
       const timeNow = now.toTimeString().slice(0,5);
       const fieldMap = {
+        hawb: item.hawb || '',
         client: item.client || '',
         destination: item.destination || '',
         mawb: item.mawb || '',
@@ -2072,6 +2073,7 @@ const aggregateShipmentsByReference = (shipments) => {
         qtyInValue: 0,
         qtyOutValue: 0,
         remainingValue: 0,
+        outboundDetails: [],
         releaseDate: '',
         releaseTime: '',
         releasePlate: '',
@@ -2131,8 +2133,25 @@ const aggregateShipmentsByReference = (shipments) => {
       }
     } else if (entryType === 'outbound') {
       groupedShipment.qtyOutValue += parseQuantityNumber(shipment.qtyOut || shipment.releaseQty || shipment.quantity || '');
-      if (shipment.date && (!groupedShipment.dateOut || shipment.date > groupedShipment.dateOut)) {
-        groupedShipment.dateOut = shipment.date;
+      const outboundDate = shipment.date || shipment.releaseDate || '';
+      if (outboundDate && (!groupedShipment.dateOut || outboundDate > groupedShipment.dateOut)) {
+        groupedShipment.dateOut = outboundDate;
+      }
+      const outboundTime = shipment.time || shipment.releaseTime || '';
+      const outboundPlate = shipment.plateNo || shipment.releasePlate || '';
+      const outboundDriver = shipment.driver || shipment.releaseDriver || '';
+      const outboundRemarks = shipment.remarks || '';
+      const outboundQty = formatQuantityDisplay(shipment.qtyOut || shipment.releaseQty || shipment.quantity || 0, shipment.unit || groupedShipment.unit || '');
+      if (outboundDate || outboundQty || outboundTime || outboundPlate || outboundDriver || outboundRemarks) {
+        groupedShipment.outboundDetails.push({
+          date: outboundDate,
+          time: outboundTime,
+          qty: outboundQty,
+          plate: outboundPlate,
+          driver: outboundDriver,
+          remarks: outboundRemarks,
+          savedAt
+        });
       }
       // Always preserve release information from outbound entries
       groupedShipment.releaseDate = shipment.releaseDate || groupedShipment.releaseDate;
@@ -2149,6 +2168,36 @@ const aggregateShipmentsByReference = (shipments) => {
 
     groupedShipment.cargoHandling = resolveCargoHandling(groupedShipment.cargoConditionIn, groupedShipment.cargoConditionOut);
     groupedShipment.remainingValue = groupedShipment.qtyInValue - groupedShipment.qtyOutValue;
+  });
+
+  const parseOutboundDateTime = (detail) => {
+    if (!detail || !detail.date) return null;
+    const iso = `${detail.date}T${detail.time || '00:00:00'}`;
+    const parsed = new Date(iso);
+    return Number.isNaN(parsed.getTime()) ? null : parsed.getTime();
+  };
+
+  Array.from(groupedEntries.values()).forEach((groupedShipment) => {
+    if (!Array.isArray(groupedShipment.outboundDetails)) return;
+    groupedShipment.outboundDetails.sort((a, b) => {
+      const aTime = parseOutboundDateTime(a);
+      const bTime = parseOutboundDateTime(b);
+      if (aTime !== null && bTime !== null) {
+        return aTime - bTime;
+      }
+      if (aTime !== null) return -1;
+      if (bTime !== null) return 1;
+      return 0;
+    });
+
+    const latestDetail = groupedShipment.outboundDetails.slice().reverse().find((detail) => detail && detail.date);
+    if (latestDetail) {
+      groupedShipment.releaseDate = latestDetail.date || groupedShipment.releaseDate;
+      groupedShipment.releaseTime = latestDetail.time || groupedShipment.releaseTime;
+      groupedShipment.releasePlate = latestDetail.plate || groupedShipment.releasePlate;
+      groupedShipment.releaseDriver = latestDetail.driver || groupedShipment.releaseDriver;
+      groupedShipment.remarks = latestDetail.remarks || groupedShipment.remarks;
+    }
   });
 
   return Array.from(groupedEntries.values()).sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
@@ -2279,6 +2328,7 @@ const normalizeShipmentForInventory = (shipment) => {
     releasePlate: shipment.releasePlate || '',
     releaseDriver: shipment.releaseDriver || '',
     remarks: shipment.remarks || '',
+    outboundDetails: Array.isArray(shipment.outboundDetails) ? shipment.outboundDetails : [],
     badgeClass: getBadgeClass(status),
     savedAt: shipment.savedAt || 0
   };
@@ -2302,9 +2352,28 @@ const getActivityBadgeClass = (activity) => {
   return normalizedActivity === 'outbound' ? 'badge-orange' : 'badge-blue';
 };
 
+const getTodayIsoDate = () => new Date().toISOString().slice(0, 10);
+
+const itemHasTodayOutbound = (item, today = getTodayIsoDate()) => {
+  if (Array.isArray(item.outboundDetails) && item.outboundDetails.length) {
+    return item.outboundDetails.some((detail) => detail.date === today);
+  }
+  return item.dateOut === today;
+};
+
 const normalizeShipmentForActivity = (shipment) => {
   const unit = shipment.unit || '';
   const activity = getActivityType(shipment);
+  const outboundDetails = Array.isArray(shipment.outboundDetails) ? shipment.outboundDetails : [];
+  const dateOut = shipment.dateOut || shipment.releaseDate || '';
+  const qtyOut = formatQuantityDisplay(shipment.qtyOutValue || 0, unit);
+  const dateOutDisplay = outboundDetails.length
+    ? outboundDetails.map((detail) => `<div>${escapeHtml(detail.date || '')}</div>`).join('')
+    : escapeHtml(dateOut);
+  const qtyOutDisplay = outboundDetails.length
+    ? outboundDetails.map((detail) => `<div>${escapeHtml(detail.qty || '')}</div>`).join('')
+    : escapeHtml(qtyOut);
+
   return {
     month: getMonthLabel(shipment.dateIn || shipment.date),
     client: shipment.client || '',
@@ -2312,10 +2381,14 @@ const normalizeShipmentForActivity = (shipment) => {
     hawb: shipment.hawb || '',
     dateIn: shipment.dateIn || shipment.date || '',
     qtyIn: formatQuantityDisplay(shipment.qtyInValue || 0, unit),
-    dateOut: shipment.dateOut || shipment.releaseDate || '',
-    qtyOut: formatQuantityDisplay(shipment.qtyOutValue || 0, unit),
+    dateOut,
+    qtyOut,
+    dateOutDisplay,
+    qtyOutDisplay,
     activity,
     location: shipment.location || '',
+    remainingValue: shipment.remainingValue || 0,
+    outboundDetails,
     badgeClass: getActivityBadgeClass(activity),
     savedAt: shipment.savedAt || 0
   };
@@ -2333,22 +2406,16 @@ const renderDashboardData = () => {
   const totalShipments = shipmentRows.length;
   const cargoInWarehouse = shipmentRows.reduce((sum, shipment) => sum + (shipment.remainingValue || 0), 0);
   const today = new Date().toISOString().slice(0, 10);
-  const incomingToday = shipmentRows.filter((shipment) => shipment.dateIn === today).length;
-  const outgoingToday = shipmentRows.filter((shipment) => shipment.dateOut === today).length;
-  const waitingForConfirmation = 0;
+  const outgoingToday = shipmentRows.filter((shipment) => itemHasTodayOutbound(shipment, today)).length;
 
   const totalValue = document.getElementById('dashboardTotalShipments');
   const cargoValue = document.getElementById('dashboardCargoInWarehouse');
-  const incomingValue = document.getElementById('dashboardIncomingToday');
   const outgoingValue = document.getElementById('dashboardOutgoingToday');
-  const waitingValue = document.getElementById('dashboardWaitingForConfirmation');
   const recentBody = document.getElementById('recentShipmentsBody');
 
   if (totalValue) totalValue.textContent = totalShipments.toLocaleString();
   if (cargoValue) cargoValue.textContent = cargoInWarehouse.toLocaleString();
-  if (incomingValue) incomingValue.textContent = incomingToday.toLocaleString();
   if (outgoingValue) outgoingValue.textContent = outgoingToday.toLocaleString();
-  if (waitingValue) waitingValue.textContent = waitingForConfirmation.toLocaleString();
 
   if (recentBody) {
     recentBody.innerHTML = shipmentRows.slice(0, 5).map((shipment) => `
@@ -3519,7 +3586,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const activitySearchInput = document.getElementById('activitySearchInput');
     const activityDateRangeSelect = document.getElementById('activity-date-range');
     const activityDateRangeInput = document.getElementById('activity-date-range-input');
-    const activitySelect = document.getElementById('activity-status');
     const activityTransactionSelect = document.getElementById('activity-transaction');
     const activityLocationSelect = document.getElementById('activity-location');
     const activityClearFilters = document.getElementById('activityClearFilters');
@@ -3536,6 +3602,54 @@ document.addEventListener('DOMContentLoaded', () => {
     const activityDateRangeApplyBtn = document.getElementById('activityDateRangeApply');
     const activityDateRangePrevBtn = document.querySelector('.calendar-prev');
     const activityDateRangeNextBtn = document.querySelector('.calendar-next');
+
+    let dashboardActivityFilter = 'all';
+
+    const clearActivityInputs = () => {
+      if (activitySearchInput) activitySearchInput.value = '';
+      if (activityDateRangeSelect) activityDateRangeSelect.value = '';
+      if (activityDateRangeInput) activityDateRangeInput.value = '';
+      if (activityTransactionSelect) activityTransactionSelect.value = '';
+      if (activityLocationSelect) activityLocationSelect.value = '';
+      if (activityDatePickerState) {
+        activityDatePickerState.preset = '';
+        activityDatePickerState.start = null;
+        activityDatePickerState.end = null;
+      }
+      if (typeof updateDateRangeInputs === 'function') updateDateRangeInputs();
+      if (typeof updateDateRangeDisplay === 'function') updateDateRangeDisplay();
+    };
+
+    const getActivityFilterDate = () => new Date().toISOString().slice(0, 10);
+
+    const activityItemIncludesTodayOutbound = (item) => itemHasTodayOutbound(item);
+
+    const setActiveDashboardCard = (filterType) => {
+      const dashboardCards = [
+        document.getElementById('dashboardTotalShipmentsCard'),
+        document.getElementById('dashboardCargoInWarehouseCard'),
+        document.getElementById('dashboardOutgoingTodayCard')
+      ];
+      dashboardCards.forEach((card) => {
+        if (!card) return;
+        card.classList.toggle('active-dashboard-card', card.dataset.dashboardFilter === filterType);
+      });
+    };
+
+    const applyDashboardActivityFilter = (filterType) => {
+      dashboardActivityFilter = filterType;
+      clearActivityInputs();
+      setActiveDashboardCard(filterType);
+      refreshActivity();
+    };
+
+    const dashboardTotalShipmentsCard = document.getElementById('dashboardTotalShipmentsCard');
+    const dashboardCargoInWarehouseCard = document.getElementById('dashboardCargoInWarehouseCard');
+    const dashboardOutgoingTodayCard = document.getElementById('dashboardOutgoingTodayCard');
+
+    dashboardTotalShipmentsCard?.addEventListener('click', () => applyDashboardActivityFilter('all'));
+    dashboardCargoInWarehouseCard?.addEventListener('click', () => applyDashboardActivityFilter('remaining'));
+    dashboardOutgoingTodayCard?.addEventListener('click', () => applyDashboardActivityFilter('outgoingToday'));
 
     let activityDatePickerState = {
       preset: activityDateRangeSelect?.value || '',
@@ -3855,7 +3969,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const getFilteredActivityData = () => {
       const query = activitySearchInput?.value.trim().toLowerCase() || '';
-      const activity = activitySelect?.value || '';
       const transactionType = activityTransactionSelect?.value.trim().toLowerCase() || '';
       const location = activityLocationSelect?.value || '';
       const rangeInput = activityDateRangeInput?.value.trim() || '';
@@ -3864,7 +3977,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return activityData.filter((item) => {
         const queryMatch = !query || [item.month, item.client, item.mawb, item.hawb].some((field) => field.toLowerCase().includes(query));
-        const activityMatch = !activity || item.activity.toLowerCase().includes(activity.toLowerCase());
         const transactionMatch = !transactionType || String(item.transactionType || '').toLowerCase().includes(transactionType);
         const locationMatch = !location || item.location.toLowerCase().includes(location.toLowerCase());
 
@@ -3877,23 +3989,45 @@ document.addEventListener('DOMContentLoaded', () => {
           dateMatch = itemDate && itemDate >= presetRange.from && itemDate <= presetRange.to;
         }
 
-        return queryMatch && activityMatch && transactionMatch && locationMatch && dateMatch;
+        let dashboardMatch = true;
+        if (dashboardActivityFilter === 'remaining') {
+          dashboardMatch = Number(item.remainingValue || 0) > 0;
+        } else if (dashboardActivityFilter === 'outgoingToday') {
+          dashboardMatch = activityItemIncludesTodayOutbound(item);
+        }
+
+        return queryMatch && transactionMatch && locationMatch && dateMatch && dashboardMatch;
       });
+    };
+
+    const normalizeExportText = (value) => {
+      const text = String(value || '')
+        .replace(/<div>/gi, '\n')
+        .replace(/<\/div>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/\n+/g, '\n')
+        .trim();
+      return text;
     };
 
     const getActivityReportExportRows = () => {
       const rows = getFilteredActivityData();
-      return rows.map((item) => ({
-        month: item.month || '',
-        client: item.client || '',
-        mawb: item.mawb || '',
-        hawb: item.hawb || '',
-        dateIn: item.dateIn || '',
-        qtyIn: item.qtyIn || '',
-        dateOut: item.dateOut || '',
-        qtyOut: item.qtyOut || '',
-        activity: item.activity || ''
-      }));
+      return rows.flatMap((item) => {
+        const detailRows = Array.isArray(item.outboundDetails) && item.outboundDetails.length
+          ? item.outboundDetails
+          : [{ date: item.dateOut || '', qty: item.qtyOut || '' }];
+
+        return detailRows.map((detail) => ({
+          month: item.month || '',
+          client: item.client || '',
+          mawb: item.mawb || '',
+          hawb: item.hawb || '',
+          dateIn: item.dateIn || '',
+          qtyIn: item.qtyIn || '',
+          dateOut: normalizeExportText(detail.date || item.dateOut || ''),
+          qtyOut: normalizeExportText(detail.qty || item.qtyOut || '')
+        }));
+      });
     };
 
     const formatExportDate = () => {
@@ -3921,7 +4055,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const exportRows = getActivityReportExportRows();
-      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Activity'];
+      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out'];
       const sheetRows = [
         ['Amvel Warehouse Activity Report'],
         ['Yusen Logistics Philippines Inc.'],
@@ -3936,8 +4070,7 @@ document.addEventListener('DOMContentLoaded', () => {
           row.dateIn,
           row.qtyIn,
           row.dateOut,
-          row.qtyOut,
-          row.activity
+          row.qtyOut
         ])
       ];
 
@@ -3994,7 +4127,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exportToPDF = () => {
       const exportRows = getActivityReportExportRows();
-      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Activity'];
+      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out'];
       const bodyRows = exportRows.map((row) => [
         row.month,
         row.client,
@@ -4003,10 +4136,8 @@ document.addEventListener('DOMContentLoaded', () => {
         row.dateIn,
         row.qtyIn,
         row.dateOut,
-        row.qtyOut,
-        row.activity
+        row.qtyOut
       ]);
-
       const jsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
       if (typeof jsPDFConstructor !== 'function') {
         console.warn('jsPDF library is unavailable. Falling back to print preview.');
@@ -4088,7 +4219,6 @@ document.addEventListener('DOMContentLoaded', () => {
               <th>Qty In</th>
               <th>Date Out</th>
               <th>Qty Out</th>
-              <th>Activity</th>
             </tr>
           </thead>
           <tbody>
@@ -4100,9 +4230,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${row.hawb}</td>
                 <td>${row.dateIn}</td>
                 <td>${row.qtyIn}</td>
-                <td>${row.dateOut}</td>
-                <td>${row.qtyOut}</td>
-                <td>${row.activity}</td>
+                <td>${row.dateOut.replace(/\n/g, '<br />')}</td>
+                <td>${row.qtyOut.replace(/\n/g, '<br />')}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -4127,7 +4256,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const items = filteredData.slice(start, start + currentRowsPerPage);
 
       if (!items.length) {
-        activityTableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:24px;color:#64748b;">No activity data saved yet.</td></tr>';
+        activityTableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:#64748b;">No activity data saved yet.</td></tr>';
       } else {
         activityTableBody.innerHTML = items.map((item) => `
           <tr>
@@ -4137,9 +4266,8 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${item.hawb}</td>
             <td>${item.dateIn}</td>
             <td>${item.qtyIn}</td>
-            <td>${item.dateOut}</td>
-            <td>${item.qtyOut}</td>
-            <td><span class="${item.badgeClass}">${item.activity}</span></td>
+            <td>${item.dateOutDisplay || escapeHtml(item.dateOut)}</td>
+            <td>${item.qtyOutDisplay || escapeHtml(item.qtyOut)}</td>
           </tr>
         `).join('');
       }
@@ -4172,8 +4300,6 @@ document.addEventListener('DOMContentLoaded', () => {
     activityDateRangeSelect?.addEventListener('change', refreshActivity);
     activityDateRangeInput?.addEventListener('input', refreshActivity);
     activityDateRangeInput?.addEventListener('change', refreshActivity);
-    activitySelect?.addEventListener('input', refreshActivity);
-    activitySelect?.addEventListener('change', refreshActivity);
     activityTransactionSelect?.addEventListener('input', refreshActivity);
     activityTransactionSelect?.addEventListener('change', refreshActivity);
     activityLocationSelect?.addEventListener('input', refreshActivity);
@@ -4197,14 +4323,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (typeof updateDateRangeInputs === 'function') updateDateRangeInputs();
       if (typeof updateDateRangeDisplay === 'function') updateDateRangeDisplay();
-      if (activitySelect) {
-        activitySelect.value = '';
-      }
       if (activityTransactionSelect) {
         activityTransactionSelect.value = '';
-      }
-      if (activityLocationSelect) {
-        activityLocationSelect.value = '';
       }
       refreshActivity();
     });
@@ -4374,6 +4494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawerQty = document.getElementById('drawerQty');
     const drawerUnit = document.getElementById('drawerUnit');
     const drawerRemainingQuantity = document.getElementById('drawerRemainingQuantity');
+    const drawerReleaseList = document.getElementById('drawerReleaseList');
     const drawerReleaseDate = document.getElementById('drawerReleaseDate');
     const drawerReleaseTime = document.getElementById('drawerReleaseTime');
     const drawerReleasePlate = document.getElementById('drawerReleasePlate');
@@ -4410,11 +4531,26 @@ document.addEventListener('DOMContentLoaded', () => {
       drawerQty.textContent = item.quantity;
       drawerUnit.textContent = item.unit;
       drawerRemainingQuantity.textContent = item.remainingQuantity;
-      drawerReleaseDate.textContent = item.releaseDate;
-      drawerReleaseTime.textContent = item.releaseTime;
-      drawerReleasePlate.textContent = item.releasePlate;
-      drawerReleaseDriver.textContent = item.releaseDriver;
-      drawerRemarks.textContent = item.remarks;
+      if (drawerReleaseList) {
+        drawerReleaseList.innerHTML = Array.isArray(item.outboundDetails) && item.outboundDetails.length
+          ? item.outboundDetails.map((detail, index) => `
+              <div class="release-entry">
+                <div class="release-entry-header">Release ${index + 1}</div>
+                <div class="release-entry-row"><span>Date</span><strong>${escapeHtml(detail.date || item.releaseDate || '')}</strong></div>
+                <div class="release-entry-row"><span>Time</span><strong>${escapeHtml(detail.time || item.releaseTime || '')}</strong></div>
+                <div class="release-entry-row"><span>Qty</span><strong>${escapeHtml(detail.qty || '')}</strong></div>
+                <div class="release-entry-row"><span>Plate Number</span><strong>${escapeHtml(detail.plate || item.releasePlate || '')}</strong></div>
+                <div class="release-entry-row"><span>Driver</span><strong>${escapeHtml(detail.driver || item.releaseDriver || '')}</strong></div>
+                <div class="release-entry-row"><span>Remarks</span><strong>${escapeHtml(detail.remarks || item.remarks || '')}</strong></div>
+              </div>
+            `).join('')
+          : '<div class="release-entry-empty">No release information available.</div>';
+      }
+      if (drawerReleaseDate) drawerReleaseDate.textContent = item.releaseDate;
+      if (drawerReleaseTime) drawerReleaseTime.textContent = item.releaseTime;
+      if (drawerReleasePlate) drawerReleasePlate.textContent = item.releasePlate;
+      if (drawerReleaseDriver) drawerReleaseDriver.textContent = item.releaseDriver;
+      if (drawerRemarks) drawerRemarks.textContent = item.remarks;
 
       inventoryDrawer.classList.add('open');
       inventoryDrawerBackdrop.classList.add('open');

@@ -15,7 +15,7 @@
   </head>
   <body>
     <div class="page-shell">
-      <div class="brand-panel">
+      <aside class="brand-panel" aria-label="Brand panel">
         <div class="brand-card">
           <div class="brand-logo-wrap">
             <img src="assets/logo-YL.png" alt="Yusen Logistics Philippines Inc logo" class="logo" />
@@ -23,81 +23,68 @@
 
           <div class="brand-copy">
             <p class="eyebrow">Yusen Logistics Philippines Inc.</p>
-            <h1>Warehouse operations with a cleaner flow</h1>
-            <p class="subtext">Monitor incoming, outgoing, inventory, and shipment status from one secure dashboard.</p>
+            <h1>Connecting Businesses. <span>Delivering Possibilities.</span></h1>
+            <p class="subtext">Secure, reliable, and globally connected warehouse operations for modern logistics teams.</p>
           </div>
 
           <div class="feature-list">
-            <span class="feature-pill">Cargo Control</span>
-            <span class="feature-pill">Smart Tracking</span>
-            <span class="feature-pill">Fast Dispatch</span>
-          </div>
-
-          <div class="truck-illustration" aria-hidden="true">
-            <svg viewBox="0 0 600 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cargo truck illustration">
-              <defs>
-                <linearGradient id="truckBody" x1="0" x2="1">
-                  <stop offset="0%" stop-color="#06183d" />
-                  <stop offset="100%" stop-color="#0f3a74" />
-                </linearGradient>
-                <linearGradient id="truckCab" x1="0" x2="1">
-                  <stop offset="0%" stop-color="#e16d10" />
-                  <stop offset="100%" stop-color="#ff8a3d" />
-                </linearGradient>
-              </defs>
-              <rect x="18" y="160" width="564" height="64" rx="18" fill="#f4f7fb" />
-              <rect x="110" y="92" width="248" height="84" rx="18" fill="url(#truckBody)" />
-              <rect x="315" y="108" width="122" height="68" rx="16" fill="url(#truckCab)" />
-              <rect x="138" y="116" width="120" height="26" rx="8" fill="#ffffff" opacity="0.92" />
-              <rect x="138" y="148" width="58" height="10" rx="5" fill="#ffffff" opacity="0.74" />
-              <rect x="335" y="128" width="70" height="18" rx="8" fill="#ffffff" opacity="0.92" />
-              <path d="M432 118H482C495 118 506 129 506 142V170H432V118Z" fill="#06183d" opacity="0.9" />
-              <rect x="500" y="132" width="22" height="38" rx="8" fill="#06183d" />
-              <circle cx="176" cy="196" r="34" fill="#152d4f" />
-              <circle cx="176" cy="196" r="17" fill="#ffffff" />
-              <circle cx="418" cy="196" r="34" fill="#152d4f" />
-              <circle cx="418" cy="196" r="17" fill="#ffffff" />
-              <circle cx="470" cy="196" r="34" fill="#152d4f" />
-              <circle cx="470" cy="196" r="17" fill="#ffffff" />
-              <rect x="48" y="80" width="56" height="18" rx="9" fill="#e16d10" />
-              <rect x="52" y="108" width="98" height="8" rx="4" fill="#06183d" opacity="0.65" />
-              <path d="M104 80H118L130 92H110L104 80Z" fill="#e16d10" />
-              <path d="M334 102L368 102" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity="0.72" />
-              <path d="M348 114L360 126" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity="0.72" />
-            </svg>
+            <div class="feature-pill"><i class="bi bi-shield-check"></i><span>Safe & Secure</span></div>
+            <div class="feature-pill"><i class="bi bi-graph-up-arrow"></i><span>Reliable Tracking</span></div>
+            <div class="feature-pill"><i class="bi bi-globe2"></i><span>Global Logistics</span></div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <div class="login-panel">
-        <form id="loginForm" class="login-card" autocomplete="on" action="#" method="post">
-          <div class="login-header">
-            <p class="eyebrow">Secure access</p>
-            <h2>Ready to work?</h2>
-            <p>Sign in to access your warehouse dashboard</p>
+      <main class="login-panel">
+        <div class="login-card">
+          <div class="mobile-brand" aria-hidden="true">
+            <img src="assets/logo-YL.png" alt="Yusen Logistics Philippines Inc logo" class="mobile-logo" />
           </div>
 
-          <label class="field">
-            <span>User ID</span>
-            <div class="input-wrap">
-              <i class="bi bi-person-fill"></i>
-              <input type="text" name="userId" placeholder="Enter User ID" required />
+          <div class="login-icon"><i class="bi bi-person-circle"></i></div>
+
+          <div class="login-header">
+            <p class="eyebrow">Secure access</p>
+            <h2>Welcome Back!</h2>
+            <p>Sign in to access the Warehouse Inventory System.</p>
+          </div>
+
+          <form id="loginForm" class="login-form" autocomplete="on" action="#" method="post">
+            <label class="field" for="userIdInput">
+              <span>Username</span>
+              <div class="input-wrap">
+                <i class="bi bi-person-fill"></i>
+                <input id="userIdInput" type="text" name="userId" placeholder="Enter username" required />
+              </div>
+            </label>
+
+            <label class="field" for="passwordInput">
+              <span>Password</span>
+              <div class="input-wrap password-wrap">
+                <i class="bi bi-lock-fill"></i>
+                <input id="passwordInput" type="password" name="password" placeholder="Enter password" required />
+                <button class="password-toggle" type="button" aria-label="Show password" title="Show password">
+                  <i class="bi bi-eye-slash"></i>
+                </button>
+              </div>
+            </label>
+
+            <div class="form-row">
+              <label class="checkbox">
+                <input type="checkbox" />
+                <span>Remember me</span>
+              </label>
+              <a href="#" class="link">Forgot Password?</a>
             </div>
-          </label>
 
-          <label class="field">
-            <span>Password</span>
-            <div class="input-wrap">
-              <i class="bi bi-lock-fill"></i>
-              <input type="password" name="password" placeholder="Enter password" required />
-            </div>
-          </label>
+            <div id="loginError" class="form-error" role="alert" aria-live="polite"></div>
 
-          <div id="loginError" class="form-error" role="alert" aria-live="polite"></div>
+            <button class="submit-btn" type="submit">Sign In</button>
+          </form>
 
-          <button type="submit">Login</button>
-        </form>
-      </div>
+          <p class="support-text">Need assistance? <a href="#">Contact your Warehouse Administrator</a></p>
+        </div>
+      </main>
     </div>
     <script src="assets/auth.js"></script>
     <script src="assets/login.js"></script>
