@@ -6,6 +6,7 @@
   --surface:#ffffff;
   --muted:#6b7485;
   --radius:12px;
+  --dr-calendar-width:340px;
 }
 *{box-sizing:border-box}
 body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:#121826}
@@ -129,10 +130,56 @@ body.app-ready .app-shell{opacity:1;transform:translateY(0)}
 .filter-box select, .filter-box input{border:1px solid rgba(0,0,0,0.06);background:#f5f7fa;padding:8px 12px;border-radius:8px;font-size:0.65rem;color:var(--text);width:100%;min-width:0}
 .filter-box select:focus, .filter-box input:focus{outline:none;border-color:rgba(0,102,204,0.35);box-shadow:0 0 0 2px rgba(0,102,204,0.12)}
 .filter-box input{font-family:inherit}
-.date-range-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.date-range-field{display:flex;flex-direction:column;gap:2px}
-.date-range-field label{font-size:0.65rem;font-weight:600;color:var(--primary)}
-.date-range-field input{font-size:0.65rem}
+.date-range-picker{position:relative}
+.date-range-button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border:1px solid rgba(0,0,0,0.06);background:#f5f7fa;border-radius:8px;color:var(--text);font-size:0.65rem;font-weight:400;cursor:pointer;transition:background 0.2s ease,border-color 0.2s ease;min-height:36px}
+.date-range-button:hover{background:#eef2f7;border-color:rgba(0,0,0,0.08)}
+.date-range-button-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:#fff;color:#2563eb;font-size:0.9rem}
+.date-range-button-arrow{display:inline-flex;align-items:center;justify-content:center;transition:transform 0.2s ease;font-size:0.95rem}
+ .date-range-button-label{font-weight:400;font-size:0.65rem;color:var(--text)}
+.date-range-button[aria-expanded="true"] .date-range-button-arrow{transform:rotate(180deg)}
+.date-range-popover{position:absolute;top:calc(100% + 6px);left:0;background:#fff;border-radius:10px;box-shadow:0 10px 22px rgba(0,0,0,0.12);padding:8px;opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity 0.18s ease,transform 0.18s ease,visibility 0.18s;z-index:2500;white-space:normal;display:inline-block;min-width:calc(var(--dr-calendar-width) + 144px);max-width:calc(100vw - 24px)}
+.date-range-popover.open{opacity:1;visibility:visible;transform:translateY(0)}
+.date-range-popover-header{margin-bottom:18px}
+.popover-label{font-size:0.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.popover-range-value{font-size:0.95rem;font-weight:700;color:#111827}
+.date-range-popover-body{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px;align-items:start}
+.date-range-presets{display:grid;gap:10px}
+.date-range-preset-btn{display:block;width:100%;text-align:left;padding:6px 8px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#06183d;font-size:0.75rem;font-weight:700;cursor:pointer;transition:background 0.12s,border-color 0.12s}
+.date-range-preset-btn:hover{background:#f8fbff;border-color:#bfdbfe}
+.date-range-preset-btn.active{background:#eff6ff;border-color:#93c5fd;color:#1d4ed8}
+.date-range-calendar-panel{background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-width:var(--dr-calendar-width);width:var(--dr-calendar-width)}
+.calendar-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.calendar-title{font-size:0.86rem;font-weight:800;color:#06183d}
+.calendar-nav{width:30px;height:30px;border-radius:8px;border:1px solid #E5E7EB;background:#f8fafc;color:#06183d;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.15s,border-color 0.15s}
+.calendar-nav:hover{background:#eef2ff;border-color:#bfdbfe}
+.calendar-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:0.62rem;color:#6b7280;font-weight:700;text-transform:uppercase;letter-spacing:0.06em}
+.calendar-weekdays span{padding:2px 0}
+.calendar-days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.calendar-day{min-height:30px;border-radius:8px;border:none;background:transparent;color:#111827;font-size:0.78rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.12s,color 0.12s,transform 0.12s}
+.calendar-day:hover{background:#eff6ff}
+.calendar-day.disabled{color:#cbd5e1;cursor:default;background:transparent}
+.calendar-day.in-range{background:#dbeafe;color:#1d4ed8}
+.calendar-day.selected{background:#2563eb;color:#ffffff;border-radius:50%}
+.calendar-day.today{box-shadow:inset 0 0 0 1px #bfdbfe}
+.date-range-actions{display:flex;justify-content:flex-end;gap:6px;margin-top:6px}
+.date-range-actions .btn{min-width:72px;padding:6px 8px;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;transition:background 0.12s,border-color 0.12s,color 0.12s}
+.date-range-actions .reset-btn{background:#f8fafc;border:1px solid #E5E7EB;color:#1f2937}
+.date-range-actions .cancel-btn{background:#fff;border:1px solid #E5E7EB;color:#1f2937}
+.date-range-actions .apply-btn{background:#2563eb;border:1px solid transparent;color:#ffffff}
+.date-range-actions .reset-btn:hover{background:#eef2ff}
+.date-range-actions .cancel-btn:hover{background:#f8fafc}
+.date-range-actions .apply-btn:hover{background:#1d4ed8}
+@media (max-width: 900px){
+  .date-range-popover{width:100%;left:0;right:0;max-width:none}
+  .date-range-calendar-panel{width:100%;min-width:0}
+}
+@media (max-width: 700px){
+  .date-range-popover{position:fixed;top:auto;bottom:12px;left:12px;right:12px;width:auto;max-width:none;z-index:3000}
+  .date-range-popover-body{grid-template-columns:1fr;gap:16px}
+  .date-range-presets{grid-auto-rows:minmax(48px,auto)}
+  .date-range-calendar-panel{width:100%;min-width:0}
+}
+..date-range-picker select[hidden], .date-range-picker input[hidden]{display:none!important}
 .filter-clear-btn{align-self:flex-end;padding:7px 9px;border:1px solid rgba(6,24,61,0.12);border-radius:12px;background:#fff;color:var(--primary);font-weight:700;cursor:pointer;transition:all 0.2s ease;min-width:140px}
 .filter-clear-btn:hover{background:#f5f7fa}
 .filter-clear-btn:focus-visible{outline:2px solid rgba(0,102,204,0.35);outline-offset:2px}
@@ -295,17 +342,6 @@ table a:hover{text-decoration:underline}
 .badge-blue{display:inline-block;background:#dbeafe;color:#0066cc;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
 .cargo-handling-good{color:#059669;font-weight:700}
 .cargo-handling-checking{color:#dc2626;font-weight:700}
-.badge-delivered{display:inline-block;background:#e8f7ef;color:#198754;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-transferred{display:inline-block;background:#eaf9ff;color:#00b9f2;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-hold{display:inline-block;background:#fff8db;color:#ffc107;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-pulled-out{display:inline-block;background:#f4ebff;color:#6f42c1;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-waiting-confirmation{display:inline-block;background:#e7f1ff;color:#0d6efd;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-off-load{display:inline-block;background:#fff2e8;color:#fd7e14;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-return{display:inline-block;background:#fff7e6;color:#f59e0b;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-back-to-shipper{display:inline-block;background:#fdecec;color:#cd2026;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-pick-up-by-client{display:inline-block;background:#e6f9fc;color:#0dcaf0;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-re-book{display:inline-block;background:#efe9ff;color:#6610f2;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
-.badge-cancel-flight{display:inline-block;background:#fdecee;color:#b02a37;padding:6px 12px;border-radius:999px;font-size:0.65rem;font-weight:700;letter-spacing:0.02em;text-transform:uppercase}
 .tabs-header{border-bottom:2px solid #e5e7eb;margin-bottom:10px}
 .tabs{display:flex;gap:5px;margin:0}
 .tab{padding:8px 10px;background:transparent;border:none;cursor:pointer;transition:all 0.2s;border-bottom:3px solid transparent;color:var(--muted);font-weight:500;white-space:nowrap;position:relative;font-size:0.85rem}

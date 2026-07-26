@@ -767,7 +767,6 @@ const TEXT_FIELD_SUGGESTIONS = {
 
     return suggestions;
   })(),
-  'activity-status': ['Delivered', 'Transferred', 'Hold', 'Pulled Out', 'Waiting for Confirmation', 'Off Load', 'Return', 'Back to Shipper', 'Pick-Up By Client', 'Re-Book', 'Cancel Flight'],
   'activity-location': (() => {
     const racks = ['A', 'B', 'C', 'D'];
     const rows = ['A', 'B', 'C'];
@@ -801,6 +800,8 @@ const TEXT_FIELD_SUGGESTIONS = {
     return suggestions;
   })(),
   'inventory-transaction': ['AFF Import', 'AFF Export', 'OFF Import', 'OFF Export']
+  ,
+  'activity-transaction': ['AFF Import', 'AFF Export', 'OFF Import', 'OFF Export']
 };
 
 const getPlateSuggestions = (query) => {
@@ -998,10 +999,124 @@ const attachTextAutocomplete = (input) => {
 
     event.preventDefault();
     input.value = suggestionButton.dataset.value || '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
     hideSuggestions();
   });
 
   input.dataset.autocompleteBound = 'true';
+};
+
+const attachOutboundHawbAutocomplete = (hawbInput) => {
+  if (!hawbInput || hawbInput.dataset.autocompleteBound === 'true') return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'plate-input-with-suggestions';
+  hawbInput.parentNode.insertBefore(wrapper, hawbInput);
+  wrapper.appendChild(hawbInput);
+
+  const suggestionsBox = document.createElement('div');
+  suggestionsBox.className = 'plate-suggestions';
+  wrapper.appendChild(suggestionsBox);
+
+  hawbInput.setAttribute('autocomplete', 'off');
+
+  const updateSuggestions = () => {
+    const query = String(hawbInput.value || '').trim().toLowerCase();
+    const items = getInventoryData();
+    const matches = items.filter((it) => {
+      if (!query) return false;
+      return [it.hawb || '', it.mawb || '', it.client || ''].some((f) => String(f).toLowerCase().includes(query));
+    }).slice(0, 10);
+
+    if (!matches.length) {
+      suggestionsBox.innerHTML = '';
+      suggestionsBox.classList.remove('show');
+      return;
+    }
+
+    suggestionsBox.innerHTML = matches.map((item, idx) => `
+      <button type="button" class="plate-suggestion-item" data-idx="${idx}">
+        <div class="plate-suggestion-plate">${escapeHtml(item.hawb || '')}</div>
+        <div class="plate-suggestion-meta">${escapeHtml(item.client || '')} • ${escapeHtml(item.mawb || '')}</div>
+      </button>
+    `).join('');
+    suggestionsBox.classList.add('show');
+    positionSuggestionBox(wrapper, suggestionsBox);
+  };
+
+  const hideSuggestions = () => {
+    suggestionsBox.classList.remove('show');
+  };
+
+  const handleOutsideClick = (event) => {
+    if (!wrapper.contains(event.target)) hideSuggestions();
+  };
+
+  suggestionsBox.addEventListener('mousedown', (event) => {
+    const btn = event.target.closest('.plate-suggestion-item');
+    if (!btn) return;
+    event.preventDefault();
+    const idx = Number(btn.dataset.idx || 0);
+    const items = getInventoryData();
+    const query = String(hawbInput.value || '').trim().toLowerCase();
+    const matches = items.filter((it) => [it.hawb || '', it.mawb || '', it.client || ''].some((f) => String(f).toLowerCase().includes(query))).slice(0, 10);
+    const item = matches[idx];
+    if (!item) return;
+
+    // Fill sibling form fields
+    const form = hawbInput.closest('form');
+    if (form) {
+      const now = new Date();
+      const today = now.toISOString().slice(0, 10);
+      const timeNow = now.toTimeString().slice(0,5);
+      const fieldMap = {
+        client: item.client || '',
+        destination: item.destination || '',
+        mawb: item.mawb || '',
+        invoice: item.invoice || '',
+        transactionType: item.transactionType || '',
+        date: today,
+        time: timeNow,
+        releasedBy: '',
+        plateNo: '',
+        trucker: '',
+        driver: '',
+        cargoCondition: '',
+        location: item.location || '',
+        quantity: '',
+        unit: ''
+      };
+
+      const fieldsToNotify = new Set(['client','destination','mawb','invoice','transactionType','location','date','time']);
+      Object.keys(fieldMap).forEach((field) => {
+        const el = form.querySelector(`[data-field="${field}"]`);
+        if (!el) return;
+        if (el.tagName === 'SELECT') {
+          const optIndex = Array.from(el.options).findIndex(o => (o.value || o.textContent || '').toString() === fieldMap[field]);
+          if (optIndex >= 0) el.selectedIndex = optIndex;
+        } else {
+          el.value = fieldMap[field];
+        }
+
+        // Only dispatch input/change for fields that should trigger live updates.
+        if (fieldsToNotify.has(field)) {
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    }
+
+    hideSuggestions();
+  });
+
+  hawbInput.addEventListener('input', updateSuggestions);
+  hawbInput.addEventListener('focus', updateSuggestions);
+  hawbInput.addEventListener('click', updateSuggestions);
+  window.addEventListener('resize', () => positionSuggestionBox(wrapper, suggestionsBox));
+  window.addEventListener('scroll', () => positionSuggestionBox(wrapper, suggestionsBox), true);
+
+  hawbInput.dataset.autocompleteBound = 'true';
 };
 
 const initPlateAutocompleteControls = () => {
@@ -1029,7 +1144,6 @@ const buildActivitySeedData = () => Array.from({ length: 25 }, (_, index) => {
   const clients = ['YAZAKI ORD', 'TOYOTA TSUSHO', 'DENSO PHIL.', 'NIPPON EXPRESS', 'KURASHIKI CORP'];
   const maws = ['SPSF-26A-030', '418650', 'TYC0018-26A', '5533899552', 'ICL-07-126'];
   const hawbs = ['YPH-04800983', 'YPH-04807585', 'YPH-04808204', 'YMY-05298532', 'YPH-63792105'];
-  const statuses = ['DELIVERED', 'TRANSFERRED', 'HOLD', 'PULLED OUT', 'WAITING FOR CONFIRMATION', 'OFF LOAD', 'RETURN', 'BACK TO SHIPPER', 'PICK-UP BY CLIENT', 'RE-BOOK', 'CANCEL FLIGHT'];
   const locations = ['Aisle A', 'Aisle B', 'Aisle C', 'Aisle A', 'Aisle B'];
   const dateIns = ['2026-07-01', '2026-06-27', '2026-05-11', '2026-07-03', '2026-06-20'];
   const dateOuts = ['2026-07-05', '2026-06-29', '2026-05-14', '2026-07-06', '2026-06-23'];
@@ -1045,9 +1159,7 @@ const buildActivitySeedData = () => Array.from({ length: 25 }, (_, index) => {
     dateIn: dateIns[index % dateIns.length],
     qtyIn: quantityIns[index % quantityIns.length],
     dateOut: dateOuts[index % dateOuts.length],
-    qtyOut: quantityOuts[index % quantityOuts.length],
-    status: statuses[index % statuses.length],
-    badgeClass: getBadgeClass(statuses[index % statuses.length])
+    qtyOut: quantityOuts[index % quantityOuts.length]
   };
 });
 
@@ -1177,24 +1289,11 @@ const saveStoredShipments = (shipments) => {
 };
 
 const getBadgeClass = (status) => {
-  if (!status) return 'badge-waiting-confirmation';
+  if (!status) return 'badge-blue';
   const normalizedStatus = String(status).toUpperCase().trim();
 
-  if (normalizedStatus.includes('DELIVER')) return 'badge-delivered';
-  if (normalizedStatus.includes('TRANSFER')) return 'badge-transferred';
-  if (normalizedStatus.includes('HOLD')) return 'badge-hold';
-  if (normalizedStatus.includes('PULLED OUT')) return 'badge-pulled-out';
-  if (normalizedStatus.includes('WAITING FOR CONFIRMATION')) return 'badge-waiting-confirmation';
-  if (normalizedStatus.includes('OFF LOAD')) return 'badge-off-load';
-  if (normalizedStatus.includes('RETURN')) return 'badge-return';
-  if (normalizedStatus.includes('BACK TO SHIPPER')) return 'badge-back-to-shipper';
-  if (normalizedStatus.includes('PICK-UP BY CLIENT')) return 'badge-pick-up-by-client';
-  if (normalizedStatus.includes('RE-BOOK')) return 'badge-re-book';
-  if (normalizedStatus.includes('CANCEL FLIGHT')) return 'badge-cancel-flight';
-
-  if (normalizedStatus.includes('RELEASE')) return 'badge-transferred';
-  if (normalizedStatus.includes('RECEIVED')) return 'badge-delivered';
-  if (normalizedStatus.includes('PARTIAL')) return 'badge-waiting-confirmation';
+  if (normalizedStatus.includes('RELEASE')) return 'badge-orange';
+  if (normalizedStatus.includes('RECEIVED')) return 'badge-blue';
   return 'badge-blue';
 };
 
@@ -2185,9 +2284,27 @@ const normalizeShipmentForInventory = (shipment) => {
   };
 };
 
+const getActivityType = (shipment) => {
+  const explicitType = String(shipment?.entryType || '').trim().toLowerCase();
+  if (explicitType === 'outbound') {
+    return 'Outbound';
+  }
+  if (explicitType === 'inbound') {
+    return 'Inbound';
+  }
+
+  const hasOutboundSignals = [shipment?.qtyOut, shipment?.releaseQty, shipment?.releaseDate, shipment?.releaseTime, shipment?.releasePlate, shipment?.releaseDriver, shipment?.releasedBy].some((value) => String(value || '').trim());
+  return hasOutboundSignals ? 'Outbound' : 'Inbound';
+};
+
+const getActivityBadgeClass = (activity) => {
+  const normalizedActivity = String(activity || '').trim().toLowerCase();
+  return normalizedActivity === 'outbound' ? 'badge-orange' : 'badge-blue';
+};
+
 const normalizeShipmentForActivity = (shipment) => {
-  const status = shipment.status || 'WAITING FOR CONFIRMATION';
   const unit = shipment.unit || '';
+  const activity = getActivityType(shipment);
   return {
     month: getMonthLabel(shipment.dateIn || shipment.date),
     client: shipment.client || '',
@@ -2197,8 +2314,9 @@ const normalizeShipmentForActivity = (shipment) => {
     qtyIn: formatQuantityDisplay(shipment.qtyInValue || 0, unit),
     dateOut: shipment.dateOut || shipment.releaseDate || '',
     qtyOut: formatQuantityDisplay(shipment.qtyOutValue || 0, unit),
-    status,
-    badgeClass: getBadgeClass(status),
+    activity,
+    location: shipment.location || '',
+    badgeClass: getActivityBadgeClass(activity),
     savedAt: shipment.savedAt || 0
   };
 };
@@ -2217,7 +2335,7 @@ const renderDashboardData = () => {
   const today = new Date().toISOString().slice(0, 10);
   const incomingToday = shipmentRows.filter((shipment) => shipment.dateIn === today).length;
   const outgoingToday = shipmentRows.filter((shipment) => shipment.dateOut === today).length;
-  const waitingForConfirmation = shipmentRows.filter((shipment) => String(shipment.status || '').toUpperCase() === 'WAITING FOR CONFIRMATION').length;
+  const waitingForConfirmation = 0;
 
   const totalValue = document.getElementById('dashboardTotalShipments');
   const cargoValue = document.getElementById('dashboardCargoInWarehouse');
@@ -2269,6 +2387,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateProfileUi(getStoredProfile());
   revealShell();
+
+  // Attach outbound HAWB autocomplete if present on inbound-outbound page
+  try {
+    const outboundHawbInput = document.querySelector('#outbound-content input[data-field="hawb"]');
+    if (outboundHawbInput) attachOutboundHawbAutocomplete(outboundHawbInput);
+  } catch (err) {
+    console.warn('Failed to attach outbound HAWB autocomplete', err);
+  }
 
   if (!isAdminUser() && window.location.pathname.includes('user-management.html')) {
     window.location.replace('dashboard.html');
@@ -3391,12 +3517,303 @@ document.addEventListener('DOMContentLoaded', () => {
     activityData = getActivityData();
 
     const activitySearchInput = document.getElementById('activitySearchInput');
-    const activityDateInInput = document.getElementById('activity-date-in');
-    const activityDateOutInput = document.getElementById('activity-date-out');
-    const activityStatusSelect = document.getElementById('activity-status');
+    const activityDateRangeSelect = document.getElementById('activity-date-range');
+    const activityDateRangeInput = document.getElementById('activity-date-range-input');
+    const activitySelect = document.getElementById('activity-status');
+    const activityTransactionSelect = document.getElementById('activity-transaction');
     const activityLocationSelect = document.getElementById('activity-location');
     const activityClearFilters = document.getElementById('activityClearFilters');
     const activityPageSizeButtons = document.querySelectorAll('.page-size-button');
+    const activityDateRangeToggle = document.getElementById('activity-date-range-toggle');
+    const activityDateRangePopover = document.getElementById('activity-date-range-popover');
+    const activityDateRangeDisplay = document.getElementById('activity-date-range-display');
+    const activityDateRangeButtonLabel = document.getElementById('activity-date-range-button-label');
+    const activityDateRangeCalendarTitle = document.getElementById('activityDateRangeCalendarTitle');
+    const activityDateRangeCalendarDays = document.getElementById('activityDateRangeCalendarDays');
+    const activityDateRangePresetButtons = Array.from(document.querySelectorAll('.date-range-preset-btn'));
+    const activityDateRangeResetBtn = document.getElementById('activityDateRangeReset');
+    const activityDateRangeCancelBtn = document.getElementById('activityDateRangePopoverCancel');
+    const activityDateRangeApplyBtn = document.getElementById('activityDateRangeApply');
+    const activityDateRangePrevBtn = document.querySelector('.calendar-prev');
+    const activityDateRangeNextBtn = document.querySelector('.calendar-next');
+
+    let activityDatePickerState = {
+      preset: activityDateRangeSelect?.value || '',
+      start: null,
+      end: null,
+      viewDate: new Date(),
+      initialSnapshot: null
+    };
+
+    const normalizeToDate = (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const sameDay = (a, b) => a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    const formatDisplayDate = (date) => new Intl.DateTimeFormat('en-US', { month: 'short', day: '2-digit', year: 'numeric' }).format(date);
+    const formatIsoDate = (date) => date.toISOString().slice(0, 10);
+    const formatRangeLabel = (start, end) => {
+      if (!start && !end) return 'Select date range';
+      if (start && !end) return formatDisplayDate(start);
+      if (start && end) return `${formatDisplayDate(start)} – ${formatDisplayDate(end)}`;
+      return 'Select date range';
+    };
+
+    const getPresetRange = (preset) => {
+      const today = normalizeToDate(new Date());
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+      const last7 = new Date(today);
+      last7.setDate(today.getDate() - 6);
+      const last30 = new Date(today);
+      last30.setDate(today.getDate() - 29);
+      const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+
+      switch (preset) {
+        case 'today':
+          return { from: today, to: today };
+        case 'yesterday':
+          return { from: yesterday, to: yesterday };
+        case 'last7':
+          return { from: last7, to: today };
+        case 'last30':
+          return { from: last30, to: today };
+        case 'thisMonth':
+          return { from: startOfThisMonth, to: today };
+        case 'lastMonth':
+          return { from: startOfLastMonth, to: endOfLastMonth };
+        default:
+          return null;
+      }
+    };
+
+    const updateDateRangeInputs = () => {
+      if (activityDateRangeSelect) {
+        activityDateRangeSelect.value = activityDatePickerState.preset || '';
+      }
+      if (activityDateRangeInput) {
+        activityDateRangeInput.value =
+          activityDatePickerState.start && activityDatePickerState.end
+            ? `${formatIsoDate(activityDatePickerState.start)} - ${formatIsoDate(activityDatePickerState.end)}`
+            : '';
+      }
+    };
+
+    const updateDateRangeDisplay = () => {
+      const labelText = formatRangeLabel(activityDatePickerState.start, activityDatePickerState.end);
+      if (activityDateRangeButtonLabel) activityDateRangeButtonLabel.textContent = labelText;
+      if (activityDateRangeDisplay) activityDateRangeDisplay.textContent = labelText;
+      activityDateRangePresetButtons.forEach((button) => {
+        button.classList.toggle('active', button.dataset.range === activityDatePickerState.preset);
+      });
+    };
+
+    const renderActivityCalendar = () => {
+      if (!activityDateRangeCalendarDays || !activityDateRangeCalendarTitle) return;
+      const viewDate = activityDatePickerState.viewDate || new Date();
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      activityDateRangeCalendarTitle.textContent = `${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+
+      const startOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+      const startWeekDay = startOfMonth.getDay();
+      const firstCalendarDay = new Date(startOfMonth);
+      firstCalendarDay.setDate(startOfMonth.getDate() - startWeekDay);
+
+      activityDateRangeCalendarDays.innerHTML = '';
+      const totalDays = 42;
+
+      for (let index = 0; index < totalDays; index += 1) {
+        const day = new Date(firstCalendarDay);
+        day.setDate(firstCalendarDay.getDate() + index);
+        const isCurrentMonth = day.getMonth() === viewDate.getMonth();
+        const disabled = !isCurrentMonth;
+        const isSelectedStart = sameDay(day, activityDatePickerState.start);
+        const isSelectedEnd = sameDay(day, activityDatePickerState.end);
+        const inRange =
+          activityDatePickerState.start &&
+          activityDatePickerState.end &&
+          day > activityDatePickerState.start &&
+          day < activityDatePickerState.end;
+        const isToday = sameDay(day, normalizeToDate(new Date()));
+
+        const dayButton = document.createElement('button');
+        dayButton.type = 'button';
+        dayButton.className = 'calendar-day';
+        if (disabled) dayButton.classList.add('disabled');
+        if (isSelectedStart) dayButton.classList.add('selected', 'start');
+        if (isSelectedEnd) dayButton.classList.add('selected', 'end');
+        if (inRange) dayButton.classList.add('in-range');
+        if (isToday) dayButton.classList.add('today');
+        dayButton.disabled = disabled;
+        dayButton.textContent = String(day.getDate());
+
+        dayButton.addEventListener('click', () => {
+          if (activityDatePickerState.start && !activityDatePickerState.end) {
+            if (day < activityDatePickerState.start) {
+              activityDatePickerState.start = normalizeToDate(day);
+              activityDatePickerState.end = null;
+            } else {
+              activityDatePickerState.end = normalizeToDate(day);
+            }
+          } else {
+            activityDatePickerState.start = normalizeToDate(day);
+            activityDatePickerState.end = null;
+          }
+          activityDatePickerState.preset = 'custom';
+          updateDateRangeInputs();
+          updateDateRangeDisplay();
+          renderActivityCalendar();
+        });
+
+        activityDateRangeCalendarDays.appendChild(dayButton);
+      }
+    };
+
+    const applyDatePickerSelection = () => {
+      updateDateRangeInputs();
+      updateDateRangeDisplay();
+      refreshActivity();
+      closeDateRangePopover();
+    };
+
+    const resetDatePickerSelection = () => {
+      activityDatePickerState.preset = '';
+      activityDatePickerState.start = null;
+      activityDatePickerState.end = null;
+      updateDateRangeInputs();
+      updateDateRangeDisplay();
+      renderActivityCalendar();
+    };
+
+    const openDateRangePopover = () => {
+      if (!activityDateRangePopover || !activityDateRangeToggle) return;
+      activityDatePickerState.initialSnapshot = {
+        preset: activityDatePickerState.preset,
+        start: activityDatePickerState.start ? new Date(activityDatePickerState.start) : null,
+        end: activityDatePickerState.end ? new Date(activityDatePickerState.end) : null,
+        viewDate: new Date(activityDatePickerState.viewDate)
+      };
+      activityDateRangePopover.classList.add('open');
+      activityDateRangeToggle.setAttribute('aria-expanded', 'true');
+      renderActivityCalendar();
+    };
+
+    const closeDateRangePopover = (restore = false) => {
+      if (!activityDateRangePopover || !activityDateRangeToggle) return;
+      if (restore && activityDatePickerState.initialSnapshot) {
+        activityDatePickerState = {
+          ...activityDatePickerState,
+          ...activityDatePickerState.initialSnapshot
+        };
+        updateDateRangeInputs();
+        updateDateRangeDisplay();
+      }
+      activityDateRangePopover.classList.remove('open');
+      activityDateRangeToggle.setAttribute('aria-expanded', 'false');
+    };
+
+    const parseDateRange = (value) => {
+      const parts = value.split('-').map((part) => part.trim());
+      if (parts.length !== 2) return null;
+      const from = parseActivityDate(parts[0]);
+      const to = parseActivityDate(parts[1]);
+      if (!from || !to) return null;
+      return { from, to };
+    };
+
+    const initializeDatePickerState = () => {
+      const initialPreset = activityDateRangeSelect?.value || '';
+      const initialRange = activityDateRangeInput?.value?.trim() || '';
+      if (initialPreset && initialPreset !== 'custom') {
+        const range = getPresetRange(initialPreset);
+        if (range) {
+          activityDatePickerState.preset = initialPreset;
+          activityDatePickerState.start = range.from;
+          activityDatePickerState.end = range.to;
+          activityDatePickerState.viewDate = new Date(range.from);
+        }
+      } else if (initialRange) {
+        const parsed = parseDateRange(initialRange);
+        if (parsed) {
+          activityDatePickerState.preset = 'custom';
+          activityDatePickerState.start = normalizeToDate(parsed.from);
+          activityDatePickerState.end = normalizeToDate(parsed.to);
+          activityDatePickerState.viewDate = new Date(parsed.from);
+        }
+      }
+      updateDateRangeInputs();
+      updateDateRangeDisplay();
+      renderActivityCalendar();
+    };
+
+    activityDateRangeToggle?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (activityDateRangePopover?.classList.contains('open')) {
+        closeDateRangePopover(true);
+      } else {
+        openDateRangePopover();
+      }
+    });
+
+    activityDateRangePresetButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const preset = button.dataset.range;
+        const range = getPresetRange(preset);
+
+        if (preset === 'custom') {
+          activityDatePickerState.preset = 'custom';
+          activityDatePickerState.start = null;
+          activityDatePickerState.end = null;
+        } else if (range) {
+          activityDatePickerState.preset = preset;
+          activityDatePickerState.start = range.from;
+          activityDatePickerState.end = range.to;
+          activityDatePickerState.viewDate = new Date(range.from);
+        }
+
+        updateDateRangeInputs();
+        updateDateRangeDisplay();
+        renderActivityCalendar();
+        if (typeof refreshActivity === 'function') refreshActivity();
+      });
+    });
+
+    activityDateRangeResetBtn?.addEventListener('click', () => {
+      resetDatePickerSelection();
+    });
+
+    activityDateRangeCancelBtn?.addEventListener('click', () => {
+      closeDateRangePopover(true);
+    });
+
+    activityDateRangeApplyBtn?.addEventListener('click', () => {
+      applyDatePickerSelection();
+    });
+
+    activityDateRangePrevBtn?.addEventListener('click', () => {
+      activityDatePickerState.viewDate.setMonth(activityDatePickerState.viewDate.getMonth() - 1);
+      renderActivityCalendar();
+    });
+
+    activityDateRangeNextBtn?.addEventListener('click', () => {
+      activityDatePickerState.viewDate.setMonth(activityDatePickerState.viewDate.getMonth() + 1);
+      renderActivityCalendar();
+    });
+
+    window.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!activityDateRangePopover || !activityDateRangeToggle) return;
+      if (!activityDateRangePopover.classList.contains('open')) return;
+      if (activityDateRangePopover.contains(target) || activityDateRangeToggle.contains(target)) return;
+      closeDateRangePopover(true);
+    });
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && activityDateRangePopover?.classList.contains('open')) {
+        closeDateRangePopover(true);
+      }
+    });
+
+    initializeDatePickerState();
 
     const getActivityRowsPerPage = () => {
       const activeButton = document.querySelector('.page-size-button.active');
@@ -3404,20 +3821,63 @@ document.addEventListener('DOMContentLoaded', () => {
       return selected === 'all' ? activityData.length : Number(selected);
     };
 
+    const parseActivityDate = (value) => {
+      if (!value) return null;
+      const parsed = new Date(`${value}T00:00:00`);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+
+    const getDateRangeBounds = () => {
+      const preset = activityDateRangeSelect?.value || '';
+      const today = new Date();
+      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const startOfYesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+      const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+
+      switch (preset) {
+        case 'today':
+          return { from: startOfToday, to: today };
+        case 'yesterday':
+          return { from: startOfYesterday, to: startOfYesterday };
+        case 'last7':
+          return { from: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6), to: today };
+        case 'last30':
+          return { from: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29), to: today };
+        case 'thisMonth':
+          return { from: startOfThisMonth, to: today };
+        case 'lastMonth':
+          return { from: startOfLastMonth, to: endOfLastMonth };
+        default:
+          return null;
+      }
+    };
     const getFilteredActivityData = () => {
       const query = activitySearchInput?.value.trim().toLowerCase() || '';
-      const dateInFilter = activityDateInInput?.value || '';
-      const dateOutFilter = activityDateOutInput?.value || '';
-      const status = activityStatusSelect?.value || '';
+      const activity = activitySelect?.value || '';
+      const transactionType = activityTransactionSelect?.value.trim().toLowerCase() || '';
       const location = activityLocationSelect?.value || '';
+      const rangeInput = activityDateRangeInput?.value.trim() || '';
+      const presetRange = getDateRangeBounds();
+      const customRange = parseDateRange(rangeInput);
 
       return activityData.filter((item) => {
         const queryMatch = !query || [item.month, item.client, item.mawb, item.hawb].some((field) => field.toLowerCase().includes(query));
-        const dateInMatch = !dateInFilter || item.dateIn === dateInFilter;
-        const dateOutMatch = !dateOutFilter || item.dateOut === dateOutFilter;
-        const statusMatch = !status || item.status.toLowerCase().includes(status.toLowerCase());
+        const activityMatch = !activity || item.activity.toLowerCase().includes(activity.toLowerCase());
+        const transactionMatch = !transactionType || String(item.transactionType || '').toLowerCase().includes(transactionType);
         const locationMatch = !location || item.location.toLowerCase().includes(location.toLowerCase());
-        return queryMatch && dateInMatch && dateOutMatch && statusMatch && locationMatch;
+
+        const itemDate = parseActivityDate(item.dateIn || item.dateOut || '');
+        let dateMatch = true;
+
+        if (customRange) {
+          dateMatch = itemDate && itemDate >= customRange.from && itemDate <= customRange.to;
+        } else if (presetRange) {
+          dateMatch = itemDate && itemDate >= presetRange.from && itemDate <= presetRange.to;
+        }
+
+        return queryMatch && activityMatch && transactionMatch && locationMatch && dateMatch;
       });
     };
 
@@ -3432,7 +3892,7 @@ document.addEventListener('DOMContentLoaded', () => {
         qtyIn: item.qtyIn || '',
         dateOut: item.dateOut || '',
         qtyOut: item.qtyOut || '',
-        status: item.status || ''
+        activity: item.activity || ''
       }));
     };
 
@@ -3461,7 +3921,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const exportRows = getActivityReportExportRows();
-      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Status'];
+      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Activity'];
       const sheetRows = [
         ['Amvel Warehouse Activity Report'],
         ['Yusen Logistics Philippines Inc.'],
@@ -3477,7 +3937,7 @@ document.addEventListener('DOMContentLoaded', () => {
           row.qtyIn,
           row.dateOut,
           row.qtyOut,
-          row.status
+          row.activity
         ])
       ];
 
@@ -3534,7 +3994,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const exportToPDF = () => {
       const exportRows = getActivityReportExportRows();
-      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Status'];
+      const headers = ['Month', 'Client', 'MAWB', 'HAWB', 'Date In', 'Qty In', 'Date Out', 'Qty Out', 'Activity'];
       const bodyRows = exportRows.map((row) => [
         row.month,
         row.client,
@@ -3544,7 +4004,7 @@ document.addEventListener('DOMContentLoaded', () => {
         row.qtyIn,
         row.dateOut,
         row.qtyOut,
-        row.status
+        row.activity
       ]);
 
       const jsPDFConstructor = window.jspdf?.jsPDF || window.jsPDF;
@@ -3628,7 +4088,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <th>Qty In</th>
               <th>Date Out</th>
               <th>Qty Out</th>
-              <th>Status</th>
+              <th>Activity</th>
             </tr>
           </thead>
           <tbody>
@@ -3642,7 +4102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${row.qtyIn}</td>
                 <td>${row.dateOut}</td>
                 <td>${row.qtyOut}</td>
-                <td>${row.status}</td>
+                <td>${row.activity}</td>
               </tr>
             `).join('')}
           </tbody>
@@ -3679,7 +4139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${item.qtyIn}</td>
             <td>${item.dateOut}</td>
             <td>${item.qtyOut}</td>
-            <td><span class="${item.badgeClass}">${item.status}</span></td>
+            <td><span class="${item.badgeClass}">${item.activity}</span></td>
           </tr>
         `).join('');
       }
@@ -3709,12 +4169,13 @@ document.addEventListener('DOMContentLoaded', () => {
     activityPrintButton?.addEventListener('click', printReport);
 
     activitySearchInput?.addEventListener('input', refreshActivity);
-    activityDateInInput?.addEventListener('input', refreshActivity);
-    activityDateInInput?.addEventListener('change', refreshActivity);
-    activityDateOutInput?.addEventListener('input', refreshActivity);
-    activityDateOutInput?.addEventListener('change', refreshActivity);
-    activityStatusSelect?.addEventListener('input', refreshActivity);
-    activityStatusSelect?.addEventListener('change', refreshActivity);
+    activityDateRangeSelect?.addEventListener('change', refreshActivity);
+    activityDateRangeInput?.addEventListener('input', refreshActivity);
+    activityDateRangeInput?.addEventListener('change', refreshActivity);
+    activitySelect?.addEventListener('input', refreshActivity);
+    activitySelect?.addEventListener('change', refreshActivity);
+    activityTransactionSelect?.addEventListener('input', refreshActivity);
+    activityTransactionSelect?.addEventListener('change', refreshActivity);
     activityLocationSelect?.addEventListener('input', refreshActivity);
     activityLocationSelect?.addEventListener('change', refreshActivity);
 
@@ -3722,14 +4183,25 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activitySearchInput) {
         activitySearchInput.value = '';
       }
-      if (activityDateInInput) {
-        activityDateInInput.value = '';
+      if (activityDateRangeSelect) {
+        activityDateRangeSelect.value = '';
       }
-      if (activityDateOutInput) {
-        activityDateOutInput.value = '';
+      if (activityDateRangeInput) {
+        activityDateRangeInput.value = '';
       }
-      if (activityStatusSelect) {
-        activityStatusSelect.value = '';
+      // Also reset the visible date-range label and internal picker state
+      if (typeof activityDatePickerState !== 'undefined') {
+        activityDatePickerState.preset = '';
+        activityDatePickerState.start = null;
+        activityDatePickerState.end = null;
+      }
+      if (typeof updateDateRangeInputs === 'function') updateDateRangeInputs();
+      if (typeof updateDateRangeDisplay === 'function') updateDateRangeDisplay();
+      if (activitySelect) {
+        activitySelect.value = '';
+      }
+      if (activityTransactionSelect) {
+        activityTransactionSelect.value = '';
       }
       if (activityLocationSelect) {
         activityLocationSelect.value = '';
@@ -4356,19 +4828,54 @@ const startQrScanner = async (modal, context) => {
   }
 }
 
+const applyPlateSuggestionSelection = (suggestionButton) => {
+  if (!suggestionButton) {
+    return false;
+  }
+
+  const wrapper = suggestionButton.closest('.plate-input-with-suggestions');
+  const activeInput = wrapper?.querySelector('input');
+  const plateInput = wrapper?.querySelector('input[data-field="plateNo"]');
+  const truckerInput = suggestionButton.closest('form')?.querySelector('input[data-field="trucker"]');
+  const suggestionsBox = wrapper?.querySelector('.plate-suggestions');
+
+  if (activeInput && suggestionButton.dataset.value) {
+    activeInput.value = suggestionButton.dataset.value || '';
+    activeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    activeInput.dispatchEvent(new Event('change', { bubbles: true }));
+  } else if (plateInput && suggestionButton.dataset.plate) {
+    plateInput.value = suggestionButton.dataset.plate || '';
+
+    plateInput.dispatchEvent(new Event('input', { bubbles: true }));
+    plateInput.dispatchEvent(new Event('change', { bubbles: true }));
+
+    if (truckerInput && suggestionButton.dataset.trucker) {
+      truckerInput.value = suggestionButton.dataset.trucker || '';
+      truckerInput.dispatchEvent(new Event('input', { bubbles: true }));
+      truckerInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+
+  if (suggestionsBox) {
+    suggestionsBox.classList.remove('show');
+  }
+
+  return true;
+};
+
+document.addEventListener('mousedown', (e) => {
+  const suggestionButton = e.target.closest('.plate-suggestion-item');
+  if (suggestionButton) {
+    e.preventDefault();
+    applyPlateSuggestionSelection(suggestionButton);
+  }
+});
+
 document.addEventListener('click', (e)=>{
   const suggestionButton = e.target.closest('.plate-suggestion-item');
   if (suggestionButton) {
     e.preventDefault();
-    const plateInput = suggestionButton.closest('.plate-input-with-suggestions')?.querySelector('input[data-field="plateNo"]');
-    const truckerInput = suggestionButton.closest('form')?.querySelector('input[data-field="trucker"]');
-    if (plateInput) {
-      plateInput.value = suggestionButton.dataset.plate || '';
-    }
-    if (truckerInput) {
-      truckerInput.value = suggestionButton.dataset.trucker || '';
-    }
-    suggestionButton.closest('.plate-input-with-suggestions').querySelector('.plate-suggestions').classList.remove('show');
+    applyPlateSuggestionSelection(suggestionButton);
     return;
   }
 
