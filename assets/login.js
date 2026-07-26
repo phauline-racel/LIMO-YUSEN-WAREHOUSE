@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const userIdInput = form.querySelector('input[name="userId"]') || form.querySelector('input[name="username"]');
   const passwordInput = form.querySelector('input[name="password"]');
   const submitButton = form.querySelector('button[type="submit"]');
+  const passwordToggle = form.querySelector('.password-toggle');
 
   const setError = (message) => {
     if (errorBox) {
@@ -16,8 +17,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const setLoading = (isLoading) => {
     if (!submitButton) return;
     submitButton.disabled = isLoading;
-    submitButton.textContent = isLoading ? 'Signing in...' : 'Login';
+    submitButton.textContent = isLoading ? 'Signing in...' : 'Sign In';
   };
+
+  if (passwordToggle && passwordInput) {
+    passwordToggle.addEventListener('click', () => {
+      const isHidden = passwordInput.type === 'password';
+      passwordInput.type = isHidden ? 'text' : 'password';
+      const icon = passwordToggle.querySelector('i');
+      if (icon) {
+        icon.className = isHidden ? 'bi bi-eye' : 'bi bi-eye-slash';
+      }
+      passwordToggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+      passwordToggle.title = isHidden ? 'Hide password' : 'Show password';
+      passwordInput.focus();
+    });
+  }
 
   if (window.AuthService?.isAuthenticated?.()) {
     window.location.href = 'pages/dashboard.html';
