@@ -139,9 +139,75 @@
             </div>
 
             <div class="inventory-filter-panel" id="activityFilterPanel" aria-hidden="true">
-              <div class="filter-box"><label for="activity-date-in">Date In</label><input id="activity-date-in" type="date" data-field="activity-date-in" aria-label="Date In" /></div>
-              <div class="filter-box"><label for="activity-date-out">Date Out</label><input id="activity-date-out" type="date" data-field="activity-date-out" aria-label="Date Out" /></div>
-              <div class="filter-box"><label for="activity-status">Status</label><input id="activity-status" type="text" data-field="activity-status" placeholder="Type or select status" autocomplete="off" aria-label="Status" /></div>
+              <div class="filter-box">
+                <label for="activity-date-range-toggle">Date Range</label>
+                <div class="date-range-picker">
+                  <button id="activity-date-range-toggle" type="button" class="date-range-button" aria-haspopup="dialog" aria-expanded="false" aria-controls="activity-date-range-popover">
+                    <span class="date-range-button-label" id="activity-date-range-button-label">Select date range</span>
+                    <span class="date-range-button-arrow">▾</span>
+                  </button>
+
+                  <div id="activity-date-range-popover" class="date-range-popover" role="dialog" aria-modal="false" aria-labelledby="activity-date-range-label">
+                    <div class="date-range-popover-header">
+                      <div>
+                        <div class="popover-label" id="activity-date-range-label">Date Range</div>
+                        <div class="popover-range-value" id="activity-date-range-display">Select a date range</div>
+                      </div>
+                    </div>
+                    <div class="date-range-popover-body">
+                      <div class="date-range-presets">
+                        <button type="button" class="date-range-preset-btn" data-range="today">Today</button>
+                        <button type="button" class="date-range-preset-btn" data-range="yesterday">Yesterday</button>
+                        <button type="button" class="date-range-preset-btn" data-range="last7">Last 7 Days</button>
+                        <button type="button" class="date-range-preset-btn" data-range="last30">Last 30 Days</button>
+                        <button type="button" class="date-range-preset-btn" data-range="thisMonth">This Month</button>
+                        <button type="button" class="date-range-preset-btn" data-range="lastMonth">Last Month</button>
+                        <button type="button" class="date-range-preset-btn" data-range="custom">Custom Range</button>
+                      </div>
+                      <div class="date-range-calendar-panel">
+                        <div class="calendar-header">
+                          <button type="button" class="calendar-nav calendar-prev" data-action="prev-month" aria-label="Previous month"><i class="bi bi-chevron-left"></i></button>
+                          <div class="calendar-title" id="activityDateRangeCalendarTitle">July 2026</div>
+                          <button type="button" class="calendar-nav calendar-next" data-action="next-month" aria-label="Next month"><i class="bi bi-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-weekdays">
+                          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                        </div>
+                        <div class="calendar-days" id="activityDateRangeCalendarDays"></div>
+                      </div>
+                    </div>
+                    <div class="date-range-actions">
+                      <button type="button" class="btn reset-btn" id="activityDateRangeReset">Reset</button>
+                      <button type="button" class="btn cancel-btn" id="activityDateRangePopoverCancel">Cancel</button>
+                      <button type="button" class="btn apply-btn" id="activityDateRangeApply">Apply</button>
+                    </div>
+                  </div>
+
+                  <select id="activity-date-range" data-field="activity-date-range" aria-label="Date Range" hidden>
+                    <option value="">All</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="last7">Last 7 Days</option>
+                    <option value="last30">Last 30 Days</option>
+                    <option value="thisMonth">This Month</option>
+                    <option value="lastMonth">Last Month</option>
+                    <option value="custom">Custom Date Range</option>
+                  </select>
+                  <input id="activity-date-range-input" type="text" data-field="activity-date-range-input" placeholder="YYYY-MM-DD - YYYY-MM-DD" aria-label="Date Range" hidden />
+                </div>
+              </div>
+              <div class="filter-box">
+                <label for="activity-status">Activity</label>
+                <select id="activity-status" data-field="activity-status" aria-label="Activity">
+                  <option value="">All</option>
+                  <option value="Inbound">Inbound</option>
+                  <option value="Outbound">Outbound</option>
+                </select>
+              </div>
+              <div class="filter-box">
+                <label for="activity-transaction">Transaction Type</label>
+                <input id="activity-transaction" type="text" data-field="activity-transaction" placeholder="Type or select type" autocomplete="off" aria-label="Transaction Type" />
+              </div>
               <div class="filter-box"><label for="activity-location">Warehouse Location</label><input id="activity-location" type="text" data-field="activity-location" placeholder="Type or select location" autocomplete="off" aria-label="Warehouse location" /></div>
               <button type="button" class="filter-clear-btn" id="activityClearFilters">Clear filters</button>
             </div>
@@ -150,7 +216,7 @@
 
         <div class="table">
           <table>
-            <thead><tr><th>Month</th><th>Client</th><th>MAWB</th><th>HAWB</th><th>Date In</th><th>Qty In</th><th>Date Out</th><th>Qty Out</th><th>Status</th></tr></thead>
+            <thead><tr><th>Month</th><th>Client</th><th>MAWB</th><th>HAWB</th><th>Date In</th><th>Qty In</th><th>Date Out</th><th>Qty Out</th><th>Activity</th></tr></thead>
             <tbody id="activityTableBody"></tbody>
           </table>
         </div>
