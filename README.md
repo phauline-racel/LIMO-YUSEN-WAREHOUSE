@@ -364,7 +364,315 @@
 
 ---
 
-## 11. Future Improvements
+## 11. Current Project Status
+
+### Completed
+- ✔ Login flow with seeded admin and employee accounts
+- ✔ Dashboard and shipment summary cards
+- ✔ Inventory page with search, filters, sorting, and detail drawer
+- ✔ Inbound and outbound entry forms
+- ✔ Activity report with export to Excel and PDF
+- ✔ User management for administrators
+- ✔ Profile page with editable profile fields and image upload
+- ✔ QR scanning support for shipment entry and lookup
+- ✔ Notifications
+- ✔ Mobile-friendly and responsive layout
+
+### Partially Completed
+- △ Profile image editing includes zoom and rotate controls, but it is still handled entirely in the browser
+- △ QR scanning works well for payloads and plain identifiers, but it is still a front-end helper rather than a backend-integrated lookup
+- △ Local Storage is used for persistence instead of a managed database
+
+### Not Yet Implemented
+- □ Backend service/API layer
+- □ MySQL or other relational database
+- □ Server-side authentication and authorization
+- □ Audit logs for user and shipment actions
+- □ Barcode scanning support
+- □ Production deployment and hosting
+
+---
+
+## 12. Database Design (Proposed)
+
+Even though the current application uses Local Storage, the intended production design should move to a relational database.
+
+### Suggested tables
+
+```sql
+Users
+- user_id (PK)
+- username
+- password_hash
+- role
+- status
+- created_at
+- last_login
+```
+
+```sql
+Profiles
+- profile_id (PK)
+- user_id (FK)
+- first_name
+- last_name
+- employee_id
+- position
+- email
+- phone
+- avatar_url
+```
+
+```sql
+Shipments
+- shipment_id (PK)
+- hawb
+- mawb
+- client
+- destination
+- invoice
+- transaction_type
+- location
+- status
+- entry_type
+- qty_in
+- qty_out
+- remaining_qty
+- created_at
+- updated_at
+```
+
+```sql
+ShipmentOutboundEvents
+- outbound_event_id (PK)
+- shipment_id (FK)
+- outbound_date
+- outbound_time
+- released_by
+- plate_no
+- driver
+- released_qty
+- remarks
+```
+
+```sql
+Notifications
+- notification_id (PK)
+- user_id (FK)
+- type
+- title
+- description
+- meta
+- created_at
+- read_at
+```
+
+### Design note
+- Passwords should be stored as hashes, not as plain values.
+- Sessions should be managed server-side with secure tokens.
+- Shipment history should be preserved in a separate table so multiple outbound actions can be tracked independently.
+
+---
+
+## 13. Why Multiple Outbound Entries Exist
+
+This project supports a warehouse behavior where one shipment reference may leave the warehouse in more than one release event.
+
+Example:
+
+```text
+Inbound
+10 Boxes
+
+Outbound #1
+3 Boxes
+Remaining 7 Boxes
+
+Outbound #2
+2 Boxes
+Remaining 5 Boxes
+
+Outbound #3
+1 Box
+Remaining 4 Boxes
+```
+
+This is why the app aggregates inbound and outbound movements by shipment reference and keeps outbound history instead of treating each release as a separate shipment.
+
+---
+
+## 14. Local Storage Sample
+
+The current app stores shipment records under the key `warehouseShipments`. A single object looks like this:
+
+```json
+{
+  "hawb": "SPSF-26A-030",
+  "client": "YAZAKI",
+  "qtyIn": 12,
+  "qtyOut": 8,
+  "remaining": 4,
+  "transactionType": "Outbound",
+  "location": "A-01",
+  "savedAt": "2026-07-27T10:15:00"
+}
+```
+
+Other local keys include:
+- `warehouseAuthAccounts`
+- `warehouseAuthSession`
+- `warehouseProfile`
+- `warehouseProfilePictures`
+- `warehouseNotificationState`
+
+---
+
+## 15. Design Standards
+
+### Primary
+- `#06183d`
+
+### Secondary
+- `#e16d10`
+
+### Success
+- `#198754`
+
+### Danger
+- `#cd2026`
+
+### Typography
+- Bootstrap-style system font stack
+- Clear headings, labels, and button text
+- Consistent spacing and hierarchy across cards, tables, and forms
+
+### Icons
+- Bootstrap Icons
+- Material Symbols
+
+### Responsive
+- Desktop
+- Tablet
+- Mobile
+
+### UI conventions
+- Rounded cards and form controls with soft shadows
+- Clear hierarchy with strong header and button contrast
+- Responsive stacking on smaller screens
+- Sidebar navigation and topbar remain consistent across pages
+- Action buttons use clear blue/green/red states for primary, success, and destructive actions
+
+---
+
+## 16. File Dependency
+
+The main flow for inventory and dashboard data is:
+
+```text
+pages/dashboard.html
+  ↓
+assets/app.js
+  ↓
+getStoredShipments()
+  ↓
+aggregateShipmentsByReference()
+  ↓
+renderDashboardData()
+```
+
+Other important dependency chains include:
+
+```text
+pages/inbound-outbound.html
+  ↓
+assets/app.js
+  ↓
+populateShipmentForm()
+  ↓
+saveStoredShipments()
+```
+
+```text
+pages/inventory.html
+  ↓
+assets/app.js
+  ↓
+refreshInventory()
+  ↓
+renderInventoryTable()
+```
+
+---
+
+## 17. Known Bugs and Issues
+
+- Local Storage data is cleared if the browser data is deleted.
+- QR scanning depends on camera permission and good lighting conditions.
+- PDF export may need fallback behavior if the external library is unavailable.
+- Profile image zoom/rotate is local only and does not sync to a backend.
+- Authentication and permissions are enforced only in the browser and are not secure for production.
+- Some validation rules are still basic and may allow incomplete or duplicate entries.
+
+---
+
+## 18. Changelog
+
+### Version 1.0
+
+Implemented
+- ✔ Login and session handling
+- ✔ Dashboard and summary cards
+- ✔ Inventory management and shipment detail drawer
+- ✔ Inbound and outbound workflows
+- ✔ Activity report and Excel/PDF export
+- ✔ User management for admins
+- ✔ Profile editing and image upload
+- ✔ QR scanner integration
+
+Current storage
+- Local Storage
+
+Future direction
+- Database integration
+- Backend API
+- Secure authentication
+- Audit logging and production deployment
+
+---
+
+## 19. References
+
+The following libraries and assets are used by the project:
+- Bootstrap Icons
+- jsQR
+- jsPDF
+- AutoTable
+- SheetJS (xlsx)
+- Material Symbols
+
+> Note: the app uses Bootstrap Icons and Material Symbols for UI visuals, while the core logic remains plain HTML, CSS, and JavaScript.
+
+---
+
+## 20. User Roles Table
+
+| Feature | Employee | Admin |
+|---|---:|---:|
+| Login | ✅ | ✅ |
+| Dashboard | ✅ | ✅ |
+| Inventory | ✅ | ✅ |
+| Inbound | ✅ | ✅ |
+| Outbound | ✅ | ✅ |
+| Activity Report | ✅ | ✅ |
+| Profile | ✅ | ✅ |
+| User Management | ❌ | ✅ |
+| Add User | ❌ | ✅ |
+| Delete User | ❌ | ✅ |
+| Reset Password | ❌ | ✅ |
+
+---
+
+## 21. Future Improvements
 
 ### Recommended improvements
 - Replace Local Storage with a real database and backend API.
@@ -382,7 +690,7 @@
 
 ---
 
-## 12. Setup Guide
+## 22. Setup Guide
 
 ### Required software
 - Modern browser with camera support (Chrome, Edge, Firefox, Safari).
@@ -411,7 +719,7 @@
 
 ---
 
-## 13. Code Comments
+## 23. Code Comments
 
 ### Files reviewed
 - `assets/auth.js`
@@ -431,7 +739,7 @@
 
 ---
 
-## 14. Maintenance Notes
+## 24. Maintenance Notes
 
 ### Files responsible for each feature
 - `assets/auth.js`: authentication, user management, session persistence.
@@ -492,7 +800,7 @@
 
 ---
 
-## 15. Known Limitations
+## 25. Known Limitations
 
 ### Current limitations
 - Local Storage is used instead of a database.
