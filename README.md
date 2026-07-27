@@ -1,3 +1,5 @@
+<div style="color:#E16D10; font-size:12px; line-height:1.5; text-align:justify;">
+
 # LIMO Warehouse System - Developer Documentation
 
 ## 1. Project Overview
@@ -823,3 +825,5 @@ The following libraries and assets are used by the project:
 ## Final Handover Summary
 
 For a new developer, start with `assets/auth.js` and `assets/app.js`, then inspect the HTML pages in `pages/`. This repo is a static front-end warehouse prototype that uses Local Storage for persistence and includes QR scanning for fast shipment entry.
+
+</div>
