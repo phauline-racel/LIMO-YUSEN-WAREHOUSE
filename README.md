@@ -144,8 +144,8 @@
 - Total Shipments: unique shipment references count.
 - Cargo in Warehouse: sum of remaining quantities.
 - Outgoing Today: shipments with outbound activity today.
-- Recent shipments section listing latest saved records.
-- Dashboard cards serve as filters for the activity page.
+- Activity summary and recent shipment activity are shown directly in the dashboard view.
+- Dashboard cards serve as filters for the activity report.
 
 ### Inventory
 - Search by HAWB, MAWB, or client.
