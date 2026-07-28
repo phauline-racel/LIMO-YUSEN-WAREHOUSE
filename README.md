@@ -2,6 +2,9 @@
 
 # LIMO Warehouse System - Developer Documentation
 
+## User Manual
+A user-facing guide for employees and administrators is available in [USER_MANUAL.md](USER_MANUAL.md). It explains how to use the system from the end-user perspective.
+
 ## 1. Project Overview
 
 **Project Name**
