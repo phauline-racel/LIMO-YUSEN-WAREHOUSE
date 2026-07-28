@@ -1,688 +1,596 @@
 # LIMO Warehouse Inventory Management System
 ## User Manual
 
-This manual explains how to use the LIMO Warehouse Inventory Management System in simple, step-by-step instructions. It is written for warehouse employees and administrators.
+## Revision History
 
-## Introduction
+| Version | Date | Author | Description |
+|---|---|---|---|
+| 1.0 | July 28, 2026 | Phauline Racel Callejo | Initial Release |
 
-### Purpose
-Use this system to record cargo movement, view warehouse activity, check inventory, update your profile, and manage users if you are an administrator.
+## Table of Contents
 
-### Description
-The system is a web-based warehouse tool for daily operations. It helps you manage inbound and outbound cargo, review inventory, export reports, and stay informed with notifications.
-
-### Step-by-step instructions
-Step 1. Open the system in your web browser.
-
-Step 2. Sign in with your username and password.
-
-Step 3. Use the main menu to open the page you need.
-
-### Expected result
-You can access the warehouse system and begin working.
-
-### Notes
-- Keep your login details private.
-- If you are new, ask your administrator for access.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Welcome screen or dashboard
-- Mobile View: Screenshot placeholder: Mobile home screen
-
-### Tips
-- Start each shift by checking the dashboard and notifications.
-
----
-
-## 5. System Requirements
-
-### Purpose
-Make sure your device and browser are ready to use the system.
-
-### Description
-The system works best on a modern web browser and a stable internet connection.
-
-### Step-by-step instructions
-Step 1. Use a recent version of Chrome, Edge, or Firefox.
-
-Step 2. Make sure your device has internet access.
-
-Step 3. If you plan to scan codes, allow camera access when prompted.
-
-Step 4. Use a screen large enough to view forms clearly. A phone or tablet can also be used.
-
-### Expected result
-The system opens correctly and all main features are available.
-
-### Notes
-- A camera is helpful for QR scanning.
-- If the page does not load, refresh the browser and try again.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Browser ready for login
-- Mobile View: Screenshot placeholder: Mobile browser setup
-
-### Tips
-- Keep your browser updated for the best experience.
+1. Introduction
+2. System Requirements
+3. Accessing the System
+4. Login
+5. Dashboard
+6. Inbound Module
+7. Outbound Module
+8. Inventory
+9. QR Scanner
+10. Notifications
+11. Profile
+12. User Management (Admin Only)
+13. Export Reports
+14. Error Messages
+15. Troubleshooting
+16. Frequently Asked Questions
+17. Best Practices
+18. Logout
+19. Appendix
+20. User Roles
+21. Default Accounts (Testing Only)
 
 ---
 
-## 6. Accessing the System
+## 1. Introduction
 
-### Purpose
-Show you how to open the warehouse system.
+### Overview
+The LIMO Warehouse Inventory Management System is a web-based tool designed for warehouse employees and administrators. It helps users record inbound and outbound shipments, monitor inventory, review activity, export reports, and manage user accounts where appropriate.
 
-### Description
-You can access the system from a desktop computer, laptop, tablet, or mobile phone.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open your browser.
+Figure 1.1 Welcome Screen
 
-Step 2. Enter the system address provided by your administrator.
-
-Step 3. If you are already signed in, the system opens directly.
-
-Step 4. If not, go to the login page and sign in.
-
-### Expected result
-You reach the login page or the main dashboard.
+### How to Use
+1. Open the system in your web browser.
+2. Sign in with your assigned username and password.
+3. Use the sidebar to navigate between the available pages.
+4. Start with the Dashboard to review current warehouse activity.
 
 ### Notes
-- If you are using a shared device, always log out after your work is done.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: System address entry on desktop
-- Mobile View: Screenshot placeholder: Mobile browser opening the system
+- Keep your login credentials private.
+- If you are new to the system, ask your administrator for access.
 
 ### Tips
+- Begin each shift by checking the Dashboard and Notifications.
+
+---
+
+## 2. System Requirements
+
+### Overview
+The system can be used on a desktop computer, laptop, tablet, or mobile device. A modern web browser and a stable internet connection are recommended.
+
+[Insert Screenshot Here]
+
+Figure 2.1 System Requirements Overview
+
+### How to Use
+1. Use a recent version of Chrome, Edge, or Firefox.
+2. Make sure your device has internet access.
+3. Allow camera access if you plan to use the QR scanner.
+4. Use a device with a screen large enough to view forms comfortably.
+
+### Notes
+- A camera is required for QR scanning.
+- If the page does not load correctly, refresh the browser and try again.
+
+### Tips
+- Keep your browser updated to avoid display or performance issues.
+
+---
+
+## 3. Accessing the System
+
+### Overview
+Users access the system through a secure web address provided by the organization. Once the page is opened, the login screen appears for authentication.
+
+[Insert Screenshot Here]
+
+Figure 3.1 Accessing the System
+
+### How to Use
+1. Open your web browser.
+2. Enter the system address provided by your administrator.
+3. If you are already signed in, the Dashboard opens directly.
+4. If not, proceed to the Login page.
+
+### Notes
+- Always log out when using a shared device.
 - Save the web address in your bookmarks for faster access.
 
+### Tips
+- Use the same browser for repeated daily access to keep the experience consistent.
+
 ---
 
-## 7. Login
+## 4. Login
 
-### Purpose
-Allow authorized users to enter the system securely.
+### Overview
+The Login page allows authorized users to access the warehouse system securely.
 
-### Description
-The login page is where you enter your username and password.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the login page.
+Figure 4.1 Login Page
 
-Step 2. Enter your username in the Username field.
-
-Step 3. Enter your password in the Password field.
-
-Step 4. Click Sign In.
-
-Step 5. If your credentials are correct, the dashboard opens.
-
-### Expected result
-You are signed in and can use the warehouse modules.
+### How to Use
+1. Open the Login page.
+2. Enter your username in the Username field.
+3. Enter your password in the Password field.
+4. Click Sign In.
 
 ### Notes
-- If the login fails, check your username and password.
-- If the problem continues, contact the administrator.
+- If the login fails, verify your username and password.
+- If the issue continues, contact the administrator.
 
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Login form on desktop
-- Mobile View: Screenshot placeholder: Mobile login form
+> ⚠ Important
+> Do not share your password with other staff members.
 
 ### Tips
-- Make sure Caps Lock is off if you are entering the password manually.
+- Make sure Caps Lock is off if you are entering your password manually.
 
 ---
 
-## 8. Dashboard
+## 5. Dashboard
 
-### Purpose
-Give you a quick overview of warehouse activity.
+### Overview
+The Dashboard provides a quick summary of warehouse operations. It displays shipment statistics, inventory information, and recent warehouse activity, allowing users to monitor daily operations at a glance.
 
-### Description
-The dashboard shows shipment summary cards and an activity report. It helps you understand current warehouse movement at a glance.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. After signing in, open the Dashboard page.
+Figure 5.1 Dashboard (Desktop)
 
-Step 2. Review the summary cards for total shipments, cargo in warehouse, and outgoing today.
+[Insert Screenshot Here]
 
-Step 3. Click a card if you want to focus the activity report on that category.
+Figure 5.2 Dashboard (Mobile)
 
-Step 4. Use the search box to look for a shipment by HAWB, MAWB, or client name.
-
-Step 5. Use the Filters button to narrow the activity report by date, transaction type, or location.
-
-Step 6. Review the activity table to see recent inbound and outbound movement.
-
-### Expected result
-You can quickly review warehouse activity and find the information you need.
+### How to Use
+1. Open the Dashboard from the sidebar.
+2. Review the summary cards for total shipments, cargo in warehouse, and outgoing today.
+3. Click a summary card to filter the activity report.
+4. Use the search bar to find records by HAWB, MAWB, or Client.
+5. Click Filters to narrow the displayed records.
+6. Review the Activity Report table for recent inbound and outbound movement.
 
 ### Notes
-- The dashboard is useful for daily checks and quick reporting.
-- Activity report details are shown on this page as part of the dashboard view.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Dashboard and activity report on desktop
-- Mobile View: Screenshot placeholder: Mobile dashboard with stacked cards
+- Dashboard data updates whenever shipment records are saved.
+- Summary cards provide quick access to filtered activity records.
 
 ### Tips
-- Check the dashboard at the start of your shift.
+- Review the Dashboard at the start of each shift.
+
+### Related Pages
+- Inventory
+- Inbound & Outbound
+- Export Reports
 
 ---
 
-## 9. Inbound Module
+## 6. Inbound Module
 
-### Purpose
-Record incoming cargo.
+### Overview
+The Inbound Module is used to record incoming cargo and receiving details.
 
-### Description
-Use the Inbound tab to enter received cargo details.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the Inbound & Outbound page.
+Figure 6.1 Inbound Form (Desktop)
 
-Step 2. Click the Inbound tab.
+[Insert Screenshot Here]
 
-Step 3. Enter shipment information such as client, destination, HAWB, MAWB, invoice, and transaction type.
+Figure 6.2 Inbound Form (Mobile)
 
-Step 4. Enter receiving details such as date, time, received by, plate number, trucker, driver, cargo condition, and warehouse location.
-
-Step 5. Enter the quantity and select the unit.
-
-Step 6. Add more quantity rows if needed.
-
-Step 7. Click Save when the form is complete.
-
-Step 8. Click Clear if you want to start over.
-
-### Expected result
-The inbound shipment is saved successfully.
+### How to Use
+1. Open the Inbound & Outbound page.
+2. Click the Inbound tab.
+3. Enter shipment details such as Client, Destination, HAWB, MAWB, Invoice, and Transaction Type.
+4. Enter receiving information such as Date, Time, Received By, Plate No., Trucker, Driver, Cargo Condition, and Warehouse Location.
+5. Enter the quantity and select the unit.
+6. Add more quantity rows if needed.
+7. Click Save when the form is complete.
+8. Click Clear if you want to start over.
 
 ### Notes
-- Double-check the quantity and unit before saving.
-- Make sure the reference numbers are correct.
+- Verify the shipment reference numbers before saving.
+- Double-check quantity and unit information to avoid errors.
 
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Inbound form on desktop
-- Mobile View: Screenshot placeholder: Mobile inbound form
+> ⚠ Important
+> Incorrect HAWB or MAWB values may lead to duplicate or mismatched records.
 
 ### Tips
-- Use the same shipment reference numbers carefully to avoid duplicate entries.
+- Use consistent reference numbers for all inbound entries.
+
+### Related Pages
+- Outbound Module
+- Inventory
+- Dashboard
 
 ---
 
-## 10. Outbound Module
+## 7. Outbound Module
 
-### Purpose
-Record outgoing cargo.
+### Overview
+The Outbound Module is used to record outgoing cargo and release details.
 
-### Description
-Use the Outbound tab to enter released cargo details.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the Inbound & Outbound page.
+Figure 7.1 Outbound Form (Desktop)
 
-Step 2. Click the Outbound tab.
+[Insert Screenshot Here]
 
-Step 3. Enter shipment information such as client, destination, HAWB, MAWB, invoice, and transaction type.
+Figure 7.2 Outbound Form (Mobile)
 
-Step 4. Enter release details such as date, time, released by, plate number, trucker, driver, cargo condition, and warehouse location.
-
-Step 5. Enter the released quantity and select the unit.
-
-Step 6. Add more quantity rows if needed.
-
-Step 7. Click Save when the form is complete.
-
-### Expected result
-The outbound shipment is saved successfully.
+### How to Use
+1. Open the Inbound & Outbound page.
+2. Click the Outbound tab.
+3. Enter shipment details such as Client, Destination, HAWB, MAWB, Invoice, and Transaction Type.
+4. Enter release information such as Date, Time, Released By, Plate No., Trucker, Driver, Cargo Condition, and Warehouse Location.
+5. Enter the quantity and select the unit.
+6. Add more quantity rows if needed.
+7. Click Save when the form is complete.
 
 ### Notes
 - Review the remaining quantity before releasing cargo.
-- Make sure the release details are accurate.
+- Confirm release details carefully before saving.
 
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Outbound form on desktop
-- Mobile View: Screenshot placeholder: Mobile outbound form
+> ⚠ Important
+> Do not release cargo unless the stock balance has been verified.
 
 ### Tips
-- If stock is low, confirm with a supervisor before release.
+- If stock is low, confirm with a supervisor before proceeding.
+
+### Related Pages
+- Inbound Module
+- Inventory
+- Dashboard
 
 ---
 
-## 11. Inventory
+## 8. Inventory
 
-### Purpose
-Review current stock and shipment records.
+### Overview
+The Inventory page displays current stock records, including remaining quantities and shipment details.
 
-### Description
-The Inventory page shows the current warehouse records, including quantities and shipment details.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the Inventory page.
+Figure 8.1 Inventory Page (Desktop)
 
-Step 2. Use the search box to find a shipment by HAWB, MAWB, or client name.
+[Insert Screenshot Here]
 
-Step 3. Click Filters to narrow the list by location or transaction type.
+Figure 8.2 Inventory Page (Mobile)
 
-Step 4. Use the sort control if you want to arrange inventory by quantity.
-
-Step 5. Review the inventory table and identify the current stock status.
-
-Step 6. Click the action button for a row to open the shipment details drawer.
-
-### Expected result
-You can see the current inventory and open detailed shipment information.
+### How to Use
+1. Open the Inventory page.
+2. Use the Search box to find records by HAWB, MAWB, or Client.
+3. Apply filters by location or transaction type if needed.
+4. Use the sort option to arrange records by quantity.
+5. Review the inventory table for current stock status.
+6. Click View or the action button to open shipment details.
 
 ### Notes
-- This page is useful for checking remaining cargo.
-- Use filters when the list is long.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Inventory table and detail drawer on desktop
-- Mobile View: Screenshot placeholder: Mobile inventory list
+- Inventory records help users confirm what is currently available in the warehouse.
+- Filters are useful when the list is long.
 
 ### Tips
-- Start with the search box before using filters.
+- Search first before applying filters.
+
+### Related Pages
+- Dashboard
+- Inbound & Outbound
+- QR Scanner
 
 ---
 
-## 12. QR Scanner
+## 9. QR Scanner
 
-### Purpose
-Use scanning to speed up data entry and lookup.
+### Overview
+The QR Scanner allows users to read shipment codes quickly and use the information to fill in forms or search records.
 
-### Description
-The QR scanner can be used to read codes and fill in shipment information quickly.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open a form or page that has a scan button.
+Figure 9.1 QR Scanner (Desktop)
 
-Step 2. Click the scan button.
+[Insert Screenshot Here]
 
-Step 3. Point the camera at the QR code or barcode.
+Figure 9.2 QR Scanner (Mobile)
 
-Step 4. Wait for the system to read the code.
-
-Step 5. Confirm that the information is filled in correctly.
-
-### Expected result
-The relevant shipment information appears in the form or search field.
+### How to Use
+1. Open a page or form that includes a scan button.
+2. Click the scan button.
+3. Point the camera at the QR code or barcode.
+4. Wait for the system to read the code.
+5. Confirm that the information appears correctly.
 
 ### Notes
 - Allow camera access when prompted.
-- If the scan fails, try again in better light.
+- If scanning fails, try again in better lighting.
 
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: QR scanner window on desktop
-- Mobile View: Screenshot placeholder: QR scanner on mobile
+> ⚠ Important
+> Make sure the code is clear and fully visible before scanning.
 
 ### Tips
-- Keep the code steady and well lit for a better scan.
+- Keep the device steady while scanning.
+
+### Related Pages
+- Inbound Module
+- Outbound Module
+- Inventory
 
 ---
 
-## 13. Notifications
+## 10. Notifications
 
-### Purpose
-Keep you informed about important warehouse activity.
+### Overview
+Notifications help users stay informed about important warehouse updates and recent activity.
 
-### Description
-Notifications show recent system activity and important updates.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Click the notification icon in the top bar.
+Figure 10.1 Notifications Panel
 
-Step 2. Review the list of notifications.
-
-Step 3. Open a notification if you need more detail.
-
-Step 4. Mark notifications as read if required.
-
-### Expected result
-You stay updated on recent shipment activity.
+### How to Use
+1. Click the notification icon in the top bar.
+2. Review the list of recent notifications.
+3. Open a notification for more detail if needed.
+4. Mark items as read when required.
 
 ### Notes
-- Check notifications regularly, especially during busy shifts.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Notification panel on desktop
-- Mobile View: Screenshot placeholder: Mobile notification panel
+- Review notifications regularly during busy shifts.
+- Notifications help you catch important updates without opening every page.
 
 ### Tips
-- Use notifications to catch changes quickly without opening every page.
+- Use notifications as a quick reminder for recent shipment changes.
+
+### Related Pages
+- Dashboard
+- Inventory
 
 ---
 
-## 14. Profile
+## 11. Profile
 
-### Purpose
-Manage your personal account details.
+### Overview
+The Profile page allows users to view and update their personal account information.
 
-### Description
-The Profile page lets you view your information, edit details, change your password, and update your photo.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the Profile page.
+Figure 11.1 Profile Page
 
-Step 2. Review your current profile information.
-
-Step 3. Click Edit Profile to update your name, username, or email.
-
-Step 4. Save your changes.
-
-Step 5. To change your photo, click the camera icon.
-
-Step 6. Upload a new photo and save it.
-
-Step 7. Open the Change Password tab if you need to update your password.
-
-Step 8. Enter your current password, new password, and confirm it.
-
-Step 9. Click Update Password.
-
-### Expected result
-Your profile and password are updated successfully.
+### How to Use
+1. Open the Profile page.
+2. Review your current information.
+3. Click Edit Profile to update your name, username, or email.
+4. Save your changes.
+5. Click the camera icon to change your profile photo.
+6. Open the Change Password tab if you need to update your password.
+7. Enter the current password, new password, and confirmation.
+8. Click Update Password.
 
 ### Notes
-- Keep your profile details accurate.
+- Keep your profile information accurate.
 - Use a clear and professional profile photo.
 
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Profile page on desktop
-- Mobile View: Screenshot placeholder: Mobile profile page
-
 ### Tips
-- Use a strong password that you can remember.
+- Choose a password that is strong and easy to remember.
+
+### Related Pages
+- Login
+- Dashboard
 
 ---
 
-## 15. User Management (Admin Only)
+## 12. User Management (Admin Only)
 
-### Purpose
-Allow administrators to manage system users.
+### Overview
+The User Management page is available only to administrators. It allows them to add, search, edit, and manage system users.
 
-### Description
-This page is available only to administrators. It helps you add, search, edit, and manage user accounts.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the User Management page.
+Figure 12.1 User Management Page
 
-Step 2. Use the search box to find a user by employee ID, name, or username.
-
-Step 3. Use the role filter to view admin or employee accounts.
-
-Step 4. Click Add User to create a new account.
-
-Step 5. Enter the required details and save the account.
-
-Step 6. Use the actions menu to edit, reset passwords, change status, or remove a user.
-
-Step 7. Confirm any action when prompted.
-
-### Expected result
-You can manage user access and keep account details current.
+### How to Use
+1. Open the User Management page.
+2. Use the search field to find a user by employee ID, name, or username.
+3. Use the role filter to view admin or employee accounts.
+4. Click Add User to create a new account.
+5. Enter the required information and save the account.
+6. Use the action menu to edit, reset a password, change status, or remove a user.
 
 ### Notes
 - Only administrators should use this page.
-- Be careful when changing roles or removing users.
+- Be careful when changing user roles or removing accounts.
 
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: User management table on desktop
-- Mobile View: Screenshot placeholder: Mobile user management view
+> ⚠ Important
+> User access changes should be reviewed carefully to avoid unauthorized account permissions.
 
 ### Tips
-- Review the user list regularly and remove inactive accounts when needed.
+- Review inactive accounts regularly and update them when needed.
+
+### Related Pages
+- Profile
+- Dashboard
 
 ---
 
-## 16. Export Reports (Excel and PDF)
+## 13. Export Reports
 
-### Purpose
-Save warehouse activity information for review and reporting.
+### Overview
+The system allows users to export the activity report in Excel or PDF format for review and sharing.
 
-### Description
-You can export the activity report to Excel or PDF from the dashboard.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the Dashboard page.
+Figure 13.1 Export Reports
 
-Step 2. Apply any needed filters or search terms.
-
-Step 3. Click Export Excel to download an Excel file.
-
-Step 4. Click Export PDF to download a PDF file.
-
-Step 5. Click Print if you need a paper copy.
-
-### Expected result
-A report file is downloaded for your use.
+### How to Use
+1. Open the Dashboard.
+2. Apply the needed filters or search terms.
+3. Click Export Excel to download an Excel file.
+4. Click Export PDF to download a PDF file.
+5. Click Print if a hard copy is required.
 
 ### Notes
 - Apply filters before exporting so the report contains the correct data.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Export buttons on desktop
-- Mobile View: Screenshot placeholder: Export buttons on mobile
+- Exported reports are useful for daily, weekly, or shift review.
 
 ### Tips
-- Use the export feature at the end of a shift or for weekly review.
+- Export reports at the end of a shift or after completing major warehouse activities.
+
+### Related Pages
+- Dashboard
+- Inventory
 
 ---
 
-## 17. Error Messages (Optional)
+## 14. Error Messages
 
-### Purpose
-Help you understand common issues while using the system.
+### Overview
+The system may display error messages when information is missing, a login attempt fails, or an action cannot be completed.
 
-### Description
-The system may show simple messages when a field is missing, a login fails, or an action cannot be completed.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Read the message carefully.
+Figure 14.1 Error Message Example
 
-Step 2. Follow the suggested action.
-
-Step 3. If the issue continues, contact your administrator.
-
-### Expected result
-You understand what to do next.
+### How to Use
+1. Read the error message carefully.
+2. Follow the suggested action.
+3. If the issue continues, contact your administrator.
 
 ### Notes
-- Error messages are meant to guide you, not confuse you.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Error message example
-- Mobile View: Screenshot placeholder: Mobile error message
+- Error messages are meant to guide the user and help resolve the issue quickly.
 
 ### Tips
-- Do not guess. Review the form and try again.
+- Do not guess when a form or action fails; review the data and try again.
 
 ---
 
-## 18. Troubleshooting
+## 15. Troubleshooting
 
-### Purpose
-Help you solve common problems quickly.
+### Overview
+This section provides simple steps for resolving common issues while using the system.
 
-### Description
-Use this section when the system does not behave as expected.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Refresh the page and try again.
+Figure 15.1 Troubleshooting Guide
 
-Step 2. Check your internet connection.
-
-Step 3. Confirm you are using the correct login details.
-
-Step 4. If you are scanning a code, make sure the code is clear and the camera has permission.
-
-Step 5. If the problem continues, contact the administrator.
-
-### Expected result
-You can solve common issues without major delay.
+### How to Use
+1. Refresh the page and try again.
+2. Check your internet connection.
+3. Confirm that your login details are correct.
+4. If you are scanning a code, check camera permission and lighting.
+5. If the issue continues, contact the administrator.
 
 ### Notes
-- Small issues are often fixed by refreshing the page or checking the camera.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Troubleshooting guidance on desktop
-- Mobile View: Screenshot placeholder: Mobile troubleshooting view
+- Many issues are resolved quickly by refreshing the page or checking the connection.
 
 ### Tips
-- Keep notes of any recurring errors and share them with support.
+- Record recurring issues so they can be reported clearly.
 
 ---
 
-## 19. Frequently Asked Questions
+## 16. Frequently Asked Questions
 
-### Purpose
-Answer common questions from users.
+### Overview
+This section answers common questions about login, data entry, inventory, and profile updates.
 
-### Description
-This section covers common questions about login, data entry, inventory, and profile updates.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Read the question that matches your issue.
+Figure 16.1 FAQ Section
 
-Step 2. Follow the answer provided.
-
-Step 3. If the answer does not solve the issue, contact the administrator.
-
-### Expected result
-You find a quick answer without delays.
+### How to Use
+1. Find the question that matches your issue.
+2. Review the answer provided.
+3. If the answer does not solve the problem, contact the administrator.
 
 ### Notes
-- Common questions include password issues, missing fields, and scan problems.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: FAQ section
-- Mobile View: Screenshot placeholder: Mobile FAQ section
+- The FAQ is useful for quick guidance before requesting support.
 
 ### Tips
 - Review the FAQ before asking for help.
 
 ---
 
-## 20. Best Practices
+## 17. Best Practices
 
-### Purpose
-Help you use the system accurately and safely.
+### Overview
+Following best practices helps users enter accurate data and work more efficiently.
 
-### Description
-These practices reduce errors and improve daily warehouse operations.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Double-check shipment numbers before saving.
+Figure 17.1 Best Practices
 
-Step 2. Use the correct quantity and unit.
-
-Step 3. Review filters before exporting reports.
-
-Step 4. Keep your profile details updated.
-
-Step 5. Log out when you finish using a shared device.
-
-### Expected result
-Your records stay accurate and your work is easier to manage.
+### How to Use
+1. Double-check shipment numbers before saving.
+2. Use the correct quantity and unit.
+3. Review filters before exporting reports.
+4. Keep your profile details updated.
+5. Log out when using a shared device.
 
 ### Notes
-- Good habits reduce duplicate entries and reporting mistakes.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Best practices reminder
-- Mobile View: Screenshot placeholder: Mobile best practices view
+- Good habits reduce duplicate records and reporting mistakes.
 
 ### Tips
-- Make accuracy your priority when entering shipment data.
+- Accuracy is the most important part of warehouse data entry.
 
 ---
 
-## 21. Logout
+## 18. Logout
 
-### Purpose
-End your session safely.
+### Overview
+Logging out ends your session safely and protects your account on shared devices.
 
-### Description
-Logging out prevents other users from accessing your account on a shared device.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Open the user profile area in the top bar.
+Figure 18.1 Logout Option
 
-Step 2. Click Logout.
-
-Step 3. Confirm the action if prompted.
-
-### Expected result
-You are signed out of the system.
+### How to Use
+1. Open the user profile area in the top bar.
+2. Click Logout.
+3. Confirm the action if prompted.
 
 ### Notes
-- Always log out when you finish using the system on a shared computer.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Logout option on desktop
-- Mobile View: Screenshot placeholder: Mobile logout option
+- Always log out when you finish working on a shared computer.
 
 ### Tips
-- Do not leave the workstation unattended without logging out.
+- Do not leave your workstation unattended without signing out.
 
 ---
 
-## 22. Appendix
+## 19. Appendix
 
-### Purpose
-Provide extra reference information.
+### Overview
+The appendix provides useful reference information for everyday use.
 
-### Description
-The appendix includes useful terms and reminders for everyday use.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Use this section as a quick reference.
+Figure 19.1 Appendix
 
-Step 2. Review the listed terms and common actions.
-
-### Expected result
-You have quick reference support while using the system.
+### How to Use
+1. Use this section as a quick reference.
+2. Review common terms and reminders when needed.
 
 ### Notes
-- The appendix helps new users learn the system faster.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Appendix reference page
-- Mobile View: Screenshot placeholder: Mobile appendix view
+- The appendix is helpful for new users and occasional users alike.
 
 ### Tips
-- Keep this manual nearby for quick reference.
+- Keep this manual nearby for quick reference during daily work.
 
 ---
 
-## 23. User Roles
+## 20. User Roles
 
-### Purpose
-Explain the main user roles in the system.
+### Overview
+The system supports different user roles so staff can access the functions appropriate to their responsibilities.
 
-### Description
-The system supports different access levels for employees and administrators.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Review the role list below.
+Figure 20.1 User Roles
 
-Step 2. Use the system according to your role.
-
-### Expected result
-You understand what each role can do.
+### How to Use
+1. Review the role list below.
+2. Use the system according to your assigned role.
 
 ### Notes
-- Employees can manage daily warehouse operations.
+- Employees can perform daily warehouse tasks.
 - Administrators can manage users and access additional controls.
-
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Role-based access screen
-- Mobile View: Screenshot placeholder: Mobile view of role-based access
-
-### Tips
-- If you are unsure about your permission, ask your administrator.
 
 ### Role Summary
 - Employee: Can sign in, record shipments, review inventory, and update profile details.
@@ -690,33 +598,29 @@ You understand what each role can do.
 
 ---
 
-## 24. Default Accounts (Testing Only)
+## 21. Default Accounts (Testing Only)
 
-### Purpose
-Provide default test accounts for training or demonstration.
+### Overview
+Default accounts are provided for training, demonstration, or initial setup. These accounts should be used only in a non-production environment unless approved by the administrator.
 
-### Description
-These accounts are intended for testing or training use only.
+[Insert Screenshot Here]
 
-### Step-by-step instructions
-Step 1. Use the administrator account for system administration tasks.
+Figure 21.1 Default Accounts
 
-Step 2. Use the employee account for everyday warehouse work.
-
-### Expected result
-You can test the system with the provided sample accounts.
+### How to Use
+1. Use the administrator account for system administration tasks.
+2. Use the employee account for everyday warehouse work.
 
 ### Notes
 - Default account details may be changed by the administrator.
 - For live use, use your own assigned account.
 
-### Screenshot placeholder
-- Desktop View: Screenshot placeholder: Default account list
-- Mobile View: Screenshot placeholder: Mobile view of default accounts
-
-### Tips
-- Do not share your password with others.
+> ⚠ Important
+> These default credentials are intended for testing and initial setup only. Administrators should change the passwords before deploying the system in a shared or production environment.
 
 ### Default Accounts
-- Administrator: Username admin001, Password Admin@123
-- Employee: Username emp001, Password Employee@123
+
+| Role | Username | Password |
+|---|---|---|
+| Administrator | admin001 | Admin@123 |
+| Employee | emp001 | Employee@123 |
