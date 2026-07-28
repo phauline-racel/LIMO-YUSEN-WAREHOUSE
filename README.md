@@ -1,5 +1,3 @@
-<div style="color:#E16D10; font-size:12px; line-height:1.5; text-align:justify;">
-
 # LIMO Warehouse System - Developer Documentation
 
 ## User Manual
