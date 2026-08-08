@@ -1,10 +1,6 @@
 # LIMO Warehouse Inventory Management System
 ## User Manual
 
-### Brand Colors
-Primary: `#06183D` (Yusen Logistics Navy)
-Secondary: `#E16D10` (Yusen Logistics Orange)
-
 ## Revision History
 
 | Version | Date | Author | Description |
@@ -26,15 +22,11 @@ Secondary: `#E16D10` (Yusen Logistics Orange)
 11. Profile Module
 12. Change Password Module
 13. User Management (Admin Only)
-14. Export Reports
-15. Error Messages
-16. Troubleshooting
-17. Frequently Asked Questions
-18. Best Practices
-19. Logout
-20. Appendix
-21. User Roles
-22. Default Accounts (Testing Only)
+14. Troubleshooting
+15. Best Practices
+16. Logout
+17. User Roles
+18. Default Accounts (Testing Only)
 
 ---
 
@@ -144,6 +136,7 @@ The Dashboard provides a top-level summary of warehouse operations, including sh
   - Outgoing shipments for the day
 - Click any card to filter the activity report by that metric.
 - Use the search field or the QR scan button inside the search bar to locate records by HAWB, MAWB, or Client.
+  - Refer to Section 9: QR Scanner for the full scanning steps.
 - Use the Date Range selector to choose:
   - All
   - Today
@@ -187,6 +180,7 @@ Manual entry is optional and used only when information needs to be corrected or
 1. Open the Inbound & Outbound page.
 2. Select the Inbound tab.
 3. Use the QR scan feature first, when available, to read the HAWB or MAWB code and automatically fill in information.
+- Refer to Section 9: QR Scanner for the full scanning steps.
 4. Under "Received by", select the warehouseman who received the cargo.
 5. If needed, adjust the pre-filled details manually.
 6. Click Save when complete.
@@ -220,6 +214,7 @@ The Outbound Module records outgoing cargo and release details.
 1. Open the Inbound & Outbound page.
 2. Select the Outbound tab.
 3. Use the QR scan feature first, when available, to read the HAWB or MAWB code and automatically fill in information.
+- Refer to Section 9: QR Scanner for the full scanning steps.
 4. Under "Released by", select the warehouseman who received the cargo.
 5. If needed, adjust the pre-filled details manually.
 6. Click Save when complete.
@@ -249,6 +244,7 @@ The Inventory page displays current stock, quantities, and shipment details.
 
 ### How to Use
 - Search records by HAWB, MAWB, or Client, or scan a QR code using the search bar QR scan button for fast lookup.
+  - Refer to Section 9: QR Scanner for the full scanning steps.
 - Apply filters by location or transaction type.
 - Sort inventory by remaining quantity, either lowest to highest or highest to lowest.
 - Clear filters when you want to reset the list.
@@ -287,7 +283,7 @@ QR scanning is embedded in the system's search workflows and is available on any
 
 ---
 
-## 10. Notifications
+## 10. Notifications and Search Bar
 
 ### Overview
 Notifications inform users about updates, alerts, and system activity.
@@ -301,11 +297,13 @@ Notifications inform users about updates, alerts, and system activity.
 *Figure 10.2 Notifications Panel - Mobile*
 
 ### How to Use
-- Click the notification icon.
+- Click the notification icon in the top bar to view new alerts and updates.
 - Review recent notifications.
 - Open notifications for details.
 - Use the double-check icon to mark all notifications as read.
 - Click the View All Notifications button at the bottom to open the full notification list.
+- Use the search bar in the top bar to look up records by HAWB, MAWB, or Client.
+- The search results can be viewed from the Activity Report or Inventory page, depending on the selected data view.
 
 ### Notes
 - Check notifications regularly during busy shifts.
@@ -478,7 +476,3 @@ Default accounts are provided for training and initial setup only.
 |---|---|---|
 | Administrator | admin001 | Admin@123 |
 | Employee | emp001 | Employee@123 |
-'''
-with open('USER_MANUAL.md', 'w', encoding='utf-8') as f:
-    f.write(content)
-PY
