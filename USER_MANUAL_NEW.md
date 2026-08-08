@@ -23,17 +23,18 @@ Secondary: `#E16D10` (Yusen Logistics Orange)
 8. Inventory
 9. QR Scanner
 10. Notifications
-11. Profile
-12. User Management (Admin Only)
-13. Export Reports
-14. Error Messages
-15. Troubleshooting
-16. Frequently Asked Questions
-17. Best Practices
-18. Logout
-19. Appendix
-20. User Roles
-21. Default Accounts (Testing Only)
+11. Profile Module
+12. Change Password Module
+13. User Management (Admin Only)
+14. Export Reports
+15. Error Messages
+16. Troubleshooting
+17. Frequently Asked Questions
+18. Best Practices
+19. Logout
+20. Appendix
+21. User Roles
+22. Default Accounts (Testing Only)
 
 ---
 
@@ -126,7 +127,7 @@ Use the Login page to securely access the warehouse system.
 ## 5. Dashboard
 
 ### Overview
-The Dashboard provides a top-level summary of warehouse operations, including shipment counts, inventory status, and recent activity.
+The Dashboard provides a top-level summary of warehouse operations, including shipment totals, current warehouse stock, outgoing shipments for the day, and recent activity.
 
 ![Figure 5.1 Dashboard - Desktop](Figure%205.1%20Dashboard%20-%20Desktop)
 
@@ -137,17 +138,32 @@ The Dashboard provides a top-level summary of warehouse operations, including sh
 *Figure 5.2 Dashboard - Mobile*
 
 ### How to Use
-- Review summary cards for shipment totals and inventory status.
-- Use the search field to locate records by HAWB, MAWB, or Client.
-- Apply filters to narrow results.
-- Review the activity report for inbound and outbound movement.
+- Review the summary cards for:
+  - Total shipments
+  - Cargo currently in the warehouse (how many remain in stock)
+  - Outgoing shipments for the day
+- Click any card to filter the activity report by that metric.
+- Use the search field or the QR scan button inside the search bar to locate records by HAWB, MAWB, or Client.
+- Use the Date Range selector to choose:
+  - All
+  - Today
+  - Yesterday
+  - Last 7 Days
+  - Last 30 Days
+  - This Month
+  - Last Month
+  - Custom Date Range
+- Filter the activity report by Transaction Type and Warehouse Location.
+- Choose how many records to display per page: 5, 10, 20, or All.
+- Use Export Excel, Export PDF, or Print to download or print the report.
 
 ### Notes
 - Dashboard data updates as shipment records are saved.
-- Summary cards provide fast access to key information.
+- Summary cards provide fast access to key information and quick filtering.
+- The activity report includes search, filters, and pagination for easier data review.
 
 ### Tips
-- Check the Dashboard at the start of each shift.
+- Check the Dashboard at the start of each shift to monitor daily activity and stock levels.
 
 ---
 
@@ -155,6 +171,9 @@ The Dashboard provides a top-level summary of warehouse operations, including sh
 
 ### Overview
 The Inbound Module captures incoming cargo details and receiving information.
+It includes the WR feature for QR scanning, which can read both HAWB and MAWB codes and automatically populate the shipment fields.
+This scan feature is available on search-enabled pages throughout the system and can also be used on any page that shows the QR scan button.
+Manual entry is optional and used only when information needs to be corrected or adjusted.
 
 ![Figure 6.1 Inbound Module - Desktop](Figure%206.1%20Inbound%20Module%20-%20Desktop)
 
@@ -167,13 +186,15 @@ The Inbound Module captures incoming cargo details and receiving information.
 ### How to Use
 1. Open the Inbound & Outbound page.
 2. Select the Inbound tab.
-3. Enter shipment details: Client, Destination, HAWB, MAWB, Invoice, Transaction Type.
-4. Enter receiving details: Date, Time, Received By, Plate No., Trucker, Driver, Cargo Condition, Warehouse Location.
-5. Add item quantities and units.
+3. Use the QR scan feature first, when available, to read the HAWB or MAWB code and automatically fill in information.
+4. Under "Received by", select the warehouseman who received the cargo.
+5. If needed, adjust the pre-filled details manually.
 6. Click Save when complete.
 7. Use Clear to reset the form if needed.
 
 ### Notes
+- The QR feature can scan both HAWB and MAWB and auto-enter shipment data.
+- Manual entry is available only for corrections or additional edits.
 - Confirm reference numbers before saving.
 - Accurate data prevents duplicate records.
 
@@ -198,10 +219,11 @@ The Outbound Module records outgoing cargo and release details.
 ### How to Use
 1. Open the Inbound & Outbound page.
 2. Select the Outbound tab.
-3. Enter shipment details: Client, Destination, HAWB, MAWB, Invoice, Transaction Type.
-4. Enter release details: Date, Time, Released By, Plate No., Trucker, Driver, Cargo Condition, Warehouse Location.
-5. Enter quantities and units.
-6. Save the record.
+3. Use the QR scan feature first, when available, to read the HAWB or MAWB code and automatically fill in information.
+4. Under "Released by", select the warehouseman who received the cargo.
+5. If needed, adjust the pre-filled details manually.
+6. Click Save when complete.
+7. Use Clear to reset the form if needed.
 
 ### Notes
 - Verify stock levels before releasing cargo.
@@ -226,10 +248,12 @@ The Inventory page displays current stock, quantities, and shipment details.
 *Figure 8.2 Inventory Page - Mobile*
 
 ### How to Use
-- Search records by HAWB, MAWB, or Client.
+- Search records by HAWB, MAWB, or Client, or scan a QR code using the search bar QR scan button for fast lookup.
 - Apply filters by location or transaction type.
-- Sort inventory by quantity or date.
-- Review table rows and click to view shipment details.
+- Sort inventory by remaining quantity, either lowest to highest or highest to lowest.
+- Clear filters when you want to reset the list.
+- Choose how many records to display per page: 5, 10, 20, or All.
+- Review table rows and click View to view shipment details.
 
 ### Notes
 - Filters improve search efficiency.
@@ -240,7 +264,7 @@ The Inventory page displays current stock, quantities, and shipment details.
 ## 9. QR Scanner
 
 ### Overview
-The QR Scanner reads shipment codes and populates form fields automatically.
+QR scanning is embedded in the system's search workflows and is available on any page that includes a scan button. Use the scan button directly on the form or search interface to read shipment QR codes and populate fields automatically.
 
 ![Figure 9.1 QR Scanner - Desktop](Figure%209.1%20QR%20Scanner%20-%20Desktop)
 
@@ -251,11 +275,11 @@ The QR Scanner reads shipment codes and populates form fields automatically.
 *Figure 9.2 QR Scanner - Mobile*
 
 ### How to Use
-1. Open the page with the scan button.
-2. Click Scan.
-3. Point the camera at the QR code.
-4. Wait for the code to be recognized.
-5. Confirm the scanned data.
+1. On any page or search interface with a scan button, tap QR Scan button.
+2. Point the camera at the QR code.
+3. Wait for the code to be recognized.
+4. Confirm the scanned data.
+5. Continue with the normal form or search workflow.
 
 ### Notes
 - Allow camera permission for scanning.
@@ -280,17 +304,19 @@ Notifications inform users about updates, alerts, and system activity.
 - Click the notification icon.
 - Review recent notifications.
 - Open notifications for details.
-- Mark items as read when resolved.
+- Use the double-check icon to mark all notifications as read.
+- Click the View All Notifications button at the bottom to open the full notification list.
 
 ### Notes
 - Check notifications regularly during busy shifts.
+- Use the mark-all-read icon when you have reviewed all alerts for faster cleanup.
 
 ---
 
-## 11. Profile
+## 11. Profile Module
 
 ### Overview
-The Profile page allows users to update personal and account information.
+The Profile module allows users to review and update personal details such as name, email, phone number, and profile photo.
 
 ![Figure 11.1 Profile Page - Desktop](Figure%2011.1%20Profile%20Page%20-%20Desktop)
 
@@ -302,10 +328,10 @@ The Profile page allows users to update personal and account information.
 
 ### How to Use
 1. Open the Profile page.
-2. Review your personal details.
-3. Update profile fields as needed.
-4. Save changes.
-5. Change your password if required.
+2. Review your personal details in the Profile module.
+3. Click the Edit Profile button to update profile fields.
+4. Change your profile picture by clicking the camera icon.
+5. Save changes.
 
 ### Notes
 - Keep your profile details current.
@@ -313,7 +339,25 @@ The Profile page allows users to update personal and account information.
 
 ---
 
-## 12. User Management (Admin Only)
+## 12. Change Password Module
+
+### Overview
+The Change Password module is a separate section on the Profile page for updating your account password securely.
+
+### How to Use
+1. Open the Profile page.
+2. Select the Change Password module.
+3. Enter your current password.
+4. Enter and confirm a new password.
+5. Save changes to update your password.
+
+### Notes
+- Choose a strong password that meets your company security requirements.
+- Do not share your password with others.
+
+---
+
+## 13. User Management (Admin Only)
 
 ### Overview
 The User Management screen is for administrators to manage user accounts.
@@ -327,76 +371,28 @@ The User Management screen is for administrators to manage user accounts.
 *Figure 12.2 User Management - Mobile*
 
 ### How to Use
+- Open the User Management page.
 - Search users by employee ID, name, or username.
 - Filter by role.
 - Add new accounts.
-- Edit account details.
-- Reset passwords or change account status.
+- View and edit account details.
+- Reset passwords to the default password.
+- Deactivate an account when access should be temporarily removed.
+- Delete an account when it is no longer required.
 
 ### Notes
 - Only administrators should use this section.
 - Review access levels before making account changes.
+- Confirm account actions carefully, especially for deactivation or deletion.
 
 ---
 
-## 13. Export Reports
-
-### Overview
-Users can export activity reports in Excel or PDF formats.
-
-![Figure 13.1 Export Reports - Desktop](Figure%2013.1%20Export%20Reports%20-%20Desktop)
-
-*Figure 13.1 Export Reports - Desktop*
-
-![Figure 13.2 Export Reports - Mobile](Figure%2013.2%20Export%20Reports%20-%20Mobile)
-
-*Figure 13.2 Export Reports - Mobile*
-
-### How to Use
-1. Open the Dashboard.
-2. Apply filters and search terms.
-3. Click Export Excel or Export PDF.
-4. Print if needed.
-
-### Notes
-- Apply filters before exporting to capture the correct data.
-
----
-
-## 14. Error Messages
-
-### Overview
-The system displays error messages when information is missing or an action cannot complete.
-
-![Figure 14.1 Error Message - Desktop](Figure%2014.1%20Error%20Message%20-%20Desktop)
-
-*Figure 14.1 Error Message - Desktop*
-
-![Figure 14.2 Error Message - Mobile](Figure%2014.2%20Error%20Message%20-%20Mobile)
-
-*Figure 14.2 Error Message - Mobile*
-
-### How to Use
-- Read the message carefully.
-- Follow the recommended action.
-- Contact your administrator if the issue persists.
-
----
-
-## 15. Troubleshooting
+## 14. Troubleshooting
 
 ### Overview
 This section describes common steps to resolve system issues.
 
-![Figure 15.1 Troubleshooting - Desktop](Figure%2015.1%20Troubleshooting%20-%20Desktop)
-
-*Figure 15.1 Troubleshooting - Desktop*
-
-![Figure 15.2 Troubleshooting - Mobile](Figure%2015.2%20Troubleshooting%20-%20Mobile)
-
-*Figure 15.2 Troubleshooting - Mobile*
-
-### How to Use
+### How to Resolve
 1. Refresh the page.
 2. Check your internet connection.
 3. Confirm login credentials.
@@ -405,40 +401,12 @@ This section describes common steps to resolve system issues.
 
 ---
 
-## 16. Frequently Asked Questions
-
-### Overview
-This FAQ section answers common questions about login, data entry, inventory, and profile updates.
-
-![Figure 16.1 FAQ - Desktop](Figure%2016.1%20FAQ%20-%20Desktop)
-
-*Figure 16.1 FAQ - Desktop*
-
-![Figure 16.2 FAQ - Mobile](Figure%2016.2%20FAQ%20-%20Mobile)
-
-*Figure 16.2 FAQ - Mobile*
-
-### How to Use
-- Locate the most relevant question.
-- Read the answer.
-- Contact your administrator if you need further help.
-
----
-
-## 17. Best Practices
+## 15. Best Practices
 
 ### Overview
 Following best practices reduces errors and improves workflow.
 
-![Figure 17.1 Best Practices - Desktop](Figure%2017.1%20Best%20Practices%20-%20Desktop)
-
-*Figure 17.1 Best Practices - Desktop*
-
-![Figure 17.2 Best Practices - Mobile](Figure%2017.2%20Best%20Practices%20-%20Mobile)
-
-*Figure 17.2 Best Practices - Mobile*
-
-### How to Use
+### What to Do
 - Double-check shipment information before saving.
 - Use correct quantities and units.
 - Review filters before exporting.
@@ -450,7 +418,7 @@ Following best practices reduces errors and improves workflow.
 
 ---
 
-## 18. Logout
+## 16. Logout
 
 ### Overview
 Logging out ends your session and secures your account.
@@ -461,37 +429,19 @@ Logging out ends your session and secures your account.
 
 ![Figure 18.2 Logout - Mobile](Figure%2018.2%20Logout%20-%20Mobile)
 
-*Figure 18.2 Logout%20-%20Mobile*
+*Figure 18.2 Logout - Mobile*
 
 ### How to Use
 1. Open the profile menu.
 2. Click Logout.
-3. Confirm if prompted.
+3. Confirm the logout prompt by clicking Logout button.
 
 ### Notes
 - Always log out on shared devices.
 
 ---
 
-## 19. Appendix
-
-### Overview
-The appendix contains reference material and terminology for daily use.
-
-![Figure 19.1 Appendix - Desktop](Figure%2019.1%20Appendix%20-%20Desktop)
-
-*Figure 19.1 Appendix - Desktop*
-
-![Figure 19.2 Appendix - Mobile](Figure%2019.2%20Appendix%20-%20Mobile)
-
-*Figure 19.2 Appendix - Mobile*
-
-### Notes
-- Use this section as a quick reference.
-
----
-
-## 20. User Roles
+## 17. User Roles
 
 ### Overview
 The system supports specific user roles so staff access functions appropriate to their responsibilities.
@@ -505,23 +455,15 @@ The system supports specific user roles so staff access functions appropriate to
 *Figure 20.2 User Roles - Mobile*
 
 ### Role Summary
-- Employee: Sign in, record shipments, review inventory, update profile.
+- Employee: Sign in, view dashboard, record shipments, review inventory, update profile.
 - Administrator: All employee functions plus user management.
 
 ---
 
-## 21. Default Accounts (Testing Only)
+## 18. Default Accounts (Testing Only)
 
 ### Overview
 Default accounts are provided for training and initial setup only.
-
-![Figure 21.1 Default Accounts - Desktop](Figure%2021.1%20Default%20Accounts%20-%20Desktop)
-
-*Figure 21.1 Default Accounts - Desktop*
-
-![Figure 21.2 Default Accounts - Mobile](Figure%2021.2%20Default%20Accounts%20-%20Mobile)
-
-*Figure 21.2 Default Accounts - Mobile*
 
 ### Notes
 - Use default accounts only in test or setup environments.
@@ -536,3 +478,7 @@ Default accounts are provided for training and initial setup only.
 |---|---|---|
 | Administrator | admin001 | Admin@123 |
 | Employee | emp001 | Employee@123 |
+'''
+with open('USER_MANUAL.md', 'w', encoding='utf-8') as f:
+    f.write(content)
+PY
