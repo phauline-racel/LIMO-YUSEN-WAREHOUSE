@@ -1986,8 +1986,17 @@ const parseQuantityNumber = (value) => {
 };
 
 const formatQuantityDisplay = (value, unit) => {
-  const numericValue = parseQuantityNumber(value);
-  if (!numericValue) {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+
+  const numericText = String(value).trim().match(/-?\d+(?:\.\d+)?/);
+  if (!numericText) {
+    return '';
+  }
+
+  const numericValue = Number(numericText[0]);
+  if (!Number.isFinite(numericValue)) {
     return '';
   }
 
@@ -4448,7 +4457,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${item.location}</td>
             <td>${item.qtyIn || ''}</td>
             <td>${item.qtyOut || ''}</td>
-            <td>${item.remainingQuantity || item.quantity || ''}</td>
+            <td>${item.remainingQuantity !== '' ? item.remainingQuantity : item.quantity || ''}</td>
             <td><button type="button" class="view-details-btn" data-index="${start + index}">View</button></td>
           </tr>
         `).join('');
