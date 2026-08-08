@@ -3967,6 +3967,15 @@ document.addEventListener('DOMContentLoaded', () => {
           return null;
       }
     };
+    const getActivityItemLatestDate = (item) => {
+      const dateIn = parseActivityDate(item.dateIn || '');
+      const dateOut = parseActivityDate(item.dateOut || '');
+      if (dateIn && dateOut) {
+        return dateOut > dateIn ? dateOut : dateIn;
+      }
+      return dateOut || dateIn;
+    };
+
     const getFilteredActivityData = () => {
       const query = activitySearchInput?.value.trim().toLowerCase() || '';
       const transactionType = activityTransactionSelect?.value.trim().toLowerCase() || '';
@@ -3975,7 +3984,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const presetRange = getDateRangeBounds();
       const customRange = parseDateRange(rangeInput);
 
-      return activityData.filter((item) => {
+      const filteredItems = activityData.filter((item) => {
         const queryMatch = !query || [item.month, item.client, item.mawb, item.hawb].some((field) => field.toLowerCase().includes(query));
         const transactionMatch = !transactionType || String(item.transactionType || '').toLowerCase().includes(transactionType);
         const locationMatch = !location || item.location.toLowerCase().includes(location.toLowerCase());
@@ -3997,6 +4006,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return queryMatch && transactionMatch && locationMatch && dateMatch && dashboardMatch;
+      });
+
+      return filteredItems.slice().sort((a, b) => {
+        const aDate = getActivityItemLatestDate(a);
+        const bDate = getActivityItemLatestDate(b);
+        if (aDate && bDate) {
+          return bDate - aDate;
+        }
+        if (aDate) return -1;
+        if (bDate) return 1;
+        return 0;
       });
     };
 
