@@ -2485,6 +2485,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let notificationState = [];
   let notificationPanel = null;
 
+  const applySidebarActiveState = () => {
+    const currentPage = window.location.pathname.split('/').pop()?.toLowerCase() || '';
+    document.querySelectorAll('#sidebar nav a').forEach((link) => {
+      const linkPage = link.getAttribute('href')?.split('/').pop()?.toLowerCase() || '';
+      link.classList.toggle('active', linkPage === currentPage);
+    });
+  };
+
+  applySidebarActiveState();
+
   const loadNotificationState = () => {
     try {
       const storedValue = localStorage.getItem(notificationStateKey);
